@@ -1,0 +1,81 @@
+Assets/XybridAvatarDemo/Audio/mouth-cues.json
+  s_1b689798402dd9::t_1dd697fc4a2a35 1-93
+Assets/XybridAvatarDemo/Audio/script.txt
+  s_1b689798402dd9::t_c79ef40a0e3423 1
+Assets/XybridAvatarDemo/Editor/XybridNameOpeningScene.cs
+  s_03bae9cec08f2e::t_26be1a1004d47b 1-53
+Assets/XybridAvatarDemo/Editor/XybridPerformanceInstaller.cs
+  s_a27705c7eed0ea::t_eec2120c555402 1-103
+Assets/XybridAvatarDemo/Editor/XybridTrollPrefabState.cs
+  s_e5bea986b158f0::t_1b307c313e8259 1-73
+Assets/XybridAvatarDemo/Runtime/GatekeeperBarrier.cs
+  s_3a0775aa5f217b::t_c41fe97802e43b 1-35
+Assets/XybridAvatarDemo/Runtime/GatekeeperSpeechLoudness.cs
+  s_243a7ec9f68bcc::t_19f37ca31ff2a4 1-79
+Assets/XybridAvatarDemo/Runtime/GatekeeperStory.cs
+  s_3a0775aa5f217b::t_1c4dcb8dc688c8 1-154
+Assets/XybridAvatarDemo/Runtime/GatekeeperView.cs
+  s_3a0775aa5f217b::t_437220f602fa1a 1-120
+Assets/XybridAvatarDemo/Runtime/IntentGatekeeperLineSource.cs
+  s_3a0775aa5f217b::t_500bb15393e3fb 1-65
+Assets/XybridAvatarDemo/Runtime/TrolaAtmosphere.cs
+  s_243a7ec9f68bcc::t_d21288e6e774db 1-79
+ProjectSettings/GraphicsSettings.asset
+  s_e5bea986b158f0::t_331534e1fdf2c5 1-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c5364b374460577cf28a0c1eb74d77e77e5ce9c6",
+  "prompts": {},
+  "sessions": {
+    "s_03bae9cec08f2e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a105c2-dd94-7bb0-b785-0e4c8556c332",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    },
+    "s_1b689798402dd9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a9711fe-8fcf-4a1c-8f32-437490a440ba",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    },
+    "s_243a7ec9f68bcc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a1c4b82a-d842-415f-9bfa-5053d9722049",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    },
+    "s_3a0775aa5f217b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a10423-693d-7752-a21c-0a8664638347",
+        "model": "unknown"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    },
+    "s_a27705c7eed0ea": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "505b4087-52bd-424a-ba0a-a56df633a17b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    },
+    "s_e5bea986b158f0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7f07d9e-36c4-4ec4-863d-0de7e557cfd1",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    }
+  }
+}
