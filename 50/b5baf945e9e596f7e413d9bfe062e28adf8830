@@ -1,0 +1,19 @@
+docs/integration-history/kitten-troll-spike/Runtime/IGatekeeperSpeechProvider.cs
+  s_293404e251193e::t_36ced9510d90de 1-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "50b5baf945e9e596f7e413d9bfe062e28adf8830",
+  "prompts": {},
+  "sessions": {
+    "s_293404e251193e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1180f-cbb6-7103-bc67-0ed76c08cc8e",
+        "model": "unknown"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    }
+  }
+}
