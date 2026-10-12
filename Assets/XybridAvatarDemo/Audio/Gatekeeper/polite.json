@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/polite.wav",
+    "duration": 2.58
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.01, "value": "X" },
+    { "start": 0.01, "end": 0.09, "value": "A" },
+    { "start": 0.09, "end": 0.27, "value": "C" },
+    { "start": 0.27, "end": 0.48, "value": "E" },
+    { "start": 0.48, "end": 1.04, "value": "B" },
+    { "start": 1.04, "end": 1.18, "value": "D" },
+    { "start": 1.18, "end": 1.39, "value": "B" },
+    { "start": 1.39, "end": 1.53, "value": "F" },
+    { "start": 1.53, "end": 1.67, "value": "C" },
+    { "start": 1.67, "end": 1.74, "value": "H" },
+    { "start": 1.74, "end": 1.81, "value": "B" },
+    { "start": 1.81, "end": 1.88, "value": "C" },
+    { "start": 1.88, "end": 1.95, "value": "G" },
+    { "start": 1.95, "end": 2.02, "value": "F" },
+    { "start": 2.02, "end": 2.23, "value": "D" },
+    { "start": 2.23, "end": 2.58, "value": "B" }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/flatter.wav",
+    "duration": 2.88
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.22, "value": "C" },
+    { "start": 0.22, "end": 0.36, "value": "B" },
+    { "start": 0.36, "end": 0.51, "value": "A" },
+    { "start": 0.51, "end": 0.58, "value": "C" },
+    { "start": 0.58, "end": 0.72, "value": "B" },
+    { "start": 0.72, "end": 0.91, "value": "D" },
+    { "start": 0.91, "end": 0.96, "value": "C" },
+    { "start": 0.96, "end": 1.14, "value": "B" },
+    { "start": 1.14, "end": 1.42, "value": "C" },
+    { "start": 1.42, "end": 1.50, "value": "A" },
+    { "start": 1.50, "end": 1.65, "value": "D" },
+    { "start": 1.65, "end": 1.69, "value": "C" },
+    { "start": 1.69, "end": 2.16, "value": "B" },
+    { "start": 2.16, "end": 2.25, "value": "A" },
+    { "start": 2.25, "end": 2.30, "value": "B" },
+    { "start": 2.30, "end": 2.49, "value": "E" },
+    { "start": 2.49, "end": 2.84, "value": "B" },
+    { "start": 2.84, "end": 2.88, "value": "X" }
+  ]
+}

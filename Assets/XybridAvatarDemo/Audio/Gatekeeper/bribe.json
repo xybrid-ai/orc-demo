@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/bribe.wav",
+    "duration": 3.73
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.23, "value": "C" },
+    { "start": 0.23, "end": 0.30, "value": "E" },
+    { "start": 0.30, "end": 0.65, "value": "B" },
+    { "start": 0.65, "end": 0.72, "value": "C" },
+    { "start": 0.72, "end": 0.79, "value": "E" },
+    { "start": 0.79, "end": 1.21, "value": "B" },
+    { "start": 1.21, "end": 1.28, "value": "C" },
+    { "start": 1.28, "end": 1.81, "value": "B" },
+    { "start": 1.81, "end": 2.01, "value": "C" },
+    { "start": 2.01, "end": 2.15, "value": "B" },
+    { "start": 2.15, "end": 2.29, "value": "E" },
+    { "start": 2.29, "end": 2.36, "value": "F" },
+    { "start": 2.36, "end": 2.43, "value": "G" },
+    { "start": 2.43, "end": 2.57, "value": "E" },
+    { "start": 2.57, "end": 2.71, "value": "C" },
+    { "start": 2.71, "end": 2.78, "value": "B" },
+    { "start": 2.78, "end": 2.85, "value": "F" },
+    { "start": 2.85, "end": 2.92, "value": "B" },
+    { "start": 2.92, "end": 3.06, "value": "C" },
+    { "start": 3.06, "end": 3.13, "value": "G" },
+    { "start": 3.13, "end": 3.20, "value": "C" },
+    { "start": 3.20, "end": 3.48, "value": "B" },
+    { "start": 3.48, "end": 3.69, "value": "H" },
+    { "start": 3.69, "end": 3.73, "value": "X" }
+  ]
+}

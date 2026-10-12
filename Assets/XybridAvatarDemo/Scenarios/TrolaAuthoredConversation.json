@@ -1,0 +1,946 @@
+{
+  "version": 1,
+  "idle_seconds": 8,
+  "hub_rounds": 2,
+  "lines": [
+    {
+      "id": "name-1",
+      "text": "Stop there. This gate has teeth.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "name-2",
+      "text": "Before you lose yours, give me your name.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "named-1",
+      "text": "{name}. Hmph. I've heard worse.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "named-2",
+      "text": "Keep your hands where I can see them.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "assigned-1",
+      "text": "No proper name? You're {name}, then.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "assigned-2",
+      "text": "Small name. Should fit what's left of you.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "business-1",
+      "text": "State your business. And spare me the heroic nonsense.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "business-ok-1",
+      "text": "You came all this way for that?",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "business-ok-2",
+      "text": "This gate opens when I say. Remember that.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "business-fallback-1",
+      "text": "No business? Begging, then. That sounds about right.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "business-fallback-2",
+      "text": "This gate opens when I say. Remember that.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "hub-common",
+      "text": "Well, {name}? Make yourself worth the trouble.",
+      "emotion": "impatience",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "hub-low",
+      "text": "My boots have outlasted better arguments than yours.",
+      "emotion": "anger",
+      "intensity": 0.8,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "hub-mid",
+      "text": "You want the gate. I want a reason.",
+      "emotion": "suspicion",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "hub-high",
+      "text": "Still here? Hah. Most folk start running by now.",
+      "emotion": "amusement",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "laugh"
+    },
+    {
+      "id": "flatter-1",
+      "text": "Big arms? Of course. The gate doesn't lift itself.",
+      "emotion": "pride",
+      "intensity": 0.6,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "flatter-3",
+      "text": "I sneezed. Saved them the effort.",
+      "emotion": "pride",
+      "intensity": 0.6,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "flatter-low",
+      "text": "Sweet words. Rotten smell. I know your sort.",
+      "emotion": "distrust",
+      "intensity": 0.7,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "flatter-mid",
+      "text": "You noticed the shoulders. Finally, someone with eyes.",
+      "emotion": "pride",
+      "intensity": 0.65,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "flatter-high",
+      "text": "Ha! Tell the captain. He keeps buying smaller helmets.",
+      "emotion": "amusement",
+      "intensity": 0.7,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "laugh"
+    },
+    {
+      "id": "bribe-1",
+      "text": "Gold buys hinges. It doesn't buy my good opinion.",
+      "emotion": "suspicion",
+      "intensity": 0.6,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "bribe-3",
+      "text": "Keep yours flat when you put the money down.",
+      "emotion": "suspicion",
+      "intensity": 0.6,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "bribe-low",
+      "text": "Trying to buy your way out of trouble?",
+      "emotion": "disgust",
+      "intensity": 0.75,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "bribe-mid",
+      "text": "That purse jingles louder than your courage.",
+      "emotion": "contempt",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "bribe-high",
+      "text": "Now that is a noise I understand.",
+      "emotion": "interest",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "threat-1",
+      "text": "See those dents? Last visitor brought a sword.",
+      "emotion": "anger",
+      "intensity": 0.8,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "threat-3",
+      "text": "Go on. Give me a reason to stretch.",
+      "emotion": "anger",
+      "intensity": 0.8,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "threat-low",
+      "text": "Careful, {name_mangled}. I can make you disappear quietly.",
+      "emotion": "menace",
+      "intensity": 0.85,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "quiet threat"
+    },
+    {
+      "id": "threat-mid",
+      "text": "You threaten me? Stand closer. I missed a bit.",
+      "emotion": "anger",
+      "intensity": 0.85,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "threat-high",
+      "text": "Brave words. Shame about the shaking knees.",
+      "emotion": "mockery",
+      "intensity": 0.6,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "camp-1",
+      "text": "Cook burns the stew. Captain calls it discipline.",
+      "emotion": "weariness",
+      "intensity": 0.4,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "camp-3",
+      "text": "You asking because you care, or because you're hungry?",
+      "emotion": "weariness",
+      "intensity": 0.4,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "camp-low",
+      "text": "Camp? You could still leave with both ears.",
+      "emotion": "menace",
+      "intensity": 0.7,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "camp-mid",
+      "text": "Cold beds. Bad stew. Excellent wall. I built it.",
+      "emotion": "pride",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "camp-high",
+      "text": "Hah. Nobody ever asks about the poor gatekeeper.",
+      "emotion": "amusement",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "laugh"
+    },
+    {
+      "id": "business-echo",
+      "text": "\"{business}.\" Pfft. Grand words for muddy boots.",
+      "emotion": "contempt",
+      "intensity": 0.65,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "reckoning-2",
+      "text": "One last chance. Give me something I can use.",
+      "emotion": "contempt",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "reckoning-low",
+      "text": "Mmm. Should've stayed in bed. Fewer little pests.",
+      "emotion": "resentment",
+      "intensity": 0.6,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "mutter"
+    },
+    {
+      "id": "reckoning-mid",
+      "text": "You're troublesome. But I've met worse this morning.",
+      "emotion": "irritation",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "reckoning-high",
+      "text": "Hah. You've got more nerve than our whole patrol.",
+      "emotion": "amusement",
+      "intensity": 0.7,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "laugh"
+    },
+    {
+      "id": "refuse-1",
+      "text": "OUT! BEFORE I USE YOU TO BAR THE GATE!",
+      "emotion": "anger",
+      "intensity": 1,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "roar"
+    },
+    {
+      "id": "refuse-2",
+      "text": "Your business can wait. Mine involves throwing you out.",
+      "emotion": "anger",
+      "intensity": 1,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "refuse-3",
+      "text": "Walk. While it's still your choice.",
+      "emotion": "anger",
+      "intensity": 1,
+      "patience_delta": 0,
+      "ends_scene": true,
+      "delivery": "quiet threat"
+    },
+    {
+      "id": "pass-1",
+      "text": "Right. The toll covers the trouble you brought.",
+      "emotion": "reluctance",
+      "intensity": 0.45,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "pass-2",
+      "text": "Through you go, {name}. Mind the stew.",
+      "emotion": "reluctance",
+      "intensity": 0.45,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "pass-4",
+      "text": "Go on. Before I remember a second toll.",
+      "emotion": "reluctance",
+      "intensity": 0.45,
+      "patience_delta": 0,
+      "ends_scene": true,
+      "delivery": ""
+    },
+    {
+      "id": "like-1",
+      "text": "Heh. Burnt stew. Captain's finest weapon. Good one.",
+      "emotion": "fondness",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "laugh"
+    },
+    {
+      "id": "like-2",
+      "text": "You can sit by my fire. Just this once.",
+      "emotion": "fondness",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "like-4",
+      "text": "Gate's open. Save me a seat inside.",
+      "emotion": "fondness",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": true,
+      "delivery": ""
+    },
+    {
+      "id": "idle-1",
+      "text": "Still thinking? Must be a very small thought.",
+      "emotion": "mockery",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "idle-2",
+      "text": "I could grow another tusk while you decide.",
+      "emotion": "impatience",
+      "intensity": 0.5,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "idle-3",
+      "text": "Gate's not getting any lighter, little traveller.",
+      "emotion": "irritation",
+      "intensity": 0.55,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "idle-4",
+      "text": "Mmm. Even the rats know when to speak.",
+      "emotion": "resentment",
+      "intensity": 0.4,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": "mutter"
+    },
+    {
+      "id": "interrupted",
+      "text": "Oi. I was speaking.",
+      "emotion": "annoyance",
+      "intensity": 0.7,
+      "patience_delta": -1,
+      "ends_scene": false,
+      "delivery": ""
+    }
+  ],
+  "nodes": [
+    {
+      "id": "name",
+      "input_slot": "name",
+      "next": "",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 5,
+          "line_ids": [
+            "name-1",
+            "name-2"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "named",
+      "input_slot": "",
+      "next": "business",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 5,
+          "line_ids": [
+            "named-1",
+            "named-2"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "assigned",
+      "input_slot": "",
+      "next": "business",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 5,
+          "line_ids": [
+            "assigned-1",
+            "assigned-2"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "business",
+      "input_slot": "business",
+      "next": "",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 5,
+          "line_ids": [
+            "business-1"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "business-accepted",
+      "input_slot": "",
+      "next": "hub",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 5,
+          "line_ids": [
+            "business-ok-1",
+            "business-ok-2"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "business-assigned",
+      "input_slot": "",
+      "next": "hub",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 5,
+          "line_ids": [
+            "business-fallback-1",
+            "business-fallback-2"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "hub",
+      "input_slot": "",
+      "next": "",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 1,
+          "line_ids": [
+            "hub-low",
+            "hub-common"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 2,
+          "max_patience": 3,
+          "line_ids": [
+            "hub-mid",
+            "hub-common"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 4,
+          "max_patience": 5,
+          "line_ids": [
+            "hub-high",
+            "hub-common"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": [
+        {
+          "label": "Flatter",
+          "target": "flatter",
+          "patience_delta": 1,
+          "repeat_delta": -1
+        },
+        {
+          "label": "Bribe",
+          "target": "bribe",
+          "patience_delta": 1,
+          "repeat_delta": -1
+        },
+        {
+          "label": "Threaten",
+          "target": "threaten",
+          "patience_delta": -2,
+          "repeat_delta": -2
+        },
+        {
+          "label": "Ask about the camp",
+          "target": "camp",
+          "patience_delta": 1,
+          "repeat_delta": 1
+        }
+      ]
+    },
+    {
+      "id": "flatter",
+      "input_slot": "",
+      "next": "hub",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 1,
+          "line_ids": [
+            "flatter-low",
+            "flatter-1",
+            "flatter-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 2,
+          "max_patience": 3,
+          "line_ids": [
+            "flatter-mid",
+            "flatter-1",
+            "flatter-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 4,
+          "max_patience": 5,
+          "line_ids": [
+            "flatter-high",
+            "flatter-1",
+            "flatter-3"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "bribe",
+      "input_slot": "",
+      "next": "hub",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 1,
+          "line_ids": [
+            "bribe-low",
+            "bribe-1",
+            "bribe-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 2,
+          "max_patience": 3,
+          "line_ids": [
+            "bribe-mid",
+            "bribe-1",
+            "bribe-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 4,
+          "max_patience": 5,
+          "line_ids": [
+            "bribe-high",
+            "bribe-1",
+            "bribe-3"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "threaten",
+      "input_slot": "",
+      "next": "hub",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 1,
+          "line_ids": [
+            "threat-low",
+            "threat-1",
+            "threat-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 2,
+          "max_patience": 3,
+          "line_ids": [
+            "threat-mid",
+            "threat-1",
+            "threat-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 4,
+          "max_patience": 5,
+          "line_ids": [
+            "threat-high",
+            "threat-1",
+            "threat-3"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "camp",
+      "input_slot": "",
+      "next": "hub",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 1,
+          "line_ids": [
+            "camp-low",
+            "camp-1",
+            "camp-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 2,
+          "max_patience": 3,
+          "line_ids": [
+            "camp-mid",
+            "camp-1",
+            "camp-3"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 4,
+          "max_patience": 5,
+          "line_ids": [
+            "camp-high",
+            "camp-1",
+            "camp-3"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "reckoning",
+      "input_slot": "",
+      "next": "",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 1,
+          "line_ids": [
+            "business-echo",
+            "reckoning-low",
+            "reckoning-2"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 2,
+          "max_patience": 3,
+          "line_ids": [
+            "business-echo",
+            "reckoning-mid",
+            "reckoning-2"
+          ],
+          "outcome": ""
+        },
+        {
+          "min_patience": 4,
+          "max_patience": 5,
+          "line_ids": [
+            "business-echo",
+            "reckoning-high",
+            "reckoning-2"
+          ],
+          "outcome": ""
+        }
+      ],
+      "choices": [
+        {
+          "label": "Offer a fair toll",
+          "target": "passage",
+          "patience_delta": 1,
+          "repeat_delta": -1
+        },
+        {
+          "label": "Share the joke",
+          "target": "friendship",
+          "patience_delta": 1,
+          "repeat_delta": -1
+        },
+        {
+          "label": "Demand the gate",
+          "target": "expelled",
+          "patience_delta": -2,
+          "repeat_delta": -2
+        }
+      ]
+    },
+    {
+      "id": "passage",
+      "input_slot": "",
+      "next": "",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 2,
+          "line_ids": [
+            "refuse-1",
+            "refuse-2",
+            "refuse-3"
+          ],
+          "outcome": "Refused"
+        },
+        {
+          "min_patience": 3,
+          "max_patience": 5,
+          "line_ids": [
+            "pass-1",
+            "pass-2",
+            "pass-4"
+          ],
+          "outcome": "Passed"
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "friendship",
+      "input_slot": "",
+      "next": "",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 3,
+          "line_ids": [
+            "refuse-1",
+            "refuse-2",
+            "refuse-3"
+          ],
+          "outcome": "Refused"
+        },
+        {
+          "min_patience": 4,
+          "max_patience": 5,
+          "line_ids": [
+            "like-1",
+            "like-2",
+            "like-4"
+          ],
+          "outcome": "Liked"
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "expelled",
+      "input_slot": "",
+      "next": "",
+      "variants": [
+        {
+          "min_patience": 0,
+          "max_patience": 5,
+          "line_ids": [
+            "refuse-1",
+            "refuse-2",
+            "refuse-3"
+          ],
+          "outcome": "Refused"
+        }
+      ],
+      "choices": []
+    }
+  ],
+  "idle_lines": [
+    "idle-1",
+    "idle-2",
+    "idle-3",
+    "idle-4"
+  ],
+  "interruption_line": "interrupted"
+}

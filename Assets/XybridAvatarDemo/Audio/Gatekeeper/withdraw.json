@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/withdraw.wav",
+    "duration": 2.18
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.09, "value": "B" },
+    { "start": 0.09, "end": 0.28, "value": "C" },
+    { "start": 0.28, "end": 0.49, "value": "E" },
+    { "start": 0.49, "end": 0.57, "value": "A" },
+    { "start": 0.57, "end": 0.84, "value": "C" },
+    { "start": 0.84, "end": 1.05, "value": "B" },
+    { "start": 1.05, "end": 1.19, "value": "F" },
+    { "start": 1.19, "end": 1.33, "value": "C" },
+    { "start": 1.33, "end": 1.40, "value": "B" },
+    { "start": 1.40, "end": 1.47, "value": "F" },
+    { "start": 1.47, "end": 1.75, "value": "C" },
+    { "start": 1.75, "end": 1.82, "value": "B" },
+    { "start": 1.82, "end": 1.96, "value": "A" },
+    { "start": 1.96, "end": 2.18, "value": "B" }
+  ]
+}

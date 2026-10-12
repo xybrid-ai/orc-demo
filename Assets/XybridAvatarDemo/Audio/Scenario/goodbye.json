@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Scenario/goodbye.wav",
+    "duration": 2.79
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.08, "value": "B" },
+    { "start": 0.08, "end": 0.27, "value": "C" },
+    { "start": 0.27, "end": 0.34, "value": "F" },
+    { "start": 0.34, "end": 0.41, "value": "B" },
+    { "start": 0.41, "end": 0.48, "value": "F" },
+    { "start": 0.48, "end": 0.62, "value": "B" },
+    { "start": 0.62, "end": 0.70, "value": "A" },
+    { "start": 0.70, "end": 0.79, "value": "B" },
+    { "start": 0.79, "end": 1.48, "value": "C" },
+    { "start": 1.48, "end": 1.52, "value": "B" },
+    { "start": 1.52, "end": 2.05, "value": "C" },
+    { "start": 2.05, "end": 2.12, "value": "B" },
+    { "start": 2.12, "end": 2.19, "value": "C" },
+    { "start": 2.19, "end": 2.40, "value": "B" },
+    { "start": 2.40, "end": 2.54, "value": "C" },
+    { "start": 2.54, "end": 2.75, "value": "B" },
+    { "start": 2.75, "end": 2.79, "value": "X" }
+  ]
+}

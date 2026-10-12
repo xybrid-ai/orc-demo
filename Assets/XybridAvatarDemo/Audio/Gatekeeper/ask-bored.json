@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/ask-bored.wav",
+    "duration": 2.91
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.11, "value": "C" },
+    { "start": 0.11, "end": 0.18, "value": "G" },
+    { "start": 0.18, "end": 0.25, "value": "B" },
+    { "start": 0.25, "end": 0.32, "value": "F" },
+    { "start": 0.32, "end": 0.46, "value": "C" },
+    { "start": 0.46, "end": 0.53, "value": "F" },
+    { "start": 0.53, "end": 0.67, "value": "D" },
+    { "start": 0.67, "end": 0.88, "value": "B" },
+    { "start": 0.88, "end": 1.34, "value": "F" },
+    { "start": 1.34, "end": 1.57, "value": "B" },
+    { "start": 1.57, "end": 1.64, "value": "G" },
+    { "start": 1.64, "end": 1.72, "value": "A" },
+    { "start": 1.72, "end": 1.81, "value": "B" },
+    { "start": 1.81, "end": 1.88, "value": "C" },
+    { "start": 1.88, "end": 1.96, "value": "A" },
+    { "start": 1.96, "end": 2.10, "value": "C" },
+    { "start": 2.10, "end": 2.17, "value": "B" },
+    { "start": 2.17, "end": 2.38, "value": "E" },
+    { "start": 2.38, "end": 2.66, "value": "B" },
+    { "start": 2.66, "end": 2.87, "value": "C" },
+    { "start": 2.87, "end": 2.91, "value": "X" }
+  ]
+}

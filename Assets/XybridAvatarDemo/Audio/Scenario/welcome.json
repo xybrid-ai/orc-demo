@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Scenario/welcome.wav",
+    "duration": 2.16
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.14, "value": "F" },
+    { "start": 0.14, "end": 0.49, "value": "E" },
+    { "start": 0.49, "end": 0.84, "value": "B" },
+    { "start": 0.84, "end": 0.91, "value": "F" },
+    { "start": 0.91, "end": 0.98, "value": "B" },
+    { "start": 0.98, "end": 1.06, "value": "A" },
+    { "start": 1.06, "end": 1.39, "value": "B" },
+    { "start": 1.39, "end": 1.60, "value": "F" },
+    { "start": 1.60, "end": 2.16, "value": "B" }
+  ]
+}

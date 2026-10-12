@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7767884349d264a3ca53fb9cc4ee1768, type: 3}
+  m_Name: PlaceholderConversation
+  m_EditorClassIdentifier: Assembly-CSharp::ConversationScenario
+  startNodeId: welcome
+  nodes:
+  - id: welcome
+    sentences:
+    - text: You're early. What brings you here?
+      audio: {fileID: 8300000, guid: f71765d379de341b5acb730b569ff30d, type: 3}
+      mouthCues: {fileID: 4900000, guid: 37b19d2c210c744e5b62227154ead9aa, type: 3}
+    choices:
+    - text: Tell me about this place.
+      targetNodeId: place
+    - text: I'm looking for work.
+      targetNodeId: work
+  - id: place
+    sentences:
+    - text: This place is a shelter for travelers.
+      audio: {fileID: 8300000, guid: 0c4ea282dd255412d814b4e205eeb467, type: 3}
+      mouthCues: {fileID: 4900000, guid: f6b85d81aba7848528745d713bd35cb3, type: 3}
+    - text: Stay out of trouble, and you'll be welcome.
+      audio: {fileID: 8300000, guid: 7d4c44c3737604e259424ba838a7f972, type: 3}
+      mouthCues: {fileID: 4900000, guid: 9f2c0b55ba9eb45aba32e5eea343fb98, type: 3}
+    choices:
+    - text: I have another question.
+      targetNodeId: welcome
+    - text: That's all. Goodbye.
+      targetNodeId: goodbye
+  - id: work
+    sentences:
+    - text: There is always work for someone with courage.
+      audio: {fileID: 8300000, guid: c8055ca6ec9a94d029eff723f27368fc, type: 3}
+      mouthCues: {fileID: 4900000, guid: 2876c9c0aea734f4091af6a1fd6f1e42, type: 3}
+    - text: We can discuss the details when you are ready.
+      audio: {fileID: 8300000, guid: 5e28b4b4f25bb452284f24fff900499c, type: 3}
+      mouthCues: {fileID: 4900000, guid: 4a0450a6955c84b0fbacf06e53a2ff8b, type: 3}
+    choices:
+    - text: Tell me about this place.
+      targetNodeId: place
+    - text: That's all. Goodbye.
+      targetNodeId: goodbye
+  - id: goodbye
+    sentences:
+    - text: Then we will speak again. Take care out there.
+      audio: {fileID: 8300000, guid: 325a43a79f5fe4739a516663b592c121, type: 3}
+      mouthCues: {fileID: 4900000, guid: 3a0f53b96001345eab87e47529204e75, type: 3}
+    choices: []

@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/lose.wav",
+    "duration": 2.83
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.08, "value": "B" },
+    { "start": 0.08, "end": 0.13, "value": "C" },
+    { "start": 0.13, "end": 0.33, "value": "D" },
+    { "start": 0.33, "end": 0.41, "value": "C" },
+    { "start": 0.41, "end": 0.48, "value": "G" },
+    { "start": 0.48, "end": 0.62, "value": "B" },
+    { "start": 0.62, "end": 0.83, "value": "C" },
+    { "start": 0.83, "end": 1.04, "value": "B" },
+    { "start": 1.04, "end": 1.25, "value": "C" },
+    { "start": 1.25, "end": 1.60, "value": "B" },
+    { "start": 1.60, "end": 1.67, "value": "C" },
+    { "start": 1.67, "end": 2.02, "value": "B" },
+    { "start": 2.02, "end": 2.44, "value": "E" },
+    { "start": 2.44, "end": 2.51, "value": "C" },
+    { "start": 2.51, "end": 2.65, "value": "E" },
+    { "start": 2.65, "end": 2.79, "value": "B" },
+    { "start": 2.79, "end": 2.83, "value": "X" }
+  ]
+}

@@ -1,0 +1,2145 @@
+{
+  "schema": 1,
+  "project": "orc-demo",
+  "unity": "6000.6.4f1",
+  "xybrid_sdk": "0.9.0",
+  "files": [
+    {
+      "path": "Assets/Fonts.meta",
+      "bytes": 172,
+      "sha256": "0edd13613ea00b8320d132fabde16cdf8e0bafb79cbd1827280b0062729dc852"
+    },
+    {
+      "path": "Assets/Fonts/Cinzel-VariableFont_wght.ttf",
+      "bytes": 126348,
+      "sha256": "3192c4e40421bf2824f40f5b0eba1047eacfa7b08d6e8ba6941b803e701a29bf"
+    },
+    {
+      "path": "Assets/Fonts/Cinzel-VariableFont_wght.ttf.meta",
+      "bytes": 471,
+      "sha256": "728aacb7e53ad56e476d162f2c47b17a40b45192f09fd0aff5f9aa4fadb318b7"
+    },
+    {
+      "path": "Assets/StreamingAssets.meta",
+      "bytes": 172,
+      "sha256": "51061c2067595bcb585151bb8c8e3aaea0fec1e9f73b2d1a1e5d6481170d7759"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2.meta",
+      "bytes": 172,
+      "sha256": "4f37d76c911a1555702a81d4da31810424548489376bd292f662f82ba3648ee6"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/kitten-s3-meanflow-f32.gguf",
+      "bytes": 541920128
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/kitten-s3-meanflow-f32.gguf.meta",
+      "bytes": 155,
+      "sha256": "94fad2c9f8a52d1b3a3e7f1094904db8d14789b7884787fe2936b11f6e7f5527"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/kitten-tts-2-q2_0.gguf",
+      "bytes": 1051096928
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/kitten-tts-2-q2_0.gguf.meta",
+      "bytes": 155,
+      "sha256": "571d568cb78c77f9f69ef1c62ef3dcecabb01a49ff82d8160fc2d08c2d8da145"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/model_metadata.json",
+      "bytes": 613,
+      "sha256": "cd9ddcbfbbf43c39c1636aca42fea582f81a7c071202853eec542e0941578999"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/model_metadata.json.meta",
+      "bytes": 155,
+      "sha256": "9c69852b10565951b117dcc80b6a0d3e800c398d9b61bb2ac97e1432728df796"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/provenance.json",
+      "bytes": 1885,
+      "sha256": "393107eeb7341bd7d05f26bb263e7cee69f858d7c9c566fc43d55762aa5c53eb"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/provenance.json.meta",
+      "bytes": 155,
+      "sha256": "410c687c57eaa8b156af8c4485ea8ff30c3817b20d8bde7ebafac28a19ebd3f7"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/voice_pair.json",
+      "bytes": 227,
+      "sha256": "cf0b3608a517f3dfbb58c5b5fb4131e5d2048d6c9d2a53ac37eaf5c46db568c8"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/voice_pair.json.meta",
+      "bytes": 155,
+      "sha256": "99118db56e77e412a0e5d200fd4b5b84e494c1be7a8b2edd9742323b03c56bb3"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/warchief.lm.json",
+      "bytes": 24173,
+      "sha256": "d8bb800f8fa51bef14bfa2d39a389f9380e15bfe40dca4b20424e4cd42ba7f39"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/warchief.lm.json.meta",
+      "bytes": 155,
+      "sha256": "1742be8990f325a1d9901b0e289a8d1eb6a9b278ad7baeb982934bb159879e88"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/warchief.s3.json",
+      "bytes": 787447,
+      "sha256": "b1b205e5adad0357af7ee99d7bb184eb6fdb18a47258ddb55d280eeeaecf1d3e"
+    },
+    {
+      "path": "Assets/StreamingAssets/KittenTTS2/warchief.s3.json.meta",
+      "bytes": 155,
+      "sha256": "dd16fc5c7489921d4e3235eb3976318f1a2f4a174a43222b65a255b128c0fefb"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb.meta",
+      "bytes": 172,
+      "sha256": "c4ad0d13b511eeb1100f8aa3a458fc82549589cea3e8ab6aead01588cb6a6e71"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS.meta",
+      "bytes": 172,
+      "sha256": "fe6aa9b0cf9e719c2c3bc6e2e0f5f83a9bddf5b4d307e314e63fca7ddbd28c8f"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/CHANGELOG.md",
+      "bytes": 13000,
+      "sha256": "4b2c2ff234b6c5f0b38d3689177ebecab5041d6242ec966cb1a5c535e6894d2c"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/CHANGELOG.md.meta",
+      "bytes": 155,
+      "sha256": "4be3d306d81e9f59dcaa09ed299fab1f63eaf2718a07a398bdfa1b907429bf34"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/LICENSE.md",
+      "bytes": 27808,
+      "sha256": "c9a10d99959990ec6802c5e2d519fb23665affa7ba32abbdea5b251ee5f93af6"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/LICENSE.md.meta",
+      "bytes": 155,
+      "sha256": "31e799a48d90766fa1cedfc92c31a5577be3102a53311fbf01f0d4a932cb80f5"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/README.adoc",
+      "bytes": 23164,
+      "sha256": "3c7dcb74008ca9eb96f5f258ca4f82e9a49ed9614d93f89bc98bd27ac3a22b43"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/README.adoc.meta",
+      "bytes": 155,
+      "sha256": "10540189d1eabe26aa4e7fdb83916cbe310d48e86dde65d86a0371af10ca8d08"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res.meta",
+      "bytes": 172,
+      "sha256": "3125131294c6e65aaf4f1cc55b1a417ba7915368d7bbf2c526677c1481f17b75"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx.meta",
+      "bytes": 172,
+      "sha256": "3532b727473db7598aa98cb817f6d3e8283d133b76b908e37a9e8ae3c0039879"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model.meta",
+      "bytes": 172,
+      "sha256": "769886cabd843b095f28dbeba5cda83b346456d1fed1f14c96c635aa0e85f895"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/README",
+      "bytes": 1617,
+      "sha256": "8b88de980568509c646d0527b8414beef136964391903b40996d32f737bf752e"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/README.meta",
+      "bytes": 155,
+      "sha256": "ea77b83127d836071f3f0b995a396c343a6f3c4011d217988f2a808dc4a9c668"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/feat.params",
+      "bytes": 129,
+      "sha256": "9f4883ca1680270667565cec30a0b827081799617bb825ff6adace06f50c178f"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/feat.params.meta",
+      "bytes": 155,
+      "sha256": "385ea086e29c8ea3d87a5cc870908b51fcce77e5ab1a83c151f1fde516c3dd51"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/feature_transform",
+      "bytes": 5660,
+      "sha256": "05cd0ef213623137b6ac76d72922776c8a14f252e032c4a3f331d41760ef30cc"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/feature_transform.meta",
+      "bytes": 155,
+      "sha256": "ff7bbe1ab129560a8f00785b7457f9f992a65be5c586a5444ce918cc29fe18b8"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/mdef",
+      "bytes": 6992233,
+      "sha256": "a100d7401e8d59ed597ea6083e0acca77e41637b7db6db66f43a0799a2eba840"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/mdef.meta",
+      "bytes": 155,
+      "sha256": "12dc4a10ac0195104d90f9163a1d81ebd14ea75c286b81fadfbfeafad54dc5d5"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/means",
+      "bytes": 23675972,
+      "sha256": "10c8a3c1b0718bc786f4c82ba1824b22cd9cdc7ffb0589559c08c0189884f0f1"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/means.meta",
+      "bytes": 155,
+      "sha256": "d8643112a990fcae39951ca1cc6d3e366d2e7f1f07aa3919882ac575f5d1a8b9"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/mixture_weights",
+      "bytes": 657728,
+      "sha256": "a756459b78bfaf85ad59215c77caaf03f9e58e91956975e33de7b8179d551c1f"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/mixture_weights.meta",
+      "bytes": 155,
+      "sha256": "e8d9188bb9cdcc90b38890529be45ed2000b5d911fb37232b6aaf12fdc4708b1"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/noisedict",
+      "bytes": 113,
+      "sha256": "394633701a17db97a512838a79de395020fc571e0537b0498b2179f727642a48"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/noisedict.meta",
+      "bytes": 155,
+      "sha256": "8e143fa152ed0c99739dbfca5eefa0bede22a33f8f50c49e1626ae6cddd07a41"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/transition_matrices",
+      "bytes": 2272,
+      "sha256": "020e3a8998d12db0d02b620aed95ee1534676fd8e50afaad29d5b432f1e6f893"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/transition_matrices.meta",
+      "bytes": 155,
+      "sha256": "8a935bc55b4531c0923a8f5d0772c49ac0378a0a2da85c1071106fc15a730b38"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/variances",
+      "bytes": 23675972,
+      "sha256": "66bc86ddf763cf27d6194247cbf4f2e912d78789ced246811e7f323f1e8280da"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/acoustic-model/variances.meta",
+      "bytes": 155,
+      "sha256": "baf7e314c33dbe1933faaf3887298a62c998e56f8d234cd2b62027f1ae8d63da"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/cmudict-en-us.dict",
+      "bytes": 3272051,
+      "sha256": "9de99dd2a24b63c653c1c30ab39388d05185cae36d0875f15c319b4ad6dc43af"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/cmudict-en-us.dict.meta",
+      "bytes": 155,
+      "sha256": "48e85d00dbfb0fcc962d9f8864d83ecdb17118be01f7ff2c6a506125aa2afba4"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/en-us-phone.lm.bin",
+      "bytes": 857195,
+      "sha256": "c57e0fa4191b096b1279cfe3a77927f52568fdecfc6624ddb5cec9527c763a54"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/en-us-phone.lm.bin.meta",
+      "bytes": 155,
+      "sha256": "45ed254188cef4d9d07eef72fe3ff604bdbfbdac6fff8f9060b09db946239e81"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/en-us.lm.bin",
+      "bytes": 27114385,
+      "sha256": "db21d0642286677699e6dbc859d2e5395570222361999387ce60f6e1d01995d6"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/res/sphinx/en-us.lm.bin.meta",
+      "bytes": 155,
+      "sha256": "0ad1d74d48fbde007dd0fa68cf5693bdaf7b3d25cfed9e950276d4ff245aba16"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/rhubarb",
+      "bytes": 8425288,
+      "sha256": "93fa4a16ae1cc88a89d59743057521407843fc7139e23808c9e6587c6cc946d3"
+    },
+    {
+      "path": "Assets/StreamingAssets/Rhubarb/Rhubarb-Lip-Sync-1.14.0-macOS/rhubarb.meta",
+      "bytes": 155,
+      "sha256": "0c3653014bbd3b980b6f7727e87633b15f726168bcefb3ddf0651c68aafa9a94"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels.meta",
+      "bytes": 172,
+      "sha256": "a222bb562ae774c580aa5cfac204782eb4b147d823fa19f650fa56138564c072"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4.meta",
+      "bytes": 172,
+      "sha256": "e1109cf4021f841c14c1fa8951d86ea9269827cbfa0223b0598d4c51fdcfd3f4"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/.cache/huggingface/.gitignore",
+      "bytes": 1,
+      "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/.cache/huggingface/CACHEDIR.TAG",
+      "bytes": 191,
+      "sha256": "f6572428f6d5e1575e73a1502895a8731f10757dfbb634909c6e154b849af91d"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/.cache/huggingface/download/ABmV3iN87Ox_UBAbUVg2re7SWug=.d808fcac6160f69139cca6583e3d66470f2b21fb3b6a1895ee01bf47a29f721e.05fd3f7e.incomplete",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/.cache/huggingface/download/Gemma4NPC-E2B-Q4_K_M.gguf.lock",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/Gemma4NPC-E2B-Q4_K_M.gguf",
+      "bytes": 3427863872,
+      "sha256": "2a6f2d10f8ca60f357048a8ec9dd52c7d2f9f81d777ccd8c1a86373a89295846"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/Gemma4NPC-E2B-Q4_K_M.gguf.meta",
+      "bytes": 155,
+      "sha256": "36ec65c34cee58179109627bdbc94b98ea654aa05154d916934035e8aadc2ed5"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/model_metadata.json",
+      "bytes": 477,
+      "sha256": "939fcc484ca76ba989c6d125e54399571770530b1dbbbe9069f5409367a553e4"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/model_metadata.json.meta",
+      "bytes": 155,
+      "sha256": "aaa9cd3373d21803f4eeaa724619aa11d039d511126941addf920df77c5fd22d"
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/universal.xyb",
+      "bytes": 183438685
+    },
+    {
+      "path": "Assets/StreamingAssets/XybridModels/universal.xyb.meta",
+      "bytes": 155,
+      "sha256": "0142d6de6d6831f4bb5595c7e64620481bb4befb37582cdbe634b5ea330646a3"
+    },
+    {
+      "path": "Assets/Synty.meta",
+      "bytes": 172,
+      "sha256": "401403f7224f3d8a8a0123c916616f694220947920da383ad9148bbb4b1b9b1a"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion.meta",
+      "bytes": 172,
+      "sha256": "6c6552d89c31eb974282f348db54a09192dbb4ad02dd0e67a3df9a362cee0e84"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations.meta",
+      "bytes": 172,
+      "sha256": "547ec72040986c9bf18bd2a0110fb0fbd93ccc8119a3e9e34dc15b3d99088102"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick.meta",
+      "bytes": 172,
+      "sha256": "d1c2ba302f4372e544d11ab51878250d16d8f31f13b33126d40d740bd1623bbb"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine.meta",
+      "bytes": 172,
+      "sha256": "c45a76bc71a9a0ecc880653126756407b0e811742f968992f07e0363e38b536d"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine/Idles.meta",
+      "bytes": 172,
+      "sha256": "449bb5801f64bd73d1ef31be66744621a88a4ffea884ed310d6742c36e9421bc"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine/Idles/A_MOD_BL_Idle_Standing_Masc.fbx",
+      "bytes": 1114064,
+      "sha256": "fcabac8c773e859f5bfd9449403114deea01437e7857cd31260ad416b9341882"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine/Idles/A_MOD_BL_Idle_Standing_Masc.fbx.meta",
+      "bytes": 49432,
+      "sha256": "4b106bbaf4e535c65c5d7f78a947ee9af7d0076c4b6bfc57ee88dbcc2d903d47"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Meshes.meta",
+      "bytes": 172,
+      "sha256": "60291022d5b3d466fa5cea9d5c713c2719f90c6e25ef1b389f87d3fc7f527d4a"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Meshes/SidekickSyntyCharacter.fbx",
+      "bytes": 1067616,
+      "sha256": "8583d027d188321b614c39b04da5ab767f14e4b00de7d3ab451e1559774dff7f"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Meshes/SidekickSyntyCharacter.fbx.meta",
+      "bytes": 49071,
+      "sha256": "8792857d155c019cebec0f4683291bce717a05602a1d8b085f47d2b32e6c3001"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Samples.meta",
+      "bytes": 172,
+      "sha256": "dda2bb4e263ff832dd6a45807dbd83105b4af8e1387999700a38c23762f0893c"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Samples/Materials.meta",
+      "bytes": 172,
+      "sha256": "b3cae77c9b1d1ba3c7de52b144f5a480113202d4040693e5d64eec4c75bb2876"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Samples/Materials/M_Dummy.mat",
+      "bytes": 2236,
+      "sha256": "fe3dd0edc0491369ccfed937be087a24f96094838da971673e683012be362714"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Samples/Materials/M_Dummy.mat.meta",
+      "bytes": 188,
+      "sha256": "73fb5ff8258e1fb335fc7ea67d520158ce2ec31f7cd622686a5d95b4f59adfd4"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Samples/Textures.meta",
+      "bytes": 172,
+      "sha256": "784c68e7340097c4d6c0fd631a4ca18a39f5014d32709f7a9dc9b08cc70ae65e"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Samples/Textures/T_Polygon_Dummy_01.png",
+      "bytes": 46661,
+      "sha256": "ea57775b90608435daea478fd338b5a9484669bff3cdd164150495eda1946375"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Samples/Textures/T_Polygon_Dummy_01.png.meta",
+      "bytes": 3672,
+      "sha256": "351b1cb603f2fa29e8f02e664af39c20eaaeb69bbe294cab68db6f4a8ac2409b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGeneric.meta",
+      "bytes": 172,
+      "sha256": "bc2482f37b5f5552997f09390a6aaf937b4c0d25c29b26eb577272363af45e20"
+    },
+    {
+      "path": "Assets/Synty/PolygonGeneric/Shaders.meta",
+      "bytes": 172,
+      "sha256": "ad5daf0facf2afe2e55117551415f7956ba05431d610fb687767a061b644bb4e"
+    },
+    {
+      "path": "Assets/Synty/PolygonGeneric/Shaders/Generic_Basic.shadergraph",
+      "bytes": 80223,
+      "sha256": "43330cdd0b0074ab148f5785dbb3512d176864816c1ad08d2485521a1eab0182"
+    },
+    {
+      "path": "Assets/Synty/PolygonGeneric/Shaders/Generic_Basic.shadergraph.meta",
+      "bytes": 285,
+      "sha256": "9c681f8786e99e3ce8899a097021d52085704474595d5cef5ef28082edaccf17"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp.meta",
+      "bytes": 172,
+      "sha256": "3b71ea3f441dfb77eeb255ff37bc7838148d352535b2f7dc15857641478ee5e4"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials.meta",
+      "bytes": 172,
+      "sha256": "4a92f7e9c26b174aa2456103588ca208d794d187067a2817b947e2c09feb5c19"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts.meta",
+      "bytes": 172,
+      "sha256": "348bc090d22605252668dc5a5581f45a0b2743aab22367d2ad453c0aae83c93b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts/Banners.meta",
+      "bytes": 172,
+      "sha256": "d0954f2aef31800699baf4b0346f4f8197621c31a7c4b34697825cad40f63dfb"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts/Banners/Banner_01.mat",
+      "bytes": 3537,
+      "sha256": "ec3a7b81913db8737c403b5c51e67fdcbc86240648742979d0597cc20fca5b3f"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts/Banners/Banner_01.mat.meta",
+      "bytes": 188,
+      "sha256": "cfe2af58480dbbcec2e557fefde9dc85b55c3344933ff4edf790ff0c15b9f438"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts/PolygonGoblinWarCamp_01_A.mat",
+      "bytes": 3786,
+      "sha256": "eae1afe1ee65852def53a7239fe9642f9d8c3eeadb030a2fbbd8919920b6a255"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts/PolygonGoblinWarCamp_01_A.mat.meta",
+      "bytes": 188,
+      "sha256": "f827e87b607aebf5b0a8d17c1f0c449efa6f53cdc2b8835684d3908cbd4dd603"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts/PolygonGoblinWarCamp_02_A.mat",
+      "bytes": 3785,
+      "sha256": "2a5db58b32cf70462eefa2a20002800c3f9d00570ef64d5932d1375906205d5b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Alts/PolygonGoblinWarCamp_02_A.mat.meta",
+      "bytes": 188,
+      "sha256": "8703b1301e31210113d79d85c81cc5255f962a11e5a60811121efd5fe5b52e15"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Misc.meta",
+      "bytes": 172,
+      "sha256": "3084e9a06d278b9ac404441039d834c85c6f67673fe116c0d3b267aba6d1a3f3"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Misc/Dark_Fade_01.mat",
+      "bytes": 2316,
+      "sha256": "9667712003d01a8e4a47ffa2fd507ffd8aa54da91502a1c20956210758e6584d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Misc/Dark_Fade_01.mat.meta",
+      "bytes": 188,
+      "sha256": "eca10817e8152601f7a0fa40b7582cce50247954ef29c3da2d385553aaa3d39b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Misc/Mud_01.mat",
+      "bytes": 3602,
+      "sha256": "41e63be1d28fcdb3231a565c498aaf567ce6b5e87f7c7ba32c35ef3071871e03"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Materials/Misc/Mud_01.mat.meta",
+      "bytes": 188,
+      "sha256": "ad9b74676d461e762949b5a560acd32868c80d5f0c3a11b1b539057cf5c370f5"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models.meta",
+      "bytes": 172,
+      "sha256": "2d4d61b7e60f6dfa673f0c91e3b080c9d56e4c4ee0b0e16ab410f2d0b394c040"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision.meta",
+      "bytes": 172,
+      "sha256": "76dfebf737b346e87df6712da711a1eb5cc78aec0705b4c29227bb51ea103ba6"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex.meta",
+      "bytes": 172,
+      "sha256": "27199752e54b039e5404bb51d56255f031cd75b1e1f3f9127a3cd096f2309153"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Gate_01_Convex 1.asset",
+      "bytes": 3908,
+      "sha256": "9a7bac7757329e51f3be8f35a53bd6da7ee0735fc2c4e169a597a0fee207801b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Gate_01_Convex 1.asset.meta",
+      "bytes": 200,
+      "sha256": "dc5e4fafcd300e71cee963d233677eee4bc8969d17a23b7820c79d2d144a3754"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Gate_01_Convex.asset",
+      "bytes": 3902,
+      "sha256": "618c047b880f3103aa154d701d01b26d40be6e392d02b9498543828a303b6c2a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Gate_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "fb108b49264d4bd328c9d8a30d22216a34d9976eb1cb0b702b949b7388949ad4"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Log_Wall_01_Convex.asset",
+      "bytes": 3914,
+      "sha256": "53c90d57083580df9a4d28588b3a3173dea4efa6f7880f560bb899aefa4172ad"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Log_Wall_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "fd807bfc70f6014cafd3778521675d6c0004f373a36ad7def9ed9e91363c7dbb"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Log_Wall_02_Convex.asset",
+      "bytes": 3913,
+      "sha256": "4085d6a5ba917a75a07b71349f82408242701e0d2976a0fc828c8d3858df4d42"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Log_Wall_02_Convex.asset.meta",
+      "bytes": 201,
+      "sha256": "f0b105f1932961a5de69570af33a266d964dec757d8e64d1ba366542ed61f263"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Part_Banner_01_Convex.asset",
+      "bytes": 3929,
+      "sha256": "68ab1e9edaa17d4e20003cb0dd9132f531b3f9391d791b8c31b28b34f0ac9a7a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Part_Banner_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "09216bb849ed087b1695d80c18e38540e5ef1903d34e83f5fe9479f4c926cd31"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Part_Banner_04_Convex.asset",
+      "bytes": 3924,
+      "sha256": "2164156fa66a3cd52ddb8f67be05d3b787312490c9c9df15b42c8f1f78a61d0c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Part_Banner_04_Convex.asset.meta",
+      "bytes": 201,
+      "sha256": "b7852a0e705c4cfdeda1cee842f5cb2937eaab7f0988a2f61d77ca563893026d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Prop_Torch_01_Convex.asset",
+      "bytes": 3926,
+      "sha256": "2d35d1c5583e968e8156497e149863b0f6ed63bb4c1409af5e72cfb13eb4f4dd"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Bld_Prop_Torch_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "d5c941eb270be2b468baff0355a8f17004b2397c44b8f93a6892e2a2a84c342c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Barrel_01_Convex.asset",
+      "bytes": 3923,
+      "sha256": "fad049bc97ba9be8a5d9cfc46157da2fc52c44440832a327b27c3bcd3a20370e"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Barrel_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "d1862ea989ff429fee391a707aa00f6eb98f4fb29da93a89b8be2c3b0739e7b4"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Camp_Fire_01_Convex.asset",
+      "bytes": 3925,
+      "sha256": "6441f0d96cdd1cc8765ba1ffa781f283adbd68473378d23ce35adba173051b1c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Camp_Fire_01_Convex.asset.meta",
+      "bytes": 201,
+      "sha256": "c8e6ab07c4cb8863dacafb0166649899a7dabe768ec10a37199b180579bf9c15"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Crate_02_Convex.asset",
+      "bytes": 3931,
+      "sha256": "99a29f0a4412a8fe633ec29df9598cf91cc13d2e3babd71059d4ce75eb91c003"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Crate_02_Convex.asset.meta",
+      "bytes": 201,
+      "sha256": "dbad9b098e59ca32b938f3c929ccc3f8e3123f578d3f2c54c59f6ca8cbfeb380"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Defence_Spikes_01_Convex.asset",
+      "bytes": 3926,
+      "sha256": "d4e54c4a4812b1775f5cc2c779a1be647e2975fb23a2a8d8a4506716e7d91b95"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Defence_Spikes_01_Convex.asset.meta",
+      "bytes": 201,
+      "sha256": "0f76fe9c1ccffb7d8005c4d4c01565314d1dc9af9612659c08df13c5652a5ef2"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Collision.fbx",
+      "bytes": 24912,
+      "sha256": "f6c427ea1827de2aec7502e683aaf8c82168ad2f895627723f2156834530f943"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Collision.fbx.meta",
+      "bytes": 2735,
+      "sha256": "1a70d670d458cd32a277be93796ddee114dadfed6ce1b6d6f48772c31dec5835"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Door_01_Collision.fbx",
+      "bytes": 22736,
+      "sha256": "2ccf757cd8ce5cb21577548710a35fe4995b8dcb074e4c45a29fe9b1f7613ccd"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Door_01_Collision.fbx.meta",
+      "bytes": 2735,
+      "sha256": "ed311bc0ae1ee915b3e01ec7254b1655238b346bd0e5bebff974ba4a367662e9"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Door_02_Collision.fbx",
+      "bytes": 22944,
+      "sha256": "17614ad575728089b4810e811608a072db826914f630e0b0c31c235fe2c3a4f6"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Door_02_Collision.fbx.meta",
+      "bytes": 2735,
+      "sha256": "2139ab5dd5efe82284278dcd4903c8ea539a7f6aee1faad0980b67e72ec70f4c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Tent_Medium_01_Collision.fbx",
+      "bytes": 27952,
+      "sha256": "05567d9d598d28ad614b6bf942d6e260ce3d8689e4b9dcfb2758ff4626b8f8b7"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Tent_Medium_01_Collision.fbx.meta",
+      "bytes": 2735,
+      "sha256": "1131c8f15872dda2378a142be3467efd5b71a5d9c3f8218deaace5a82431417e"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Tower_01_Collision.fbx",
+      "bytes": 25744,
+      "sha256": "b229acc9fb9f2298341803f670ceb89cff43059091c7efb83bbee83e80013dc5"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Tower_01_Collision.fbx.meta",
+      "bytes": 2735,
+      "sha256": "0443e6972ab9137f69caa25331d730acd0d0d7c816e76eb8331fbe927d08dd90"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Env_Tree_Marsh_02_Collision.fbx",
+      "bytes": 24512,
+      "sha256": "0c7f15c4427e266a6d8e3d62396a3630f1d76dd2f56bca012aa552abb8a45076"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Env_Tree_Marsh_02_Collision.fbx.meta",
+      "bytes": 2735,
+      "sha256": "c04213f42338e455609fedfdbdea86e5fa2646fed74e4723058bdab2e4237df1"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Gate_01.fbx",
+      "bytes": 220000,
+      "sha256": "6d9a5960a9de9d60e79616c4fa63fff169d96480d245a3f0170b8513917312f2"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Gate_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "30e44e282cd29897cd7f8c527513a255b9907f095eb44dcb0fe0aabf26e03954"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Log_Wall_01.fbx",
+      "bytes": 64112,
+      "sha256": "c583b705977736900e774728b8fb4a1d4a3be00bfe3137509723b35edc40cc07"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Log_Wall_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "b8db4bb872ca9db67037224d66dcd6d4eef94d346e8042b4c8b52da883654ab1"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Log_Wall_02.fbx",
+      "bytes": 41648,
+      "sha256": "2cbb5f61f217497104a45b69aaf7fb829fe02861d04ccfa31f990772eeb43333"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Log_Wall_02.fbx.meta",
+      "bytes": 2735,
+      "sha256": "14c8f6c89918eb53b68d585b27b1afe3deda7bbdea08a166ca9a5ec120870677"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Part_Banner_01.fbx",
+      "bytes": 30464,
+      "sha256": "e2de0df412fe2f1e5c1ad391c162cf408fba5921259d42c64aadcd948eb67cd8"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Part_Banner_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "45d161ca83243fb9327b9dd4341d4f74e3e6778d2c0479df0a3816c21d5cc69a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Part_Banner_04.fbx",
+      "bytes": 46688,
+      "sha256": "91073ed327f2b38ce6414436a1b610b91b738b5e44011a377b59efbe21b6ea67"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Part_Banner_04.fbx.meta",
+      "bytes": 2735,
+      "sha256": "7a25bbe8768a8640271b1b8fc860870087b4c8ffcc0733f74a64ecabc4c6399f"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Prop_Torch_01.fbx",
+      "bytes": 64192,
+      "sha256": "b296e3c8c0b10bc9f095e766fb8c9071b5468a17c909808707bef46f2e8210f6"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Prop_Torch_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "7a99eb3529a89e39277823798c4467ff587dec1829f1058e7194b4ffb3fe0741"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Tent_Medium_01.fbx",
+      "bytes": 121408,
+      "sha256": "7811a9650dac57cc2a1504b9ab94563349252095cb889f489b12cfaf8fff904b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Tent_Medium_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "99858712daa0fd0329a862240e4c80deca1cd435661731ce93f7b961dc3dcf79"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Tower_01.fbx",
+      "bytes": 794624,
+      "sha256": "d618f3afcc763597f4921f0a728ae6bcd6e7128b761b54f5b09934a33ed73c96"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Tower_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "7d02511ba1cc30d27c2082103f2505789ff2147c5c70d99bb22a8f2ecfc138a2"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Grass_Preset_01.fbx",
+      "bytes": 658944,
+      "sha256": "aaba2a41665f5bdde40cfe70530c3bef060cdaddd7a2f95ff9d14cfe54bf8f95"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Grass_Preset_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "bd00c326a803272c17d4513a2d4f677c9d0d618ff43065974cd832078c77c293"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Grass_Preset_02.fbx",
+      "bytes": 815344,
+      "sha256": "4f3f8471637df2e38e7e5d64317518005909a15e22f1ad4c980cb6240a7362a0"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Grass_Preset_02.fbx.meta",
+      "bytes": 2735,
+      "sha256": "98126744efe07451001be7842ba4510cb1e38e3a7b9954129f212479cf89bb58"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Ground_Dirt_Flat_01.fbx",
+      "bytes": 39344,
+      "sha256": "1ad6b9340af328c90410f7b2126894d0ea48c34235651e1fa5bece067bdf10de"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Ground_Dirt_Flat_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "20e8ef9db1f404ef9926ed4fc27a4e4b0dfe960b5e01963be7e11f8421ea8c0b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Road_Planks_Straight_01.fbx",
+      "bytes": 87824,
+      "sha256": "a45b556fbbe846cc32889eb86500080fb42a41ed1b94100e3fae55a34692d7fc"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Road_Planks_Straight_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "d96556698104250f9d917e76012d2d2e0aec702a1ac5818935b3996334bed0de"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Rock_02.fbx",
+      "bytes": 45520,
+      "sha256": "4a302d23d731da233ac4fabf465d56080322e6ec5d424a85b51676ca3d2613b7"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Rock_02.fbx.meta",
+      "bytes": 2735,
+      "sha256": "479fb93dd2ec1ce56fcffaeed88f1a83cf76bf93e3cfa02b133da086bb11d727"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Tree_Marsh_02.fbx",
+      "bytes": 214672,
+      "sha256": "6f8a7379130a25332a73211406ef48d4acf3df4e6e908a5fdf4910f6a169294b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Env_Tree_Marsh_02.fbx.meta",
+      "bytes": 2735,
+      "sha256": "93e8faaf3f9a3c6bbafb57450f5f1f2d0fb000be8f95e57fe58f1551b0584d3f"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Barrel_01.fbx",
+      "bytes": 175264,
+      "sha256": "0db8c0b3ab1ba99f557c3aeeedc532ef968113399e0b302ac7066108f3e2e468"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Barrel_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "7d9b2e4faf282ca5ef85f94a92e3609db9a43b88045522b06dee4e3418c5a8f0"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Camp_Fire_01.fbx",
+      "bytes": 153392,
+      "sha256": "a2ab4253d4cc3c1d7d9df8a0e7a215845264e0da042dd3cec0e32a1729c84b03"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Camp_Fire_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "aeac127e6e7a73a0268aba461349eeb295d21af4008e80652eb22b030667c58b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Crate_02.fbx",
+      "bytes": 90800,
+      "sha256": "af8d5604c7761e3e2acfe79a2cf336f0144f7af23d5c182b85481ff3d701a52c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Crate_02.fbx.meta",
+      "bytes": 2735,
+      "sha256": "991fbe4f041cce2d1cf7eb1ecca4b147ac2b97142b48d6c2381583ed1fd15389"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Defence_Spikes_01.fbx",
+      "bytes": 56768,
+      "sha256": "d11889c2f4e27167c01ed1df136fb143894d13b51faf18b6f61aeaa95b72bfcf"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Defence_Spikes_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "fce6e132f38a57cefb0feeceaa9c6d8e52f77b8fd6e12cc1846ce8091a1ef753"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs.meta",
+      "bytes": 172,
+      "sha256": "c252f15b2159bd4eb6fac30e5dd3027207d47be2baa05b3ddd3a11f68067b9e8"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings.meta",
+      "bytes": 172,
+      "sha256": "952669e14b2697899ece1dee107bc193d76f6eed5e00f07a1c17b608ea4627b8"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/Parts.meta",
+      "bytes": 172,
+      "sha256": "6c1bbae6426a74a7e2272104b68753d37768712ebe6aa808043a4ba95f631c7c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/Parts/SM_Bld_Part_Banner_01.prefab",
+      "bytes": 2892,
+      "sha256": "2900fc0a1373fe908197e82483bc3b58cac44f027504feebdfd7a0377e74708f"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/Parts/SM_Bld_Part_Banner_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "9edbee5f519fcbd377f885ca5859ae999f986dbfa7268f6a93c10402877e3eee"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/Parts/SM_Bld_Part_Banner_04.prefab",
+      "bytes": 2894,
+      "sha256": "6a2013fd455b064ac68c658aca8d46007182f5d49732afb1b19fec4c0e3998c1"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/Parts/SM_Bld_Part_Banner_04.prefab.meta",
+      "bytes": 154,
+      "sha256": "c2d38b67b6b4f61580febf8db0649f5ed2402d28a4ebe002818a2048ed125b82"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Gate_01.prefab",
+      "bytes": 9627,
+      "sha256": "d89f10af47b14ada4c67be3804de293cece3e5c3d39c178f61f53c2ad08f6e79"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Gate_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "e9f90f9af7f5dac98eef1249bbcaf98c225fb3543da53e24e21f26db69898436"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Log_Wall_01.prefab",
+      "bytes": 2885,
+      "sha256": "40e40c8d5a2928d540b7be1fc104c5cc5cb3a2ba31ec013a9d7c8e68b38c18e8"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Log_Wall_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "14b090c31c22fd880d9f34ac5ff0cf5a9c2380a80a6cb5847477f5c980aa192b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Log_Wall_02.prefab",
+      "bytes": 2888,
+      "sha256": "1f0e53d5d3d4bc221369d61ab550aa37a21cb9c518b1787c6dbeae7a94c5bd1a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Log_Wall_02.prefab.meta",
+      "bytes": 154,
+      "sha256": "71d908ce75689fdedde93a5376afa9ba66f594447164fef61478cd93a2e9c64a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Tent_Medium_01.prefab",
+      "bytes": 5374,
+      "sha256": "3b96b6178ecf9a4b5423d09d5d6ce6a1ba40f491aa900bffa34039979b03c711"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Tent_Medium_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "9a74f936c34169395088002b71a1bc4c8f85c598d0435146daa5e7ee02f69d05"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Tower_01.prefab",
+      "bytes": 2957,
+      "sha256": "3c53a7390c65bb539af244378649f7d00d220641e28abd50d70e0f2edfadb49a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Tower_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "4c7ad24ccc03711e250d4f726dccef3ca8e8584df86e28e1474fe40f5da6a0b1"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment.meta",
+      "bytes": 172,
+      "sha256": "e16205a204e57e8938940504ff26d3a2cd1bb7bdb43a5056c9c65a4208f89594"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Grass_Preset_01.prefab",
+      "bytes": 2442,
+      "sha256": "c469d7ea6b7ef9c5425a26c76887be739d3d29563a299191e14efc3f0dfae76e"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Grass_Preset_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "c9d0dcc350e733a499ffb8cf7323655854521bdf2dbe6811cd411b83e5ab393b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Grass_Preset_02.prefab",
+      "bytes": 2441,
+      "sha256": "803a010bb61032feec9251fe45ed49f92bde846bf56e350722c46b16651f3933"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Grass_Preset_02.prefab.meta",
+      "bytes": 154,
+      "sha256": "d18035a5d4555b42c0b4728184926d66d502a7c1fee97eb4ad6fd59965e55185"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Ground_Dirt_Flat_01.prefab",
+      "bytes": 2899,
+      "sha256": "647bd95b908632e550f77e8ff1ae91714bc82e53407c48544b8613f83aaa249d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Ground_Dirt_Flat_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "2818ea42b77ded6b6c4551c7c0575e81210f1a50c921e5bbb13d27f045797d4d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Road_Planks_Straight_01.prefab",
+      "bytes": 2450,
+      "sha256": "2a48091adb90114e8244726453bf5bb96457b6e8089a17319f41c6fb50752fb8"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Road_Planks_Straight_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "196b96743e4dd8efae2b0dfe130b71a2f60256ef5b4833fef1d884e97b33eed4"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Rock_02.prefab",
+      "bytes": 2881,
+      "sha256": "f8c261b42cfeb7c4a92e62dbb31674f00356cb014e7b9f012ea02fe8489fa9a7"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Rock_02.prefab.meta",
+      "bytes": 154,
+      "sha256": "586957e238a119459326a83d3adec7be2f528e206fedd9f2501f47eb4b5c07b0"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Tree_Marsh_02.prefab",
+      "bytes": 2892,
+      "sha256": "edd501c5c4c924268b7037f9685d6948404a500ccde956a8d2a0ebb1972fbbf7"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Environment/SM_Env_Tree_Marsh_02.prefab.meta",
+      "bytes": 154,
+      "sha256": "0a75b8b0b90d3ef2b7dfcbb5ae30472a525515706bf444826945439b0904744c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props.meta",
+      "bytes": 172,
+      "sha256": "14d32de34977531b99307632ffb09559a103dd45c086c7179fbe3f88ef799c81"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Barrel_01.prefab",
+      "bytes": 2889,
+      "sha256": "07cf1fcb396a2d34020a31633fb5de7baa7aa17b3666b25d00709732364a6681"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Barrel_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "71cb74ffbfaeef953da0c5789efb3b8705d70738b1b75facd9d85a2a31f64129"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Camp_Fire_01.prefab",
+      "bytes": 2880,
+      "sha256": "6ca3d1ca1f3438ccbdda8bf25318bdcaf848dc0ef36333764e6d5a1c216a6337"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Camp_Fire_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "da49dbe1554eab50529feb0ffad01b07d338a1fe961d937d9789531af0044e9b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Crate_02.prefab",
+      "bytes": 2887,
+      "sha256": "fc1641b2b4bff3e6dcd6cf5cb1f3428e99efb3e1ecdd102d8f28571e16e3cc9a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Crate_02.prefab.meta",
+      "bytes": 154,
+      "sha256": "2a909142d4054d5e36b154ff40ff13a17a6ac1cb492fa7845cf222ef82336c7b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Defence_Spikes_01.prefab",
+      "bytes": 2894,
+      "sha256": "1aa0ed2f79e816072a48e4c7a5ac3db0a43363e397e71bad34f6ec10e15213ff"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Defence_Spikes_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "04bea2fc1049623ebb3375f61404420149a66f6a7baadd7a63ff8004861a2f9d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Torch_01.prefab",
+      "bytes": 2885,
+      "sha256": "6f9608bcc2991aa4a951ba132185959f1ce1490b66a6ac5ac9becd0096aa7897"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Torch_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "d4a91bd1f5dabc73f742a7acd3479b62255a6ee2fb29a493b3d307b345c58931"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures.meta",
+      "bytes": 172,
+      "sha256": "4d0ae494e886d32b6995876dc553bdd189a47946bb09f3332c350f0026a83fe1"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts.meta",
+      "bytes": 172,
+      "sha256": "063dffc663c0cb9053be9cb36d8d8a5c54cac4279a66e1368fa21d8ddefeaf19"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts/Banners.meta",
+      "bytes": 172,
+      "sha256": "e737a3cbb4a120730cf3a43881865a3211dae4420c5353899a2afc93e9c9e12f"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts/Banners/Banner_01.png",
+      "bytes": 114656,
+      "sha256": "4768280c013fbaf47f14c6a0e535085823381987f7c047ffcde428974f0d5322"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts/Banners/Banner_01.png.meta",
+      "bytes": 2849,
+      "sha256": "b58387fc919eff20755733d962405174112b17be8216822ad3a0a5e75037089b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts/PolygonGoblinWarCamp_01_A.png",
+      "bytes": 2242466,
+      "sha256": "3c57856be0e4f67044cce18d20f8a6e409cd9cf737e4fc6c2f8da940435c40b6"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts/PolygonGoblinWarCamp_01_A.png.meta",
+      "bytes": 2849,
+      "sha256": "9724fd368492d24c6107b74c4f9fc48a360c4ab3b676cde51fc1d2e51edd8e41"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts/PolygonGoblinWarCamp_02_A.png",
+      "bytes": 2263334,
+      "sha256": "907d4dc84f6d1ad93a65b5ce14f2d3b334799db311be9e7625bb675d930642b5"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Alts/PolygonGoblinWarCamp_02_A.png.meta",
+      "bytes": 2849,
+      "sha256": "c7f4fc981c6112524029090018cfe713abdf85e98e304f83a488996e3f93f7d5"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Emissive.meta",
+      "bytes": 172,
+      "sha256": "554b6756d4f6eaeffe9401b47ea4235aa79d493d3747c719c9c8017581a7d718"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Emissive/PolygonGoblinWarCamp_01_A_Emissive.png",
+      "bytes": 241812,
+      "sha256": "932e2b565e09a4e9f8e947f2c22759015e7a4f0889151f46e7c4d6508fe7eb46"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Emissive/PolygonGoblinWarCamp_01_A_Emissive.png.meta",
+      "bytes": 2849,
+      "sha256": "bda8f966993a190f9d65f0d293e634b3bf51bf33ec6bdb994545beee74286e1b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Emissive/PolygonGoblinWarCamp_02_A_Emissive.png",
+      "bytes": 241845,
+      "sha256": "56bcc1bcf0ae96e1338b45c90a3fe64f5e936d8324e586ecef9ac0943d03087b"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Emissive/PolygonGoblinWarCamp_02_A_Emissive.png.meta",
+      "bytes": 2849,
+      "sha256": "f599babb5e69d0a77e757c8fbb54f95212fd6568470b89980be273c077641f4d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Env.meta",
+      "bytes": 172,
+      "sha256": "c23aba75f0b20872d6dc85975b5567aae567b0b9f96645244367dec210b43337"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Env/Mud_01.png",
+      "bytes": 164188,
+      "sha256": "f7cb8725cf1dea76df1a942e94e2667e6b26071ba0755cc1377ff96793b76dfb"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Env/Mud_01.png.meta",
+      "bytes": 2045,
+      "sha256": "c12c7f6a2f259dece202c9bb030e3ec9a4b8965601b3a4994d68339370b174c8"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Env/Mud_01_Normals.png",
+      "bytes": 286642,
+      "sha256": "fc759d20814f0441effa6234e67e2cca1ef0dd1ef6c91a103fe430846eaa5ca0"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Env/Mud_01_Normals.png.meta",
+      "bytes": 2376,
+      "sha256": "6d6b9a60941b1d57bab85adaebbb622f7bc637f3c553c9c75cab5979fb6dad7e"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Misc.meta",
+      "bytes": 172,
+      "sha256": "f18daa1c8dc509b31381d95693007859c8e71d4978eef76bfc3c6e565257f8e6"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Misc/PolygonGoblinWarCamp_01_Normals.png",
+      "bytes": 1040110,
+      "sha256": "0884a08127542f18166d9ec047285357cd7116fd54dcfbc41537134bc2bc1947"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Textures/Misc/PolygonGoblinWarCamp_01_Normals.png.meta",
+      "bytes": 2849,
+      "sha256": "1586fc564aed5ff17500a1913e632fa795f851196ea301aed524d54065382769"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters.meta",
+      "bytes": 172,
+      "sha256": "9eb01e57a4a789cbc994a61f22ddfab8d62585b8a05accdab92f448fe795cedc"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters.meta",
+      "bytes": 172,
+      "sha256": "f922d837fe5a1b607a3dc785cdfe6c0414049330bca08dc89a90b6352dbe24cd"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters.meta",
+      "bytes": 172,
+      "sha256": "ce30c4800f751ea19b4849dab66f99ebda69a62bca2a6e80ff369f9aa6d1badc"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03.meta",
+      "bytes": 172,
+      "sha256": "443db92bf47400901b013f45a036cdc20f7020d892d9483e255a37ffefb3d846"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/GoblinFighter_03.prefab",
+      "bytes": 217415,
+      "sha256": "eca5b01a300d7288e1d69fddbc8724c844eac7f33dbe0f04e6803e2da185f967"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/GoblinFighter_03.prefab.meta",
+      "bytes": 154,
+      "sha256": "a47a34f98a1bfd05d9108b05bace9fa217157104003b2e7edbb0fb252dbeca1a"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Materials.meta",
+      "bytes": 172,
+      "sha256": "c21fd09cb0fff7d1d02929dfcc91a21b2b50c86dc3caa85d3703590e2c68bd11"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Materials/GoblinFighter_03.mat",
+      "bytes": 6278,
+      "sha256": "1a624e7541d925ebb4cd89011fd8f95fc055064f4ce6f6e373db6df6fa70a0b8"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Materials/GoblinFighter_03.mat.meta",
+      "bytes": 188,
+      "sha256": "b73ef19346f8c8d6905ae034f925dd8a7b8ec6f9a891034cf8ec3e584b74d5c0"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Meshes.meta",
+      "bytes": 172,
+      "sha256": "c9cd335910a765d9a8c738f8e4c3ab4e3590bdf0c8b714e351c07aca8acdb465"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Meshes/GoblinFighter_03-avatar.asset",
+      "bytes": 121393,
+      "sha256": "deb5ce00e23b7c91f17aa5c83b09bcea465c03896ceca7407dac2fa4b51715cb"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Meshes/GoblinFighter_03-avatar.asset.meta",
+      "bytes": 188,
+      "sha256": "7faa69f24ac1de3a049495d01d55d61dc5e496b62431be2fb9da15bfa556ecc0"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Meshes/GoblinFighter_03.asset",
+      "bytes": 16981484,
+      "sha256": "70e174936a0b122cc0a293db92d3cdf916c1ac71707bc47d822b717224c9ca4f"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Meshes/GoblinFighter_03.asset.meta",
+      "bytes": 188,
+      "sha256": "9f6cfdf140294e08339bf342be598785290e435efb81135191fc0c7ccdaff403"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Textures.meta",
+      "bytes": 172,
+      "sha256": "d43ceb90860218a596c8230e025449326c0a9b4748963a2ccd16fced35c57f2f"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Textures/T_GoblinFighter_03ColorMap.png",
+      "bytes": 823,
+      "sha256": "34738057f62b44a1871fce4d75c86e40afe3ccd593078bb0e25e37edd67fcaa5"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Textures/T_GoblinFighter_03ColorMap.png.meta",
+      "bytes": 2519,
+      "sha256": "be738f14fa27d66296fea373f4cfd082df49c156c4d44da18610b3fd6daae521"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources.meta",
+      "bytes": 172,
+      "sha256": "43f3b32c4f3cc97e603efa16ea0eafe6feed8e840834ea9affab29b17585465b"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Shaders.meta",
+      "bytes": 172,
+      "sha256": "46e8dd11ca1effee77178c6c1257ddaebd0e4aee1b7912a77e17673437f7f6e1"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Shaders/Sidekick_ShaderGraph.shadergraph",
+      "bytes": 164376,
+      "sha256": "a9d97ae2d5e4195a0d84ead711b7a143c16ae36d7f8f0e2f00cc52ee8ea5d055"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Shaders/Sidekick_ShaderGraph.shadergraph.meta",
+      "bytes": 285,
+      "sha256": "8bcfae53520f38f8465b82488566150352623559a3c03d0f085046a7d3a01b1e"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures.meta",
+      "bytes": 172,
+      "sha256": "7472cdced34461e165cd62ae8271f35968295ba3122d151bdb756c01f4d55ec2"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks.meta",
+      "bytes": 172,
+      "sha256": "86847931b93f9a70d38465756ed928f8a7c03aee30dd11a5b4c4e52675b58cbf"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/Mask_Cuts.png",
+      "bytes": 1884,
+      "sha256": "b2d328be237c63c5b50dab5aa79afef0a3936b9d3b061bdaee64ef2d30f2392f"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/Mask_Cuts.png.meta",
+      "bytes": 2520,
+      "sha256": "837fdc71113c55c03bdca9f3d289a3977e1aa833fb9de12837a72e7e29071f25"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/Mask_Dark.png",
+      "bytes": 1639,
+      "sha256": "0ef6d251497d282ce8c3a913b7e8553e922184e7782ceb7c5a18506649c39ab4"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/Mask_Dark.png.meta",
+      "bytes": 2520,
+      "sha256": "fab14f5edffc4ca38b9fdb43e4d693693c72ef3590d4fd209994d6720769f14e"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/Mask_Dirt.png",
+      "bytes": 1637,
+      "sha256": "f2002aa68c74639a0aa42abdf5ccec00a18c669f43710561dc541a2ee37ee95f"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/Mask_Dirt.png.meta",
+      "bytes": 2520,
+      "sha256": "b0bda8c60193b0bc679fce920679b9997df323c87cbcfc905cad75158c70daa7"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/T_EyeEdgeMask.png",
+      "bytes": 1651,
+      "sha256": "937f048ad4e0b39c8cf5db31a98390cb5d82e488a2bd602e7ef07eb259f06915"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/T_EyeEdgeMask.png.meta",
+      "bytes": 2519,
+      "sha256": "2ce293a16922ffe4a00d19e80fa59097ad4380aaa481d398e29ef6e705eeebe5"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/T_SkinMask_Map.png",
+      "bytes": 1876,
+      "sha256": "98330d0b274921e9bc59a4299e3c2d0d65b8a1a13d76f34409d8f8ce73a9e6e5"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/Masks/T_SkinMask_Map.png.meta",
+      "bytes": 2519,
+      "sha256": "b1aea23ee48c38d991fcd1e6127ff4904c0c9017f5e69f210582a2f063f551f6"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_EmissionMap.png",
+      "bytes": 1997,
+      "sha256": "f618c1edd61b7b77676ab4b73113f1651d4a02e2d43faec894c2cae4e1e1e7c7"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_EmissionMap.png.meta",
+      "bytes": 3830,
+      "sha256": "ad6490b04ce54a6486c9eff58a90f20d372ded16a959c952c8b60b0263325bfc"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_MetallicMap.png",
+      "bytes": 2198,
+      "sha256": "6f7a9a0719aa8abb9340e2840e86931717d6afe5abf34f7f1115ecdd3e6f4f51"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_MetallicMap.png.meta",
+      "bytes": 3830,
+      "sha256": "a74781b45e39526792ea3dd59cabff24b40fb0042bf0db3daf41f583adceef01"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_OpacityMap.png",
+      "bytes": 2026,
+      "sha256": "8d19d147d4859b215c539cf960212cab5dc6c173a3c9076e6eae5b2386262b6e"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_OpacityMap.png.meta",
+      "bytes": 3830,
+      "sha256": "0e4e0f8ba530df2bf413ce908af06a62e279b3617adfe8cf781912bce6e8d815"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_ReflectionMap.png",
+      "bytes": 2042,
+      "sha256": "86b2d8e3404a152c44c2faaf1c2111fa27c7a3324536668a3e1d628907e873c0"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_ReflectionMap.png.meta",
+      "bytes": 3830,
+      "sha256": "abccc86ca7a90ea948f6535d1ac0073c2b23f8149fc28318a0d4bfb47383fae7"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_SmoothnessMap.png",
+      "bytes": 2198,
+      "sha256": "bfdffa7c36a5acdc88262af1cb9f3cf2d1f68ac75f058c386c011a8ac2074f26"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Resources/Textures/T_SmoothnessMap.png.meta",
+      "bytes": 3830,
+      "sha256": "d752506e5b2bfe7da8f8f3759ce6c1a080f27c98082afb674a709d5d038c7219"
+    },
+    {
+      "path": "Assets/Xybrid.meta",
+      "bytes": 172,
+      "sha256": "0122a6c4d74fea68801e5531385e30b67d8d4711d7268cdf6bd2f33ea65e59e2"
+    },
+    {
+      "path": "Assets/Xybrid/Plugins.meta",
+      "bytes": 172,
+      "sha256": "321a4fbcd5f09bf64ee9625dceeab894ee249ab8a4e3ba41c96b5437b618b937"
+    },
+    {
+      "path": "Assets/Xybrid/Plugins/.xybrid-native-macos-version",
+      "bytes": 5,
+      "sha256": "30c99e8b103eacbe6f6d6e1b54b06ca6d5f3164b4f50094334a517ae95ca8fba"
+    },
+    {
+      "path": "Assets/Xybrid/Plugins/macOS.meta",
+      "bytes": 172,
+      "sha256": "ecb71338e4fedd4ad37155b5e0f04a22dd226f82bddd3b7bd72b0db5c4937284"
+    },
+    {
+      "path": "Assets/Xybrid/Plugins/macOS/libxybrid_bolt.dylib",
+      "bytes": 32377976,
+      "sha256": "61f8c9a5bcc49272f2f02e3d2a41bbc50774e4276980a409fe7d6ec94b23e824"
+    },
+    {
+      "path": "Assets/Xybrid/Plugins/macOS/libxybrid_bolt.dylib.meta",
+      "bytes": 729,
+      "sha256": "be1bbf0cf55ee45f08f290f285e84b95a93a560f046ff81aa20dae357d60147b"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo.meta",
+      "bytes": 172,
+      "sha256": "c52e335014eaa32bd59027b16f0652b7dcd12980973ae916359f55b4e763a8a5"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio.meta",
+      "bytes": 172,
+      "sha256": "dda5d95dbc905114eb5739b0cfd287e1df417e0342b9554e6f6487dbd1d3018a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored.meta",
+      "bytes": 172,
+      "sha256": "a22efc56967dc2f1ff51ea7f16bc641b8bc7073eda23be4858a42223b0de562f"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/assigned-2.wav",
+      "bytes": 121726,
+      "sha256": "97c8b59831c88d16d966994edc685a6f98333923577ee53d663bb119cfe854bd"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/assigned-2.wav.meta",
+      "bytes": 485,
+      "sha256": "fe974730147d35502ac02b4f1184ebbf48676c4feef4465288692d9370a8f6c8"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-1.wav",
+      "bytes": 159690,
+      "sha256": "53df69e822cb97d32712c02b2aa0e4b05a753b61dd6c8933349850e9b2124d97"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-1.wav.meta",
+      "bytes": 485,
+      "sha256": "b9338e36dfcf3715fd1e16fec9fecf7c96ddf78d48a3915bbd10467e644ff01a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-3.wav",
+      "bytes": 131536,
+      "sha256": "dfa19940c535ffe5d3adcc0b2fce6634769cbe7ab11c2e71021e882ece1c7063"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-3.wav.meta",
+      "bytes": 485,
+      "sha256": "6583c341bddbb593069c8914af35fc9779ef27f211115699f60b91a424873dfe"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-high.wav",
+      "bytes": 142832,
+      "sha256": "3857d0cf01c8f536a4292d0797b4e3eadd9be6f1d52ccc74283ce9882834214c"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-high.wav.meta",
+      "bytes": 485,
+      "sha256": "ff013e970639a3ca83fe0c02d13247eb5ab160d724152d87ebd135ee7c84901a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-low.wav",
+      "bytes": 111528,
+      "sha256": "6d47334e9cbb73c5cb2c315cd69b6f975a809539e407f2b85fd7cafa4d985a48"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-low.wav.meta",
+      "bytes": 485,
+      "sha256": "639deab517d290cc2adba72a8175cc0198cf2d15796985088f549c3dac2b332a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-mid.wav",
+      "bytes": 132148,
+      "sha256": "392368795d537bec51b816ba016b6ad9dccb613488e6c302140b23aaf005d42b"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/bribe-mid.wav.meta",
+      "bytes": 485,
+      "sha256": "51b60272c500d3b6a3f55f80e124bb88a422ae5faddec2222480e52893c90e8a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-1.wav",
+      "bytes": 162052,
+      "sha256": "53d0a8f2702098301406094e36750c9a4be24c5d582bcb2174297e7d3395778e"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-1.wav.meta",
+      "bytes": 485,
+      "sha256": "bc4aa656a19ff34bea1d8808a4badc47510b2283483cca7d520f8e108dcc72fa"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-fallback-1.wav",
+      "bytes": 160300,
+      "sha256": "0d2e16ad4559c6cdc53806558dd678e0023e890c92663885a98f560a4f0db45f"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-fallback-1.wav.meta",
+      "bytes": 485,
+      "sha256": "1d58f86dcb4edb918107eff7806b3072d9fd5075c58395f70da2b47cf36996e1"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-fallback-2.wav",
+      "bytes": 151664,
+      "sha256": "45e5e7854e8d9fca52930f43e8e07abf48049306d7606112a9d66a1a96ee7be0"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-fallback-2.wav.meta",
+      "bytes": 485,
+      "sha256": "2c0e34e5432cc6eb075b329449b6a6bfb272ab7affdca9f939481e49d152a829"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-ok-1.wav",
+      "bytes": 98088,
+      "sha256": "fad9ae6608ab091aa9bac8877042916d2dab1c49dcd8540b706b30a2a1252b29"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-ok-1.wav.meta",
+      "bytes": 485,
+      "sha256": "5a6b2a21fe0f744f7baaeb1bd4ea68b7de16243e43d34fed172744308778504e"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-ok-2.wav",
+      "bytes": 151664,
+      "sha256": "45e5e7854e8d9fca52930f43e8e07abf48049306d7606112a9d66a1a96ee7be0"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/business-ok-2.wav.meta",
+      "bytes": 485,
+      "sha256": "fe5eef372b93cb22d29f919d280198e3cc163c5f77a726b135335cdb400a9f75"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-1.wav",
+      "bytes": 157440,
+      "sha256": "3a78310faaba07c2712fa164b515838c53c40b2c39340a6c230ac1fff9c3991a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-1.wav.meta",
+      "bytes": 485,
+      "sha256": "ffc76677885a66af3e177f0f7dd5c0165b086a3cf41687ad5c8ae41fd411124f"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-3.wav",
+      "bytes": 159804,
+      "sha256": "76d3704ff5af7ffed90e97de864d8960d2bf9b22cb269d9d7867b45e431055f8"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-3.wav.meta",
+      "bytes": 485,
+      "sha256": "52f4f3ffe18e6aa1e5080b3f4575d96629025b77454ac87f9f44653a8b3afde4"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-high.wav",
+      "bytes": 158156,
+      "sha256": "9b754c3d3c4af129ebec291b46882d2a8f4e6400bbbfd14ff4026480a89c2235"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-high.wav.meta",
+      "bytes": 485,
+      "sha256": "17e8f84c1fefe3fe5a4f1bcb0490b487ace6204150fa8000fb96c80a9c1fb244"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-low.wav",
+      "bytes": 129376,
+      "sha256": "f8593063c5f2853be0ff3af968aec47cd4a28d6ca9406100678037f8b3dae1f0"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-low.wav.meta",
+      "bytes": 485,
+      "sha256": "efa9dc8dc25b54f2762770697be020e0826bf1fd8630299dfcbc2420401ccf2d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-mid.wav",
+      "bytes": 178114,
+      "sha256": "f37466086ef7efdd5df057785661dffa456d6e43adc1227218ab64621a1c5247"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/camp-mid.wav.meta",
+      "bytes": 485,
+      "sha256": "5dac0de938cedc1d37fbc7d3a9e9b2bd1159738faaa644192569d74f42832d85"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-1.wav",
+      "bytes": 158044,
+      "sha256": "2c4c0cfa5f0960c56e89c0532f7254796b1f04b2713097ea051fea66f29ab586"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-1.wav.meta",
+      "bytes": 485,
+      "sha256": "bcc8ec15156abf2861c23314bd99b2723f27a9001e6e427d173247661e2e0ca8"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-3.wav",
+      "bytes": 115156,
+      "sha256": "0b3df15dfe099821d5950b858c68b112e14c6f2ad42f84ae024493c389e37bd5"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-3.wav.meta",
+      "bytes": 485,
+      "sha256": "7df739e0ba538ca7b83959d770a1c19b76722c045d362fa09a65b153d70f7c32"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-high.wav",
+      "bytes": 161008,
+      "sha256": "9a963bfe6416b092131aafe736829d4951da0a80d73542466137cc34ae757dfb"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-high.wav.meta",
+      "bytes": 485,
+      "sha256": "8002ff9d101c3ada2099ad7b6abcbcb7adc21d206f744b0f5c6a25bd5678ec96"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-low.wav",
+      "bytes": 147012,
+      "sha256": "051fa79df16c9181bd5d1964cdb1c0df53197bd702f4a8d069543f0b179d7ba3"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-low.wav.meta",
+      "bytes": 485,
+      "sha256": "87bcb594f2e781804754bf05efab4d2e9035dae0bdadcab4dffa969c861bfa3e"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-mid.wav",
+      "bytes": 160430,
+      "sha256": "b4a701f127e382a2fef0a47a8a669ad9e01c386239fc6893e31e43355a06dd6d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/flatter-mid.wav.meta",
+      "bytes": 485,
+      "sha256": "54f19fd8186e4e49ff7af0bb53e412bb8522a68e7351d80d40cecb8c5f458b24"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/hub-high.wav",
+      "bytes": 149782,
+      "sha256": "96bdd1f8d7d74197f6069f1dfb127abba4b45d452b939ac9c25b3f9f4a582b8a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/hub-high.wav.meta",
+      "bytes": 485,
+      "sha256": "2f6204b7ca229a39f83cf6b2cec55e8f1cffe3343165aca9acde26df6bc89508"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/hub-low.wav",
+      "bytes": 165450,
+      "sha256": "43b90faa537cd24c6c3a8e2d58b479390e7a34f7ae46ab0a84210d7ef323e86d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/hub-low.wav.meta",
+      "bytes": 485,
+      "sha256": "af643a4245b0fd9f395ac994be051bc7a4721b4859a20a456aec3fb880fa3e76"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/hub-mid.wav",
+      "bytes": 120114,
+      "sha256": "b2204509b0c0e5e1810fdafb452711b46a2342287cdb493b919fecb1c2fde85d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/hub-mid.wav.meta",
+      "bytes": 485,
+      "sha256": "a357c290e4c5dbf23e09467d4a5862f55b3e8fe95b8c30b135bf963cf98e7cb9"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-1.wav",
+      "bytes": 137226,
+      "sha256": "1dbffe63e03114f35a87a3fab00062f9f75dd7f1fc0147cc4b8e653317f317ca"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-1.wav.meta",
+      "bytes": 485,
+      "sha256": "46e9ed3ad31dff9eca233ea9c7be5eb6554a677b42368cd5012d8e7cdd54ec68"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-2.wav",
+      "bytes": 141806,
+      "sha256": "583b6218a3f238823171f185850730d43fc55962e76b3c1e3d8681481d2c9ed4"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-2.wav.meta",
+      "bytes": 485,
+      "sha256": "dbbdae0b5c1a17beec7b70acb4aae5b0092efba6f98a5f8bd8965ea607443256"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-3.wav",
+      "bytes": 151610,
+      "sha256": "8b4d1126748b75c9ae0331e93699cba77f6747041c0a5fd53f9b346468373256"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-3.wav.meta",
+      "bytes": 485,
+      "sha256": "bcceb9e0b784220e6edfdc6c9e2f05c97d46277cd77604b35558e8e59c9c6bbc"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-4.wav",
+      "bytes": 125558,
+      "sha256": "234dd66f155cf7361d99d668eb9504f9cce81420b92bdc3e6266fe2366b7c865"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/idle-4.wav.meta",
+      "bytes": 485,
+      "sha256": "506c0cd7ff2923987fe5580920ccad0d5b9e839821d26bae44499e85abcb2d25"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/interrupted.wav",
+      "bytes": 91006,
+      "sha256": "2206df1ee4ea9a722a0298f9a5df262fb18708f30b8c5fa164f63b3d1dc818d4"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/interrupted.wav.meta",
+      "bytes": 485,
+      "sha256": "ab637f66fee6a089feb838fee9a4ac766971776cd34c2796e1e58b48f49e00f3"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/like-1.wav",
+      "bytes": 178218,
+      "sha256": "39b51cad09b7deb7bcf1c47adb4915efb2d929ee46d85629af59039059873bbf"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/like-1.wav.meta",
+      "bytes": 485,
+      "sha256": "de823ba851e7f52c83c72f22729f188a2ba784ff2215d9b1bdf52fbd7be314f7"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/like-2.wav",
+      "bytes": 135858,
+      "sha256": "2d2884ade3db052b0e61dc910bfcb1b60d634024c98f5d55c1dc7a095db05f51"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/like-2.wav.meta",
+      "bytes": 485,
+      "sha256": "2b89cc6775cd1eed7346051245dc752bff1e36e5d6cdae2afc6f971813e5e01b"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/like-4.wav",
+      "bytes": 140108,
+      "sha256": "96bb9d4635dbe206f68e30331c01df787d84ce31d9bde09fd007ad249e2ac685"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/like-4.wav.meta",
+      "bytes": 485,
+      "sha256": "d8d3786c42685ee4a479f4f25a9f4fdab237820aefb19def930bfaddbd020fa3"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/name-1.wav",
+      "bytes": 103460,
+      "sha256": "5465a787c10b0cfaeb7d56dc5c98b3fa1765c9f9db74ac23cc8012bc4aa57f82"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/name-1.wav.meta",
+      "bytes": 485,
+      "sha256": "c1c7f1614c3d2efe631e61a481fdefdb5b091c6967fc0cffedca8203ea5ca643"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/name-2.wav",
+      "bytes": 119364,
+      "sha256": "1a43504b9bbb1fec2d9fc2f00bb27503701b7ae8caafbcc2407a4ef92796d371"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/name-2.wav.meta",
+      "bytes": 485,
+      "sha256": "d8007b2e7ad96ab8e9c260d3f475a091d4fd3b5944df01e5ae49074daca14b1d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/named-2.wav",
+      "bytes": 113870,
+      "sha256": "8921bf672f4b868bd171e1ee177bcb1ac9e388f5a880c11531301e27bdde0125"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/named-2.wav.meta",
+      "bytes": 485,
+      "sha256": "f99839be10f1577f131b7a79417d56eeb18aaf2ace7676858c5c74e9ae61224b"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/pass-1.wav",
+      "bytes": 135284,
+      "sha256": "f36a67748f472af0b04e9f029828de36ea96a14b932dd4c0bd2d661c86bb8e9f"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/pass-1.wav.meta",
+      "bytes": 485,
+      "sha256": "f34285f52578eb4fbcb1a384c0130e3617cf74933af994e03082c2c5b9f0933e"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/pass-4.wav",
+      "bytes": 145466,
+      "sha256": "118e75f088da366fb22b82167ff94c6e6ae9274b098f09e32620a300c58ee7ca"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/pass-4.wav.meta",
+      "bytes": 485,
+      "sha256": "472d744a8eac15119fff35c593ddbdda43bbafa7e61489bc563c015d1b9d0308"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-2.wav",
+      "bytes": 152216,
+      "sha256": "11fd3108261c93723d83f79d56afe351eeeb9df207136dc2aae0454d89c54f8a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-2.wav.meta",
+      "bytes": 485,
+      "sha256": "93292e77554faaf25c31f9721d66e1815e6f7d798c8b47a017e7b8d7de9f676f"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-high.wav",
+      "bytes": 134222,
+      "sha256": "593a830490cd8d3e1b297b55091cb4295690e796d2f645eb932765d58e3d9f5e"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-high.wav.meta",
+      "bytes": 485,
+      "sha256": "708b8bd09986b89588f90931cb32016ae3b39bb9643fbc0bfe7593f4e494db30"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-low.wav",
+      "bytes": 153722,
+      "sha256": "2884933d6fbe1f9a3a5c4e427dffdf2f197aecba9524e1522a0d94f933737eae"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-low.wav.meta",
+      "bytes": 485,
+      "sha256": "9235e20df4d83bdce4cef8de7a804ac0cb7ddb9028e3562b023aeec3f41a4765"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-mid.wav",
+      "bytes": 127322,
+      "sha256": "5fcb76216748e777226132d781cc04fa37d3b2f937d04ae8ea69a0a19f851c84"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/reckoning-mid.wav.meta",
+      "bytes": 485,
+      "sha256": "5de6a6bf977959c7582c0c5a6f54ed9e8cc0207ac122a6ba36cff95930ec9a92"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/refuse-1.wav",
+      "bytes": 131786,
+      "sha256": "a2395d1a3bf2602ee99a003e7ec9a328a8a468c68aeb8d7d03ca0638d7dffc7a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/refuse-1.wav.meta",
+      "bytes": 485,
+      "sha256": "53eba80cda3dc5984d005d2db6b82e5089df6c979bc229f159efea31b5a2494c"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/refuse-2.wav",
+      "bytes": 165154,
+      "sha256": "238d4bd888b88f86a3a72db15dfbffa2b7fb1e062b60a284a4f58f9871a77dce"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/refuse-2.wav.meta",
+      "bytes": 485,
+      "sha256": "45c52cc67c1f9cc2f7563033fa1be94f49d1a20d225d756ade81fdeb0990dc3a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/refuse-3.wav",
+      "bytes": 97452,
+      "sha256": "8d421ec72a206b7779e0902b70237a875ea8f9064733482427e1c7729228376d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/refuse-3.wav.meta",
+      "bytes": 485,
+      "sha256": "46f7f85375908ab770a60df89e0205df8757eed1778dd2efdfabb3c37a2f984d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-1.wav",
+      "bytes": 141458,
+      "sha256": "5351ac6167be910bc63c9235f7890aaf14db0f276a08eadb7fee7242e2413105"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-1.wav.meta",
+      "bytes": 485,
+      "sha256": "bec12ac35dadd793ae8a0676fafb725790d4b2fae5a912be9a28257e7e488793"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-3.wav",
+      "bytes": 116662,
+      "sha256": "c2228b5e1cf333ce0b912d67bd3791eec7cc1eba627131476c7532901d6e48b8"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-3.wav.meta",
+      "bytes": 485,
+      "sha256": "4e13aa0c516f1f0691a1831a19c1f77ca37c78d0ccf4196eb3a598b0e857b568"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-high.wav",
+      "bytes": 134720,
+      "sha256": "492647f64b96e03aac26246a350c9fb4b750520cdb9056e080c6b5000fe4a1f1"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-high.wav.meta",
+      "bytes": 485,
+      "sha256": "3eb7b64bcdae4172af3de1a3db6a643e90e4406781fe993b2efb283b0e879abd"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-mid.wav",
+      "bytes": 153390,
+      "sha256": "c76708430015fc32d6b64d7c4c451836c9a06f9d6d15016d6690b236a46d3239"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Authored/threat-mid.wav.meta",
+      "bytes": 485,
+      "sha256": "f14f5ccf7ff323d646f5342d6a9851b3ffde1ca94092558015f02755920fed0b"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario.meta",
+      "bytes": 172,
+      "sha256": "091a29ec3c2bc21138f8b364923e78e2b0ecd7067c947c07a6657e3f6c966287"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/goodbye.wav",
+      "bytes": 134036,
+      "sha256": "ae740e6124a47de4b80a5112e15cfe140afaf84e7770635b77ef913bb10b1cfa"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/goodbye.wav.meta",
+      "bytes": 485,
+      "sha256": "4481425085b94b4e251d1d654514065515baf2cf620b03610fadf2644b2665d5"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/place-1.wav",
+      "bytes": 128990,
+      "sha256": "e5756cc0eab7a64deccd4d9699e3016d3ca4ae405ae89e6962a35b20601515c6"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/place-1.wav.meta",
+      "bytes": 485,
+      "sha256": "c73f1cbaf1b1cb70501d014b5bbc75db362453ce89c0e1e7af4fc290013deefb"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/place-2.wav",
+      "bytes": 121660,
+      "sha256": "a8a419b80eb8247710a9e5fb026c0a153b7045d46812e814f1fb3c7b1935ecb5"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/place-2.wav.meta",
+      "bytes": 485,
+      "sha256": "cfa94d23c953be36ab1254e507402504eed6bf0dc57a5a4bea152fa7fd69dbd5"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/welcome.wav",
+      "bytes": 104084,
+      "sha256": "b5bd5ae0cdf108a3665002d263d5505bad5288e2fc27b7e1abe72896b1332f82"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/welcome.wav.meta",
+      "bytes": 485,
+      "sha256": "9dceb2d7bca645f2e227eb819871aefec6a2aeb8966532fca10aab7a0abe4049"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/work-1.wav",
+      "bytes": 131218,
+      "sha256": "088a6a295874cec1803297b4025cf3df8d8584441629c6b1513ccdf4ac6da600"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/work-1.wav.meta",
+      "bytes": 485,
+      "sha256": "87fd600542a3d16c97090b3be3a66a104c6a6a693e8968051fba86175357d7f7"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/work-2.wav",
+      "bytes": 131868,
+      "sha256": "4bea1a218373598c8efdec54f543368b74e1e1321cb481b698d19cc2ad7ff97b"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/Scenario/work-2.wav.meta",
+      "bytes": 485,
+      "sha256": "4c1e4dffbf840688ddb33f02e240f8aafd46b62fda3a01095ee66f48ff45b210"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/speech.wav",
+      "bytes": 495120,
+      "sha256": "bea10f78afd7f0facdfcfb0d836b76477d9b1b7b72f143bd37319310f757d385"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Audio/speech.wav.meta",
+      "bytes": 485,
+      "sha256": "092b9a06ee6c0590601569bf16de77bff6858dff6485aadc6ccc742bbfa4048b"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Plugins.meta",
+      "bytes": 172,
+      "sha256": "2b98e605acf9fd07546972df278e20ec908aada9ea9d363046aabc21a13f7309"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Plugins/macos-arm64.meta",
+      "bytes": 172,
+      "sha256": "c3dac1ca202793f85adb13122ec54210fe44bed3890c951cf08aec374067878c"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Plugins/macos-arm64/libzzz_embed.dylib",
+      "bytes": 890416,
+      "sha256": "bc561839aa30328adcfeb5e5cf964e7c38bfb12f41479aa9c30f8b9995fdb035"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Plugins/macos-arm64/libzzz_embed.dylib.meta",
+      "bytes": 566,
+      "sha256": "15585ad56b3d86a48db2e45578e17f2697394689c9af3f8679b6e8b5daa70d82"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources.meta",
+      "bytes": 172,
+      "sha256": "e0876489ecb1dead124de4f6de2237efee27b1b684c1fb1664d298cd0c3e0554"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions.meta",
+      "bytes": 172,
+      "sha256": "31f4c379b6c2347ef00a4d9f13ce9669680a6103a1fbc44be4afad53b95cd3b8"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/grr.wav",
+      "bytes": 35522,
+      "sha256": "ca22619bfdbc832f13e9087ab1e34a4d3affa4fd676ebe5d25c9bb02fd495078"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/grr.wav.meta",
+      "bytes": 485,
+      "sha256": "a483b4067019447853f768ea242e82e69a66fe12e6c710dfc7028b6f38fb37b7"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/heh.wav",
+      "bytes": 29808,
+      "sha256": "40eec5baedca69e9c99401b5739f94e4140eefca78b5d2eaeeb2c4ac4f06401a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/heh.wav.meta",
+      "bytes": 485,
+      "sha256": "a99b5e71332a3ea99e180d514da44a7582422accfd2543a0200d566c3bba1305"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/hmm.wav",
+      "bytes": 28768,
+      "sha256": "61f8f1ef9ace6b02d8c2c7eaad3ab36356e467a290c36d567d6dc6489e9baab6"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/hmm.wav.meta",
+      "bytes": 485,
+      "sha256": "148cbef2f6ea4023c115a3795d06025714e320118958332cd6dfa4d1353ed057"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/hmph.wav",
+      "bytes": 32310,
+      "sha256": "176ab8ebd1254d2d2fc48def49101749ad56fcfc96272944e99f7616570292e0"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/hmph.wav.meta",
+      "bytes": 485,
+      "sha256": "0914f785dcae91875147e95bdf0c3d58a95237039a429ae3628b959e6684fb64"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/hrm.wav",
+      "bytes": 34552,
+      "sha256": "3b3ac588ca8fe8c0134fb4b64caf2ffb139b58b36b29b27551381cc947812fe8"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/hrm.wav.meta",
+      "bytes": 485,
+      "sha256": "b45a94d049cd33f62b5e2a0e9d82311c13cd129b58ce6a9c82f00b0d290c2d85"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/huh.wav",
+      "bytes": 33398,
+      "sha256": "d298da1af34030ccfcc782d808058ecd4d7f262efa3553164e799b60475f4000"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/huh.wav.meta",
+      "bytes": 485,
+      "sha256": "b68f618bbfb0f687c532b5c59f979ab98746f0ae00bf24cd8019dc928dbb1061"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/mmhm.wav",
+      "bytes": 32508,
+      "sha256": "4528ac78dbfdbcd831810cf1833b3dd9958492a4e3925c5ef4f98c23b11c9ce2"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/mmhm.wav.meta",
+      "bytes": 485,
+      "sha256": "1e15530689a581cf84fbe36b1a1b5cfcbf61f44ea10baa35f88050103d59da2a"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/ugh.wav",
+      "bytes": 36390,
+      "sha256": "6fbff9d5641078b299d4c6d7e22c1da9e6b676ed1bce18248ee4265f47c49d5c"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Resources/GatekeeperReactions/ugh.wav.meta",
+      "bytes": 485,
+      "sha256": "dd78f96626931c7ae96347660eac78c38d2ef5d62c8839c20b6b406b9179e32d"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Materials/Dusk/DialogueFade.asset",
+      "bytes": 4831,
+      "sha256": "6629f069c6a0a38884bde9d08dfc1f4f7e744a4fefdee8818be2e66b36418011"
+    },
+    {
+      "path": "Assets/XybridAvatarDemo/Materials/Dusk/DialogueFade.asset.meta",
+      "bytes": 189,
+      "sha256": "3f900c4a7ec4a9f0b7b2fcb3a4406aa5925acdc6912e785a2f53676b1eb83736"
+    }
+  ]
+}

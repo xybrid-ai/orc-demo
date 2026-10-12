@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Scenario/place-2.wav",
+    "duration": 2.53
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.04, "value": "X" },
+    { "start": 0.04, "end": 0.12, "value": "B" },
+    { "start": 0.12, "end": 0.33, "value": "C" },
+    { "start": 0.33, "end": 0.40, "value": "B" },
+    { "start": 0.40, "end": 0.47, "value": "C" },
+    { "start": 0.47, "end": 0.89, "value": "B" },
+    { "start": 0.89, "end": 0.97, "value": "A" },
+    { "start": 0.97, "end": 1.01, "value": "C" },
+    { "start": 1.01, "end": 1.19, "value": "H" },
+    { "start": 1.19, "end": 1.38, "value": "C" },
+    { "start": 1.38, "end": 1.43, "value": "E" },
+    { "start": 1.43, "end": 1.61, "value": "F" },
+    { "start": 1.61, "end": 1.69, "value": "A" },
+    { "start": 1.69, "end": 1.90, "value": "B" },
+    { "start": 1.90, "end": 1.97, "value": "F" },
+    { "start": 1.97, "end": 2.32, "value": "C" },
+    { "start": 2.32, "end": 2.47, "value": "A" },
+    { "start": 2.47, "end": 2.53, "value": "X" }
+  ]
+}

@@ -1,0 +1,610 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01b6d10762db4489284afc42029df45e, type: 3}
+  m_Name: TrolaGatekeeper
+  m_EditorClassIdentifier: Assembly-CSharp::GatekeeperScenario
+  initialPatience: 3
+  maxTurns: 5
+  captureName: 1
+  authoredConversation: 1
+  debugStartInFreeForm: 0
+  authoredSource: {fileID: 4900000, guid: a9c6ae4f675dc4d5d92a4585cc6d356c, type: 3}
+  fallbackNames:
+  - Worm
+  - Turnip
+  - Pebble
+  nameBlocklist:
+  - fuck
+  - shit
+  - bitch
+  - cunt
+  - asshole
+  - arsehole
+  - dick
+  - cock
+  - pussy
+  - bastard
+  - motherfucker
+  - nigger
+  - nigga
+  - faggot
+  choices:
+  - label: Ask politely
+    reply: Please let me through, sir.
+  - label: Flatter him
+    reply: You are a mighty guardian.
+  - label: Offer gold
+    reply: I offer you gold coins.
+  - label: Insult him
+    reply: You are an idiot.
+  lines:
+  - id: name-1
+    recordedMood: 0
+    text: Stop there. This gate has teeth.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: d742d9fc85e0c43d8895694d6421b32f, type: 3}
+    mouthCues: {fileID: 4900000, guid: 4432076770db24690a72b21b13c49eed, type: 3}
+  - id: name-2
+    recordedMood: 0
+    text: Before you lose yours, give me your name.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: fadd26f9c425c438a9d341c307ff5e9b, type: 3}
+    mouthCues: {fileID: 4900000, guid: ab45500eaa6ba46f4a9ace368429fb4a, type: 3}
+  - id: named-1
+    recordedMood: 0
+    text: '{name}. Hmph. I''ve heard worse.'
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: named-2
+    recordedMood: 0
+    text: Keep your hands where I can see them.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: ce09a93a7c1d14b49b054fe31e39b109, type: 3}
+    mouthCues: {fileID: 4900000, guid: 024aa3dec141247eda8436ed0cb80a4c, type: 3}
+  - id: assigned-1
+    recordedMood: 0
+    text: No proper name? You're {name}, then.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: assigned-2
+    recordedMood: 0
+    text: Small name. Should fit what's left of you.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 9e50f0ee94eb84087b8a1ee1c63aefb6, type: 3}
+    mouthCues: {fileID: 4900000, guid: b47a29083b94741b8bf0c15132220b3c, type: 3}
+  - id: business-1
+    recordedMood: 0
+    text: State your business. And spare me the heroic nonsense.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 573acac79dabd490db7187d7d6e8fb6d, type: 3}
+    mouthCues: {fileID: 4900000, guid: f7a9ce967e3c24d97bca649fd79a929f, type: 3}
+  - id: business-ok-1
+    recordedMood: 0
+    text: You came all this way for that?
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: ddfef3b88941843fdbb6609ccd139065, type: 3}
+    mouthCues: {fileID: 4900000, guid: cad7bb479d3bb415a8f2cf3df8805ff3, type: 3}
+  - id: business-ok-2
+    recordedMood: 0
+    text: This gate opens when I say. Remember that.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: ff8ba017dcd434818bb63a8af321050b, type: 3}
+    mouthCues: {fileID: 4900000, guid: b8dddcb48dae34c14b9840b1750fa68d, type: 3}
+  - id: business-fallback-1
+    recordedMood: 0
+    text: No business? Begging, then. That sounds about right.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 811ada1f4758f49c78546699aed22dbd, type: 3}
+    mouthCues: {fileID: 4900000, guid: b13116665a2a94e468e91d78c15405d3, type: 3}
+  - id: business-fallback-2
+    recordedMood: 0
+    text: This gate opens when I say. Remember that.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 1435c0977fc4e435e8233ce977bed785, type: 3}
+    mouthCues: {fileID: 4900000, guid: b8817ed2905de4ba999c186750093523, type: 3}
+  - id: hub-common
+    recordedMood: 0
+    text: Well, {name}? Make yourself worth the trouble.
+    emotion: impatience
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: hub-low
+    recordedMood: 0
+    text: My boots have outlasted better arguments than yours.
+    emotion: anger
+    intensity: 0.8
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 1a63936c1413c49e799bb320fbb4e6b6, type: 3}
+    mouthCues: {fileID: 4900000, guid: 5bcd2512cc79a412bbca4dab4f8be141, type: 3}
+  - id: hub-mid
+    recordedMood: 0
+    text: You want the gate. I want a reason.
+    emotion: suspicion
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: dbd719fb3dcee4bdc91539b2ded3d059, type: 3}
+    mouthCues: {fileID: 4900000, guid: 4364439e0d725438d9e2ef244387b761, type: 3}
+  - id: hub-high
+    recordedMood: 0
+    text: Still here? Hah. Most folk start running by now.
+    emotion: amusement
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery: laugh
+    audio: {fileID: 8300000, guid: 0983411e643a042eeb215c88132784f3, type: 3}
+    mouthCues: {fileID: 4900000, guid: 5f2acd1e6eb834ab7bf4d3cd86dad872, type: 3}
+  - id: flatter-1
+    recordedMood: 0
+    text: Big arms? Of course. The gate doesn't lift itself.
+    emotion: pride
+    intensity: 0.6
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: d5e59f206002a4bfc91d1ad268263dfc, type: 3}
+    mouthCues: {fileID: 4900000, guid: 7e4e6cb84d9d84fbd9df307af0ca6030, type: 3}
+  - id: flatter-3
+    recordedMood: 0
+    text: I sneezed. Saved them the effort.
+    emotion: pride
+    intensity: 0.6
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 78501f5dfd29a422b82c273e51de81e7, type: 3}
+    mouthCues: {fileID: 4900000, guid: d1fb35100cfe54ef2b80bd45381a0a0d, type: 3}
+  - id: flatter-low
+    recordedMood: 0
+    text: Sweet words. Rotten smell. I know your sort.
+    emotion: distrust
+    intensity: 0.7
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 84f05ee30668544c4b4b1b1e1fdcaee0, type: 3}
+    mouthCues: {fileID: 4900000, guid: 64b4bd588854347e7971954fb43eff53, type: 3}
+  - id: flatter-mid
+    recordedMood: 0
+    text: You noticed the shoulders. Finally, someone with eyes.
+    emotion: pride
+    intensity: 0.65
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 095a4f494b4cf42919de8b9c80027f2d, type: 3}
+    mouthCues: {fileID: 4900000, guid: ab220c662c1ca41bb95a71519fb635bb, type: 3}
+  - id: flatter-high
+    recordedMood: 0
+    text: Ha! Tell the captain. He keeps buying smaller helmets.
+    emotion: amusement
+    intensity: 0.7
+    patience_delta: 0
+    ends_scene: 0
+    delivery: laugh
+    audio: {fileID: 8300000, guid: df9770e2062474238b58a4a41b4fd06e, type: 3}
+    mouthCues: {fileID: 4900000, guid: 50806236ef042404893488144637e84b, type: 3}
+  - id: bribe-1
+    recordedMood: 0
+    text: Gold buys hinges. It doesn't buy my good opinion.
+    emotion: suspicion
+    intensity: 0.6
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 3a5c6d077046e4af1aedbe6a4c7d37f0, type: 3}
+    mouthCues: {fileID: 4900000, guid: dedafc13cb4d8435b8e42f008226019c, type: 3}
+  - id: bribe-3
+    recordedMood: 0
+    text: Keep yours flat when you put the money down.
+    emotion: suspicion
+    intensity: 0.6
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 4179f26aa19544afcb83f13c4bb7d454, type: 3}
+    mouthCues: {fileID: 4900000, guid: a780a144bbc23412f8fbf0f41ed84e23, type: 3}
+  - id: bribe-low
+    recordedMood: 0
+    text: Trying to buy your way out of trouble?
+    emotion: disgust
+    intensity: 0.75
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 4b685dbb8ec024267b5d1bdd80fd817e, type: 3}
+    mouthCues: {fileID: 4900000, guid: a7e60baf3811040f0889d7d5485628f8, type: 3}
+  - id: bribe-mid
+    recordedMood: 0
+    text: That purse jingles louder than your courage.
+    emotion: contempt
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: f820aa9686c004e4abd1b5963f81950f, type: 3}
+    mouthCues: {fileID: 4900000, guid: 55b9844df0ec84a94ba826e9d1281dc5, type: 3}
+  - id: bribe-high
+    recordedMood: 0
+    text: Now that is a noise I understand.
+    emotion: interest
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 78091d9fbf7f24c3bbfad3cd41516fd2, type: 3}
+    mouthCues: {fileID: 4900000, guid: 3281ca60439aa4247b400e6c7ab7f69d, type: 3}
+  - id: threat-1
+    recordedMood: 0
+    text: See those dents? Last visitor brought a sword.
+    emotion: anger
+    intensity: 0.8
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 17c45cbd9e0084df9a6adf21a1d499cf, type: 3}
+    mouthCues: {fileID: 4900000, guid: a68324370608d4ab2b9772605cab4f8c, type: 3}
+  - id: threat-3
+    recordedMood: 0
+    text: Go on. Give me a reason to stretch.
+    emotion: anger
+    intensity: 0.8
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 22fc280d0a6a84ffab66fa8ec08211c8, type: 3}
+    mouthCues: {fileID: 4900000, guid: a1d9346e946714ae6883aa226f0a4bf7, type: 3}
+  - id: threat-low
+    recordedMood: 0
+    text: Careful, {name_mangled}. I can make you disappear quietly.
+    emotion: menace
+    intensity: 0.85
+    patience_delta: 0
+    ends_scene: 0
+    delivery: quiet threat
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: threat-mid
+    recordedMood: 0
+    text: You threaten me? Stand closer. I missed a bit.
+    emotion: anger
+    intensity: 0.85
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: c3df12063e08d47908e9673e05435050, type: 3}
+    mouthCues: {fileID: 4900000, guid: 0c45e130d7fe34c1eab920fbcc7e244b, type: 3}
+  - id: threat-high
+    recordedMood: 0
+    text: Brave words. Shame about the shaking knees.
+    emotion: mockery
+    intensity: 0.6
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: a896123b64aa44e01882ff72d3720f3a, type: 3}
+    mouthCues: {fileID: 4900000, guid: 4412a6b304d794ccda8ff3ac511557bb, type: 3}
+  - id: camp-1
+    recordedMood: 0
+    text: Cook burns the stew. Captain calls it discipline.
+    emotion: weariness
+    intensity: 0.4
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: c0d1f13d9a9f1477f816d1c64c02cb70, type: 3}
+    mouthCues: {fileID: 4900000, guid: 942159aba12ae436d8e090dbc8ce81d8, type: 3}
+  - id: camp-3
+    recordedMood: 0
+    text: You asking because you care, or because you're hungry?
+    emotion: weariness
+    intensity: 0.4
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 483435ada00ec4e7d8d294caca84f080, type: 3}
+    mouthCues: {fileID: 4900000, guid: e4dd9e23bdea3480ea4ee1a5be988591, type: 3}
+  - id: camp-low
+    recordedMood: 0
+    text: Camp? You could still leave with both ears.
+    emotion: menace
+    intensity: 0.7
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 2527f5fbe979441c0baad434d4391537, type: 3}
+    mouthCues: {fileID: 4900000, guid: 32ec3f097dd9348eb88383a49d5a82c8, type: 3}
+  - id: camp-mid
+    recordedMood: 0
+    text: Cold beds. Bad stew. Excellent wall. I built it.
+    emotion: pride
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: cd913aa720bac4c2ea6e5f7248c3e05b, type: 3}
+    mouthCues: {fileID: 4900000, guid: 41ef9612579894dc49a56afdb922f6b1, type: 3}
+  - id: camp-high
+    recordedMood: 0
+    text: Hah. Nobody ever asks about the poor gatekeeper.
+    emotion: amusement
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery: laugh
+    audio: {fileID: 8300000, guid: 54d745ae70c2e465ba182ea6bd808d62, type: 3}
+    mouthCues: {fileID: 4900000, guid: 66f48c8a907404b319ed35db6dfbd121, type: 3}
+  - id: business-echo
+    recordedMood: 0
+    text: '"{business}." Pfft. Grand words for muddy boots.'
+    emotion: contempt
+    intensity: 0.65
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: reckoning-2
+    recordedMood: 0
+    text: One last chance. Give me something I can use.
+    emotion: contempt
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 0b76ba6d010f84c9d9e4f05f124718c0, type: 3}
+    mouthCues: {fileID: 4900000, guid: 3a614cc98ec214621848a21b8949733e, type: 3}
+  - id: reckoning-low
+    recordedMood: 0
+    text: Mmm. Should've stayed in bed. Fewer little pests.
+    emotion: resentment
+    intensity: 0.6
+    patience_delta: 0
+    ends_scene: 0
+    delivery: mutter
+    audio: {fileID: 8300000, guid: f2770c4309ea344ae847d6b32052cfbf, type: 3}
+    mouthCues: {fileID: 4900000, guid: 52ff242cd13c74fb0ae3c6b54a82cc01, type: 3}
+  - id: reckoning-mid
+    recordedMood: 0
+    text: You're troublesome. But I've met worse this morning.
+    emotion: irritation
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: cee26b68992b940bab7d4c769351ade3, type: 3}
+    mouthCues: {fileID: 4900000, guid: 16f1ea0d228ad4ec7a39184d42373167, type: 3}
+  - id: reckoning-high
+    recordedMood: 0
+    text: Hah. You've got more nerve than our whole patrol.
+    emotion: amusement
+    intensity: 0.7
+    patience_delta: 0
+    ends_scene: 0
+    delivery: laugh
+    audio: {fileID: 8300000, guid: 94a0e00d381af494db13ac5d29aa9aff, type: 3}
+    mouthCues: {fileID: 4900000, guid: 24f127e3fc64a407c81a2de309bd622e, type: 3}
+  - id: refuse-1
+    recordedMood: 0
+    text: OUT! BEFORE I USE YOU TO BAR THE GATE!
+    emotion: anger
+    intensity: 1
+    patience_delta: 0
+    ends_scene: 0
+    delivery: roar
+    audio: {fileID: 8300000, guid: 63758975f32ec4677b9f56a7e4511ea1, type: 3}
+    mouthCues: {fileID: 4900000, guid: 58aefa8ce70e6470aa41a39a9fa71ad9, type: 3}
+  - id: refuse-2
+    recordedMood: 0
+    text: Your business can wait. Mine involves throwing you out.
+    emotion: anger
+    intensity: 1
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 8931b691e559a42f1a611b4dcf852fc8, type: 3}
+    mouthCues: {fileID: 4900000, guid: 1981847e595c741dda3abe682f2f9d07, type: 3}
+  - id: refuse-3
+    recordedMood: 0
+    text: Walk. While it's still your choice.
+    emotion: anger
+    intensity: 1
+    patience_delta: 0
+    ends_scene: 1
+    delivery: quiet threat
+    audio: {fileID: 8300000, guid: eaba19e30739140fc8169fc8a62fcf9b, type: 3}
+    mouthCues: {fileID: 4900000, guid: bfb994f3da129499da94d7825b7fca2d, type: 3}
+  - id: pass-1
+    recordedMood: 0
+    text: Right. The toll covers the trouble you brought.
+    emotion: reluctance
+    intensity: 0.45
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 4a1bc0e6fc2654aec9c2ecfd713bad95, type: 3}
+    mouthCues: {fileID: 4900000, guid: a719e3052115f4c7fa0227b11795b622, type: 3}
+  - id: pass-2
+    recordedMood: 0
+    text: Through you go, {name}. Mind the stew.
+    emotion: reluctance
+    intensity: 0.45
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: pass-4
+    recordedMood: 0
+    text: Go on. Before I remember a second toll.
+    emotion: reluctance
+    intensity: 0.45
+    patience_delta: 0
+    ends_scene: 1
+    delivery:
+    audio: {fileID: 8300000, guid: 0bd6fc39efe8c417c9a1debfb9031f0b, type: 3}
+    mouthCues: {fileID: 4900000, guid: eadb5ae44eead4c5990041ce31d8c270, type: 3}
+  - id: like-1
+    recordedMood: 0
+    text: Heh. Burnt stew. Captain's finest weapon. Good one.
+    emotion: fondness
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery: laugh
+    audio: {fileID: 8300000, guid: 64c3a3f230d9841cca822d6943995338, type: 3}
+    mouthCues: {fileID: 4900000, guid: d8fe59cc35c7444f8aa96f8fcf65cfc3, type: 3}
+  - id: like-2
+    recordedMood: 0
+    text: You can sit by my fire. Just this once.
+    emotion: fondness
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 7e16176082fdb41fc9dc56bac68c69a5, type: 3}
+    mouthCues: {fileID: 4900000, guid: ecfffa143197c4a6f9461c2f48df2e55, type: 3}
+  - id: like-4
+    recordedMood: 0
+    text: Gate's open. Save me a seat inside.
+    emotion: fondness
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 1
+    delivery:
+    audio: {fileID: 8300000, guid: c9111e53e648d40a6acab91bb8fd8021, type: 3}
+    mouthCues: {fileID: 4900000, guid: eb4840fa1c1764c71adaa17fa302e18e, type: 3}
+  - id: idle-1
+    recordedMood: 0
+    text: Still thinking? Must be a very small thought.
+    emotion: mockery
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: f19eed8f6f5454263a19b0d9514ae9f0, type: 3}
+    mouthCues: {fileID: 4900000, guid: 8cc0a9e66eed84a55bc79ff9e327191a, type: 3}
+  - id: idle-2
+    recordedMood: 0
+    text: I could grow another tusk while you decide.
+    emotion: impatience
+    intensity: 0.5
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: ae8760ec5c82e44b38c2a1d1ea437a18, type: 3}
+    mouthCues: {fileID: 4900000, guid: 2637dfd04ebcb4fc5a6f99eabf0aa13a, type: 3}
+  - id: idle-3
+    recordedMood: 0
+    text: Gate's not getting any lighter, little traveller.
+    emotion: irritation
+    intensity: 0.55
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: d614e6c1467dc4b62aaa71205661c0a8, type: 3}
+    mouthCues: {fileID: 4900000, guid: fdf8eb64854cc438b88c49fd8f76b8ef, type: 3}
+  - id: idle-4
+    recordedMood: 0
+    text: Mmm. Even the rats know when to speak.
+    emotion: resentment
+    intensity: 0.4
+    patience_delta: 0
+    ends_scene: 0
+    delivery: mutter
+    audio: {fileID: 8300000, guid: da79aff3ee86a40fca4b310d2a6e6cde, type: 3}
+    mouthCues: {fileID: 4900000, guid: 081825cd82e6e4694a9110f09214bbff, type: 3}
+  - id: interrupted
+    recordedMood: 0
+    text: Oi. I was speaking.
+    emotion: annoyance
+    intensity: 0.7
+    patience_delta: -1
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 8300000, guid: 93b30c8ab4f2c42429e367a7caae9d2d, type: 3}
+    mouthCues: {fileID: 4900000, guid: f224816c477ab43a2a2c44e75ede9e64, type: 3}
+  voices:
+  - mood: 0
+    pitch: 0.9
+    volume: 0.78
+    anger: 0
+    amusement: 0
+  - mood: 1
+    pitch: 0.98
+    volume: 0.92
+    anger: 0.4
+    amusement: 0
+  - mood: 2
+    pitch: 1.08
+    volume: 1
+    anger: 0.9
+    amusement: 0
+  - mood: 3
+    pitch: 0.95
+    volume: 0.87
+    anger: 0
+    amusement: 0.75

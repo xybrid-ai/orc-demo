@@ -1,0 +1,1031 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 434c37339af5c4fd889fbeb23aa3b399, type: 3}
+  m_Name: TrollPerformance
+  m_EditorClassIdentifier: Assembly-CSharp::GatekeeperPerformanceSettings
+  moodBlendSeconds: 0.3
+  moodHoldSeconds: 1.2
+  moodReleaseSeconds: 1.6
+  moodLinger: 0.35
+  intensityAmplitude:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1.8
+      outSlope: 1.8
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.4
+      value: 0.58
+      inSlope: 0.9
+      outSlope: 0.9
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.7
+      value: 0.81
+      inSlope: 0.65
+      outSlope: 0.65
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.6
+      outSlope: 0.6
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  facialScale: 1
+  emotionTags:
+  - tag: contempt
+    family: 1
+    earDroop: 0
+  - tag: pride
+    family: 1
+    earDroop: 0
+  - tag: mockery
+    family: 1
+    earDroop: 0
+  - tag: anger
+    family: 2
+    earDroop: 0
+  - tag: menace
+    family: 2
+    earDroop: 0
+  - tag: resentment
+    family: 2
+    earDroop: 0
+  - tag: irritation
+    family: 3
+    earDroop: 0
+  - tag: annoyance
+    family: 3
+    earDroop: 0
+  - tag: impatience
+    family: 3
+    earDroop: 0
+  - tag: weariness
+    family: 3
+    earDroop: 0.6
+  - tag: reluctance
+    family: 3
+    earDroop: 0.25
+  - tag: suspicion
+    family: 4
+    earDroop: 0
+  - tag: distrust
+    family: 4
+    earDroop: 0
+  - tag: interest
+    family: 4
+    earDroop: 0
+  - tag: curiosity
+    family: 4
+    earDroop: 0
+  - tag: disgust
+    family: 5
+    earDroop: 0
+  - tag: amusement
+    family: 6
+    earDroop: 0
+  - tag: fondness
+    family: 6
+    earDroop: 0
+  families:
+  - family: 1
+    source: A_FacePose_Smug; right sneer raised, left outer brow raised, right lid
+      heavy and left open (lopsided), chin up
+    face:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 0.68
+        right: 0.68
+      browOuterUp:
+        left: 0.6
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0.25
+      browFrown:
+        left: 0.4
+        right: 0.04
+      browRaise:
+        left: 0.3
+        right: 0
+      eyeSquint:
+        left: 0.4
+        right: 0.85
+      eyeWideUpper:
+        left: 0.15
+        right: 0.1
+      eyeWideLower:
+        left: 0.44
+        right: 0.64
+      eyeBlinkUpper:
+        left: 0.2
+        right: 0.45
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0.05
+        right: 1
+      cheekSquint:
+        left: 0.02
+        right: 0.35
+    useStrongFace: 0
+    strongFace:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 0
+        right: 0
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0
+        right: 0
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0
+        right: 0
+      eyeWideUpper:
+        left: 0
+        right: 0
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0
+        right: 0
+      cheekSquint:
+        left: 0
+        right: 0
+    faceFullAt: 0.5
+    faceScale: 1
+    body:
+      headPitch: -8
+      headYaw: 8
+      headRoll: 4
+      lean: -2
+      shoulderRaise: -1
+      shoulderForward: 0
+      breathRate: 0.85
+      breathDepth: 1.1
+      blinkRate: 0.6
+      dartRate: 0.6
+      accentGain: 0.8
+      snarl: 0.45
+      earsBack: 0.25
+      earsDroop: 0
+  - family: 2
+    source: Neutral -> A_FacePose_Angry -> A_FacePose_Enraged; head down so the wide
+      eyes glare up
+    face:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 0.87
+        right: 0.87
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0.02
+        right: 0.02
+      browFrown:
+        left: 0.19
+        right: 0.19
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 1.05
+        right: 1.05
+      eyeWideUpper:
+        left: 0.24
+        right: 0.42
+      eyeWideLower:
+        left: 0.15
+        right: 0.31
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0.07
+        right: 0.36
+      cheekSquint:
+        left: 0.39
+        right: 0.38
+    useStrongFace: 1
+    strongFace:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 1
+        right: 1
+      browOuterUp:
+        left: 0.01
+        right: 0.01
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0.3
+        right: 0.34
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0.3
+        right: 0.3
+      eyeWideUpper:
+        left: 0.7
+        right: 0.8
+      eyeWideLower:
+        left: 0.15
+        right: 0.31
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0.06
+        right: 0.34
+      cheekSquint:
+        left: 0.34
+        right: 0.33
+    faceFullAt: 0.4
+    faceScale: 1
+    body:
+      headPitch: 7
+      headYaw: 0
+      headRoll: 0
+      lean: 5
+      shoulderRaise: 4
+      shoulderForward: 2
+      breathRate: 1.5
+      breathDepth: 1.5
+      blinkRate: 0.5
+      dartRate: 0.3
+      accentGain: 1.6
+      snarl: 0.6
+      earsBack: 1
+      earsDroop: 0
+  - family: 3
+    source: A_FacePose_Grumpy; upper lids lowered, looks away often
+    face:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 0.64
+        right: 0.64
+      browOuterUp:
+        left: 0.19
+        right: 0.19
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0.22
+        right: 0.39
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0.6
+        right: 0.5
+      eyeWideUpper:
+        left: 0.1
+        right: 0.1
+      eyeWideLower:
+        left: 0.44
+        right: 0.64
+      eyeBlinkUpper:
+        left: 0.28
+        right: 0.28
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0.78
+        right: 0.78
+      cheekSquint:
+        left: 0.32
+        right: 0.27
+    useStrongFace: 0
+    strongFace:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 0
+        right: 0
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0
+        right: 0
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0
+        right: 0
+      eyeWideUpper:
+        left: 0
+        right: 0
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0
+        right: 0
+      cheekSquint:
+        left: 0
+        right: 0
+    faceFullAt: 0.5
+    faceScale: 1
+    body:
+      headPitch: 3
+      headYaw: -7
+      headRoll: -3
+      lean: 0
+      shoulderRaise: 2.5
+      shoulderForward: 1.5
+      breathRate: 1.15
+      breathDepth: 1.25
+      blinkRate: 1.2
+      dartRate: 1.8
+      accentGain: 1.1
+      snarl: 0.25
+      earsBack: 0.4
+      earsDroop: 0
+  - family: 4
+    source: A_FacePose_Suspicious; right eye squinted shut-ish, left eye open under
+      a raised brow, side-eye tilt
+    face:
+      browInnerUp:
+        left: 0.4
+        right: 0
+      browInnerDown:
+        left: 0.3
+        right: 0.6
+      browOuterUp:
+        left: 0.3
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0
+        right: 0.5
+      browRaise:
+        left: 0.7
+        right: 0
+      eyeSquint:
+        left: 0.3
+        right: 0.95
+      eyeWideUpper:
+        left: 0.35
+        right: 0
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0
+        right: 0.3
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0.5
+        right: 0.5
+      cheekSquint:
+        left: 0.32
+        right: 0.27
+    useStrongFace: 0
+    strongFace:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 0
+        right: 0
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0
+        right: 0
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0
+        right: 0
+      eyeWideUpper:
+        left: 0
+        right: 0
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0
+        right: 0
+      cheekSquint:
+        left: 0
+        right: 0
+    faceFullAt: 0.5
+    faceScale: 1
+    body:
+      headPitch: 2
+      headYaw: 10
+      headRoll: -9
+      lean: 3
+      shoulderRaise: 1
+      shoulderForward: 0
+      breathRate: 0.85
+      breathDepth: 0.9
+      blinkRate: 0.4
+      dartRate: 0.3
+      accentGain: 0.7
+      snarl: 0
+      earsBack: 0
+      earsDroop: 0
+  - family: 5
+    source: A_FacePose_Disgusted; lids lowered, recoil and turn away
+    face:
+      browInnerUp:
+        left: 0.58
+        right: 0
+      browInnerDown:
+        left: 0.32
+        right: 0.79
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0.37
+        right: 0.42
+      browFrown:
+        left: 0.27
+        right: 0.03
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0.23
+        right: 0.76
+      eyeWideUpper:
+        left: 0.2
+        right: 0.2
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0.2
+        right: 0.3
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0.31
+        right: 1
+      cheekSquint:
+        left: 0.46
+        right: 0.46
+    useStrongFace: 0
+    strongFace:
+      browInnerUp:
+        left: 0
+        right: 0
+      browInnerDown:
+        left: 0
+        right: 0
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0
+        right: 0
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0
+        right: 0
+      eyeWideUpper:
+        left: 0
+        right: 0
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0
+        right: 0
+      noseSneer:
+        left: 0
+        right: 0
+      cheekSquint:
+        left: 0
+        right: 0
+    faceFullAt: 0.5
+    faceScale: 1
+    body:
+      headPitch: -6
+      headYaw: -11
+      headRoll: 4
+      lean: -5
+      shoulderRaise: 3
+      shoulderForward: -1.5
+      breathRate: 1.1
+      breathDepth: 1.3
+      blinkRate: 1.3
+      dartRate: 1.2
+      accentGain: 1
+      snarl: 0.85
+      earsBack: 0.6
+      earsDroop: 0
+  - family: 6
+    source: A_FacePose_Content -> A_FacePose_Happy, restrained; lower lids raised,
+      upper lids soft
+    face:
+      browInnerUp:
+        left: 0.16
+        right: 0.16
+      browInnerDown:
+        left: 0
+        right: 0
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0
+        right: 0
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0.38
+        right: 0.38
+      eyeWideUpper:
+        left: 0.3
+        right: 0.3
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0.15
+        right: 0.15
+      noseSneer:
+        left: 0
+        right: 0
+      cheekSquint:
+        left: 0.32
+        right: 0.32
+    useStrongFace: 1
+    strongFace:
+      browInnerUp:
+        left: 0.38
+        right: 0.38
+      browInnerDown:
+        left: 0
+        right: 0
+      browOuterUp:
+        left: 0
+        right: 0
+      browOuterDown:
+        left: 0
+        right: 0
+      browFrown:
+        left: 0
+        right: 0
+      browRaise:
+        left: 0
+        right: 0
+      eyeSquint:
+        left: 0.74
+        right: 0.74
+      eyeWideUpper:
+        left: 0.3
+        right: 0.3
+      eyeWideLower:
+        left: 0
+        right: 0
+      eyeBlinkUpper:
+        left: 0
+        right: 0
+      eyeBlinkLower:
+        left: 0.3
+        right: 0.3
+      noseSneer:
+        left: 0
+        right: 0
+      cheekSquint:
+        left: 0.68
+        right: 0.68
+    faceFullAt: 0.5
+    faceScale: 0.75
+    body:
+      headPitch: -3
+      headYaw: 3
+      headRoll: 7
+      lean: -1.5
+      shoulderRaise: -2.5
+      shoulderForward: -1
+      breathRate: 0.9
+      breathDepth: 1.1
+      blinkRate: 1.2
+      dartRate: 1.1
+      accentGain: 1.2
+      snarl: 0
+      earsBack: 0
+      earsDroop: 0
+  noseSneerCap: 0.55
+  noseSneerSpeakingCap: 0.22
+  cheekSquintSpeakingCap: 0.45
+  snarlSpeakingCap: 0.08
+  snarlSilentCap: 0.3
+  capBlendSeconds: 0.15
+  blinkInterval: {x: 2.2, y: 5.6}
+  blinkCloseSeconds: 0.07
+  blinkHoldSeconds: 0.03
+  blinkOpenSeconds: 0.12
+  doubleBlinkChance: 0.18
+  doubleBlinkGap: 0.09
+  blinkUpperWeight: 1
+  blinkLowerWeight: 0.25
+  gazeShiftBlinkDegrees: 9
+  gazeShiftBlinkChance: 0.5
+  blinkRefractorySeconds: 1.2
+  contactSeconds: {x: 2.4, y: 6}
+  dartSeconds: {x: 0.25, y: 0.6}
+  dartYaw: {x: 4, y: 11}
+  dartPitch: {x: -6, y: 3}
+  saccadeSeconds: 0.04
+  eyeYawLimit: 28
+  eyePitchLimit: 20
+  headFollow: 0.3
+  headFollowSeconds: 0.22
+  lidFollowDegrees: 25
+  lidFollowMax: 0.6
+  breathsPerMinute: 13
+  breathChestDegrees: 1
+  breathShoulderDegrees: 0.8
+  breathHeadCounter: 0.6
+  weightShiftSeconds: 9
+  weightShiftRollDegrees: 0.9
+  weightShiftYawDegrees: 0.7
+  headLevelling: 0.7
+  microHeadDegrees: 0.7
+  microHeadHz: 0.23
+  neckShare: 0.35
+  idleMotionScale: 0.55
+  idleSmoothSeconds: 1.2
+  leanHeadCounter: 0.7
+  loudnessHopSeconds: 0.01
+  envelopeAttackSeconds: 0.02
+  envelopeReleaseSeconds: 0.12
+  peakFloor: 0.35
+  peakRise: 1.25
+  peakLookbackSeconds: 0.15
+  peakCooldownSeconds: 0.2
+  accentDegrees: 1.6
+  accentAttackSeconds: 0.06
+  accentDecaySeconds: 0.26
+  accentGainByIntensity: {x: 0.5, y: 1.7}
+  accentBrowRaise: 0.12
+  speakingMicroScale: 1.3
+  laugh:
+    tag: laugh
+    bounceChestDegrees: 2.4
+    bounceShoulderDegrees: 3.5
+    bounceHeadDegrees: 1.8
+    headBackDegrees: 8
+    squint: 0.35
+    cheekSquint: 0.4
+    lowerLid: 0.25
+    envelopeAttackSeconds: 0.012
+    envelopeReleaseSeconds: 0.08
+    rampSeconds: 0.25
+    releaseSeconds: 0.45
+  roar:
+    tag: roar
+    lungeDegrees: 8
+    lungeAttackSeconds: 0.16
+    lungeReleaseSeconds: 0.55
+    headCounter: 0.65
+    shoulderRaise: 4
+    shakeMeters: 0.006
+    shakeDegrees: 0.4
+    shakeHz: 17
+    eyeWide: 0.35
+    browDown: 0.35
+    snarl: 0.8
+  quietThreat:
+    tag: quiet threat
+    leanDegrees: 5
+    leanSeconds: 1.4
+    lidLower: 0.12
+    lifeScale: 0.12
+    breathDepthScale: 0.5
+    accentScale: 0.15
+    blinkRateScale: 0.6
+  mutter:
+    tag: mutter
+    leanDegrees: 3
+    leanSeconds: 1.4
+    lidLower: 0.15
+    lifeScale: 0.2
+    breathDepthScale: 0.5
+    accentScale: 0.15
+    blinkRateScale: 0.6
+  attentiveSeconds: 1.5
+  restlessFrom: 0.3
+  restlessSmoothSeconds: 0.6
+  glanceAt: 0.45
+  glanceYaw: 16
+  glancePitch: -6
+  glanceSeconds: 1
+  glanceHeadFollow: 0.55
+  exhaleAt: 0.62
+  exhaleSeconds: 1.9
+  exhaleShoulderDrop: 2.5
+  exhaleChestSlump: 1.6
+  exhaleHeadDrop: 2.5
+  exhaleLidLower: 0.25
+  restlessTiltDegrees: 5
+  restlessDartBoost: 1.5
+  fallbackIdleSeconds: 8
+  patienceNeutral: 3
+  patienceMaximum: 5
+  patienceBlendSeconds: 0.8
+  lowPatienceFace:
+    browInnerUp:
+      left: 0
+      right: 0
+    browInnerDown:
+      left: 0.35
+      right: 0.35
+    browOuterUp:
+      left: 0
+      right: 0
+    browOuterDown:
+      left: 0
+      right: 0
+    browFrown:
+      left: 0.2
+      right: 0.2
+    browRaise:
+      left: 0
+      right: 0
+    eyeSquint:
+      left: 0.15
+      right: 0.15
+    eyeWideUpper:
+      left: 0
+      right: 0
+    eyeWideLower:
+      left: 0
+      right: 0
+    eyeBlinkUpper:
+      left: 0
+      right: 0
+    eyeBlinkLower:
+      left: 0
+      right: 0
+    noseSneer:
+      left: 0
+      right: 0
+    cheekSquint:
+      left: 0
+      right: 0
+  lowPatienceBody:
+    headPitch: 3
+    headYaw: 0
+    headRoll: 0
+    lean: 4
+    shoulderRaise: 2.5
+    shoulderForward: 1
+    breathRate: 1.15
+    breathDepth: 1.15
+    blinkRate: 0.75
+    dartRate: 0.5
+    accentGain: 1.1
+    snarl: 0.1
+    earsBack: 0.5
+    earsDroop: 0
+  highPatienceBody:
+    headPitch: -2
+    headYaw: 0
+    headRoll: 0
+    lean: -1.5
+    shoulderRaise: -2
+    shoulderForward: -0.5
+    breathRate: 0.9
+    breathDepth: 1
+    blinkRate: 1.1
+    dartRate: 1.2
+    accentGain: 1
+    snarl: 0
+    earsBack: 0
+    earsDroop: 0
+  highPatienceRelief: 0.3
+  interruptAttackSeconds: 0.06
+  interruptHoldSeconds: 0.35
+  interruptReleaseSeconds: 0.6
+  interruptFaceCamera: 1
+  interruptHeadDown: 3
+  interruptStareSeconds: 1.6
+  interruptFace:
+    browInnerUp:
+      left: 0
+      right: 0
+    browInnerDown:
+      left: 0.8
+      right: 0.8
+    browOuterUp:
+      left: 0
+      right: 0
+    browOuterDown:
+      left: 0
+      right: 0
+    browFrown:
+      left: 0.6
+      right: 0.6
+    browRaise:
+      left: 0
+      right: 0
+    eyeSquint:
+      left: 0.2
+      right: 0.2
+    eyeWideUpper:
+      left: 0.35
+      right: 0.35
+    eyeWideLower:
+      left: 0
+      right: 0
+    eyeBlinkUpper:
+      left: 0
+      right: 0
+    eyeBlinkLower:
+      left: 0
+      right: 0
+    noseSneer:
+      left: 0.25
+      right: 0.3
+    cheekSquint:
+      left: 0
+      right: 0
+  interruptEarFlickDegrees: 16
+  repeatLeadSeconds: 0.12
+  repeatSeconds: 1.4
+  repeatTiltDegrees: -6
+  repeatNarrowRightEye: 1
+  repeatSquint: 0.45
+  repeatLidLower: 0.3
+  repeatBrowDown: 0.3
+  repeatMinimumLength: 2
+  settleSeconds: 1.2
+  passage:
+    family: 1
+    intensity: 0.4
+    extra:
+      headPitch: -3
+      headYaw: 0
+      headRoll: 0
+      lean: -1
+      shoulderRaise: -1.5
+      shoulderForward: 0
+      breathRate: 0.85
+      breathDepth: 1.1
+      blinkRate: 0.9
+      dartRate: 1
+      accentGain: 1
+      snarl: 0
+      earsBack: 0
+      earsDroop: 0
+  expulsion:
+    family: 2
+    intensity: 0.75
+    extra:
+      headPitch: 1
+      headYaw: 0
+      headRoll: 0
+      lean: 2
+      shoulderRaise: 2
+      shoulderForward: 1
+      breathRate: 1.4
+      breathDepth: 1.6
+      blinkRate: 0.7
+      dartRate: 0.5
+      accentGain: 1
+      snarl: 0.2
+      earsBack: 0.7
+      earsDroop: 0
+  friendship:
+    family: 6
+    intensity: 0.6
+    extra:
+      headPitch: 0
+      headYaw: 0
+      headRoll: 3
+      lean: 0
+      shoulderRaise: -2
+      shoulderForward: -1
+      breathRate: 0.9
+      breathDepth: 1
+      blinkRate: 1.1
+      dartRate: 1.1
+      accentGain: 1
+      snarl: 0
+      earsBack: 0
+      earsDroop: 0
+  leftEarBone: earl_dyn_01_01_c
+  rightEarBone: earr_dyn_01_01_r
+  earBackDegrees: 22
+  earDroopDegrees: 14
+  earFlickHz: 9
+  earFlickSeconds: 0.35
+  earTwitchInterval: {x: 6, y: 14}
+  earTwitchDegrees: 6
+  previewIntensities: {x: 0.4, y: 0.7, z: 1}
+  randomSeed: 431

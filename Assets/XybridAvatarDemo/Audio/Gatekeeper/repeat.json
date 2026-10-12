@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/repeat.wav",
+    "duration": 2.90
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.17, "value": "F" },
+    { "start": 0.17, "end": 0.38, "value": "E" },
+    { "start": 0.38, "end": 0.80, "value": "B" },
+    { "start": 0.80, "end": 0.87, "value": "C" },
+    { "start": 0.87, "end": 1.08, "value": "B" },
+    { "start": 1.08, "end": 1.15, "value": "C" },
+    { "start": 1.15, "end": 1.30, "value": "B" },
+    { "start": 1.30, "end": 1.37, "value": "A" },
+    { "start": 1.37, "end": 1.71, "value": "B" },
+    { "start": 1.71, "end": 1.79, "value": "A" },
+    { "start": 1.79, "end": 2.02, "value": "B" },
+    { "start": 2.02, "end": 2.09, "value": "C" },
+    { "start": 2.09, "end": 2.17, "value": "A" },
+    { "start": 2.17, "end": 2.52, "value": "B" },
+    { "start": 2.52, "end": 2.80, "value": "F" },
+    { "start": 2.80, "end": 2.90, "value": "X" }
+  ]
+}

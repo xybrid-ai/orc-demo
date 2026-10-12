@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/ask-irritated.wav",
+    "duration": 2.98
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.03, "value": "X" },
+    { "start": 0.03, "end": 0.11, "value": "C" },
+    { "start": 0.11, "end": 0.25, "value": "B" },
+    { "start": 0.25, "end": 0.46, "value": "E" },
+    { "start": 0.46, "end": 0.53, "value": "B" },
+    { "start": 0.53, "end": 0.85, "value": "F" },
+    { "start": 0.85, "end": 0.92, "value": "E" },
+    { "start": 0.92, "end": 1.16, "value": "C" },
+    { "start": 1.16, "end": 1.37, "value": "B" },
+    { "start": 1.37, "end": 1.93, "value": "C" },
+    { "start": 1.93, "end": 2.07, "value": "F" },
+    { "start": 2.07, "end": 2.14, "value": "E" },
+    { "start": 2.14, "end": 2.22, "value": "A" },
+    { "start": 2.22, "end": 2.38, "value": "C" },
+    { "start": 2.38, "end": 2.45, "value": "B" },
+    { "start": 2.45, "end": 2.66, "value": "C" },
+    { "start": 2.66, "end": 2.94, "value": "B" },
+    { "start": 2.94, "end": 2.98, "value": "X" }
+  ]
+}

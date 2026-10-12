@@ -1,0 +1,87 @@
+{
+  "title": "Placeholder conversation",
+  "startNodeId": "welcome",
+  "nodes": [
+    {
+      "id": "welcome",
+      "sentences": [
+        {
+          "text": "You're early. What brings you here?",
+          "audio": "Audio/Scenario/welcome.wav",
+          "mouthCues": "Audio/Scenario/welcome.json"
+        }
+      ],
+      "choices": [
+        {
+          "text": "Tell me about this place.",
+          "targetNodeId": "place"
+        },
+        {
+          "text": "I'm looking for work.",
+          "targetNodeId": "work"
+        }
+      ]
+    },
+    {
+      "id": "place",
+      "sentences": [
+        {
+          "text": "This place is a shelter for travelers.",
+          "audio": "Audio/Scenario/place-1.wav",
+          "mouthCues": "Audio/Scenario/place-1.json"
+        },
+        {
+          "text": "Stay out of trouble, and you'll be welcome.",
+          "audio": "Audio/Scenario/place-2.wav",
+          "mouthCues": "Audio/Scenario/place-2.json"
+        }
+      ],
+      "choices": [
+        {
+          "text": "I have another question.",
+          "targetNodeId": "welcome"
+        },
+        {
+          "text": "That's all. Goodbye.",
+          "targetNodeId": "goodbye"
+        }
+      ]
+    },
+    {
+      "id": "work",
+      "sentences": [
+        {
+          "text": "There is always work for someone with courage.",
+          "audio": "Audio/Scenario/work-1.wav",
+          "mouthCues": "Audio/Scenario/work-1.json"
+        },
+        {
+          "text": "We can discuss the details when you are ready.",
+          "audio": "Audio/Scenario/work-2.wav",
+          "mouthCues": "Audio/Scenario/work-2.json"
+        }
+      ],
+      "choices": [
+        {
+          "text": "Tell me about this place.",
+          "targetNodeId": "place"
+        },
+        {
+          "text": "That's all. Goodbye.",
+          "targetNodeId": "goodbye"
+        }
+      ]
+    },
+    {
+      "id": "goodbye",
+      "sentences": [
+        {
+          "text": "Then we will speak again. Take care out there.",
+          "audio": "Audio/Scenario/goodbye.wav",
+          "mouthCues": "Audio/Scenario/goodbye.json"
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

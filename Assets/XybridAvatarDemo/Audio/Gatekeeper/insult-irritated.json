@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "soundFile": "/home/vercel-sandbox/xybrid/.context/unity-avatar-poc/Audio/Gatekeeper/insult-irritated.wav",
+    "duration": 2.66
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.16, "value": "C" },
+    { "start": 0.16, "end": 0.23, "value": "B" },
+    { "start": 0.23, "end": 0.30, "value": "G" },
+    { "start": 0.30, "end": 0.62, "value": "B" },
+    { "start": 0.62, "end": 0.76, "value": "D" },
+    { "start": 0.76, "end": 0.80, "value": "C" },
+    { "start": 0.80, "end": 1.06, "value": "B" },
+    { "start": 1.06, "end": 1.13, "value": "C" },
+    { "start": 1.13, "end": 1.24, "value": "A" },
+    { "start": 1.24, "end": 1.38, "value": "D" },
+    { "start": 1.38, "end": 1.73, "value": "B" },
+    { "start": 1.73, "end": 1.85, "value": "A" },
+    { "start": 1.85, "end": 1.99, "value": "F" },
+    { "start": 1.99, "end": 2.06, "value": "B" },
+    { "start": 2.06, "end": 2.13, "value": "G" },
+    { "start": 2.13, "end": 2.20, "value": "E" },
+    { "start": 2.20, "end": 2.27, "value": "B" },
+    { "start": 2.27, "end": 2.34, "value": "C" },
+    { "start": 2.34, "end": 2.62, "value": "B" },
+    { "start": 2.62, "end": 2.66, "value": "X" }
+  ]
+}

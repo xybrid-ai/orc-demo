@@ -1,0 +1,116 @@
+{
+  "lines": [
+    {
+      "id": "intro",
+      "recordedMood": "Bored",
+      "text": "Halt. My gate. Tell me why I should let you through.",
+      "audio": "Audio/Gatekeeper/intro.wav",
+      "mouthCues": "Audio/Gatekeeper/intro.json"
+    },
+    {
+      "id": "ask-bored",
+      "recordedMood": "Bored",
+      "text": "Everyone wants through. Give me a better reason.",
+      "audio": "Audio/Gatekeeper/ask-bored.wav",
+      "mouthCues": "Audio/Gatekeeper/ask-bored.json"
+    },
+    {
+      "id": "ask-irritated",
+      "recordedMood": "Irritated",
+      "text": "I heard you. Asking again won't open the gate.",
+      "audio": "Audio/Gatekeeper/ask-irritated.wav",
+      "mouthCues": "Audio/Gatekeeper/ask-irritated.json"
+    },
+    {
+      "id": "ask-furious",
+      "recordedMood": "Furious",
+      "text": "Another excuse, and you are going back.",
+      "audio": "Audio/Gatekeeper/ask-furious.wav",
+      "mouthCues": "Audio/Gatekeeper/ask-furious.json"
+    },
+    {
+      "id": "question",
+      "recordedMood": "Bored",
+      "text": "Something worth my time. Food, gold, or decent manners.",
+      "audio": "Audio/Gatekeeper/question.wav",
+      "mouthCues": "Audio/Gatekeeper/question.json"
+    },
+    {
+      "id": "polite",
+      "recordedMood": "Bored",
+      "text": "Manners. That's a start. What else have you got?",
+      "audio": "Audio/Gatekeeper/polite.wav",
+      "mouthCues": "Audio/Gatekeeper/polite.json"
+    },
+    {
+      "id": "flatter",
+      "recordedMood": "Amused",
+      "text": "Heh. Mighty guardian, am I? Keep talking.",
+      "audio": "Audio/Gatekeeper/flatter.wav",
+      "mouthCues": "Audio/Gatekeeper/flatter.json"
+    },
+    {
+      "id": "bribe",
+      "recordedMood": "Amused",
+      "text": "Now that sounds interesting. Hand it over, and we have a deal.",
+      "audio": "Audio/Gatekeeper/bribe.wav",
+      "mouthCues": "Audio/Gatekeeper/bribe.json"
+    },
+    {
+      "id": "bad-bribe",
+      "recordedMood": "Irritated",
+      "text": "That barely buys a crust. Make me a serious offer.",
+      "audio": "Audio/Gatekeeper/bad-bribe.wav",
+      "mouthCues": "Audio/Gatekeeper/bad-bribe.json"
+    },
+    {
+      "id": "repeat",
+      "recordedMood": "Irritated",
+      "text": "You already tried that. Bring me something new.",
+      "audio": "Audio/Gatekeeper/repeat.wav",
+      "mouthCues": "Audio/Gatekeeper/repeat.json"
+    },
+    {
+      "id": "insult-irritated",
+      "recordedMood": "Irritated",
+      "text": "Careful. I am not in the mood for that.",
+      "audio": "Audio/Gatekeeper/insult-irritated.wav",
+      "mouthCues": "Audio/Gatekeeper/insult-irritated.json"
+    },
+    {
+      "id": "insult-furious",
+      "recordedMood": "Furious",
+      "text": "Watch your mouth! You're one word from being thrown out!",
+      "audio": "Audio/Gatekeeper/insult-furious.wav",
+      "mouthCues": "Audio/Gatekeeper/insult-furious.json"
+    },
+    {
+      "id": "apology",
+      "recordedMood": "Irritated",
+      "text": "Better. Now give me a reason to lift the gate.",
+      "audio": "Audio/Gatekeeper/apology.wav",
+      "mouthCues": "Audio/Gatekeeper/apology.json"
+    },
+    {
+      "id": "win",
+      "recordedMood": "Amused",
+      "text": "Hmph. You've earned your passage. Go through before I change my mind.",
+      "audio": "Audio/Gatekeeper/win.wav",
+      "mouthCues": "Audio/Gatekeeper/win.json"
+    },
+    {
+      "id": "lose",
+      "recordedMood": "Furious",
+      "text": "Enough! The gate stays shut. Turn around.",
+      "audio": "Audio/Gatekeeper/lose.wav",
+      "mouthCues": "Audio/Gatekeeper/lose.json"
+    },
+    {
+      "id": "withdraw",
+      "recordedMood": "Bored",
+      "text": "Then go back the way you came.",
+      "audio": "Audio/Gatekeeper/withdraw.wav",
+      "mouthCues": "Audio/Gatekeeper/withdraw.json"
+    }
+  ]
+}

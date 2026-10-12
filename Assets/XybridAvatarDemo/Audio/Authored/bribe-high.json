@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "soundFile": "/var/folders/lg/zckf0l017gsc16_rnw2xy67m0000gn/T/DefaultCompany/Xybrid Tavern/TrolaSpeech/b69a9f0d73a240d49acf2d32037f034f/speech.wav",
+    "duration": 2.97
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.04, "value": "B" },
+    { "start": 0.04, "end": 0.15, "value": "C" },
+    { "start": 0.15, "end": 0.36, "value": "E" },
+    { "start": 0.36, "end": 0.43, "value": "B" },
+    { "start": 0.43, "end": 0.50, "value": "C" },
+    { "start": 0.50, "end": 0.85, "value": "B" },
+    { "start": 0.85, "end": 0.93, "value": "A" },
+    { "start": 0.93, "end": 1.14, "value": "B" },
+    { "start": 1.14, "end": 1.21, "value": "C" },
+    { "start": 1.21, "end": 1.35, "value": "E" },
+    { "start": 1.35, "end": 1.63, "value": "B" },
+    { "start": 1.63, "end": 1.84, "value": "D" },
+    { "start": 1.84, "end": 1.98, "value": "B" },
+    { "start": 1.98, "end": 2.17, "value": "D" },
+    { "start": 2.17, "end": 2.22, "value": "C" },
+    { "start": 2.22, "end": 2.47, "value": "B" },
+    { "start": 2.47, "end": 2.61, "value": "C" },
+    { "start": 2.61, "end": 2.68, "value": "B" },
+    { "start": 2.68, "end": 2.89, "value": "C" },
+    { "start": 2.89, "end": 2.96, "value": "B" },
+    { "start": 2.96, "end": 2.97, "value": "X" }
+  ]
+}
