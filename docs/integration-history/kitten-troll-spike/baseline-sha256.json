@@ -1,0 +1,36 @@
+{
+  "GatekeeperLiveSpeech.cs": [
+    "34fd7068b1d8f1bfce3d82426bf5a16e3626ea29e54a1c2d5a026a9c832b955a",
+    "9e8f3dcfe9ff697cabe504b8d9daf685ac7aa7b5dce1cf4c50840c541fc6f382",
+    "9ac78fdf8297eb7d54a2e8e28581a2679e5c8e5fdc1924aa13c9bf8f82b04aaf",
+    "fe6f55aff390e055fe9874866a1461148bd11dd69b347d535a3fd819dc818e01"
+  ],
+  "GatekeeperController.cs": [
+    "790ad74d7c93939fe743be232b6a3b29986528eccb245591b54d8619b418e919",
+    "99af4c55543a76fd3501d734a0581a914b54ba736cde8c81381b3e3f699534dc"
+  ],
+  "XybridAvatarPlayer.cs": [
+    "d4a986a60e1657f27643c991ddcbccee9851c199518b53cbc11325d80b161126",
+    "0bfa1711c3954ac7bff4dacf60b6d18bd755a43341fbdfeb2ad21b5eacbbc333"
+  ],
+  "GatekeeperSpeechControls.cs": [
+    "51be1ef8c6db94c4bf57cdb31aae69c231d4456e9fdc2d548198c929b23b8045",
+    "29bdb7dbbf6feaf52f1eb3720499d56402721d78e481ad4656d9c1edbfa7cf21"
+  ],
+  "GatekeeperSpeechValidation.cs": [
+    "4b6bb65d0148d64f95802973771968b69b3fe987fed787f336dc39e77377bf04",
+    "fcd50b1986e16d2bceceff075bfe1ef1c1c7b532aeb4fd29bbef0867db52a86c"
+  ],
+  "IGatekeeperSpeechProvider.cs": [
+    "c593bd0d1f0b11a28ecce4d2466c8d904c1e6b911b41f9cc775dceeb32082b56"
+  ],
+  "KittenNativeSpeechProvider.cs": [
+    "a3c91054553e711097705c0f494dbe7438e698c897d18ee655c66019d213b16e"
+  ],
+  "GatekeeperPcmBuffer.cs": [
+    "157e464792d4ecd430507ad2054bed7f4bdf60222eeb45ebabaa6b087ee6c1d6"
+  ],
+  "KittenSdkSpeechProvider.cs": [
+    "ed3b52b3982e8908e8c5bf867c844a6b4d091d316fbb4a365fbbcec770071172"
+  ]
+}

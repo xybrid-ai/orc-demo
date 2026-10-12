@@ -1,0 +1,19 @@
+{
+  "model_id": "gemma4npc-e2b-q4",
+  "version": "b8e57bca1c8e5455178c16cd9554b2f75bb0c9fc",
+  "execution_template": {
+    "type": "Gguf",
+    "model_file": "Gemma4NPC-E2B-Q4_K_M.gguf",
+    "context_length": 8192
+  },
+  "files": ["Gemma4NPC-E2B-Q4_K_M.gguf"],
+  "metadata": {
+    "backend": "llamacpp",
+    "architecture": "gemma4",
+    "task": "text-generation",
+    "instruction_tuned": true,
+    "quantization": "Q4_K_M"
+  },
+  "preprocessing": [],
+  "postprocessing": []
+}

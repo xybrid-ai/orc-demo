@@ -1,0 +1,16 @@
+{
+  "engine_tag": "v0.1.0-rc.4",
+  "source_commit": "56385c4a3fbab8bc503341947af37e96ebb0071d",
+  "model_revision": "baa41e5d2c5f64be0095365672a7858542261271",
+  "decoder_revision": "749d1c1a46eb10492095d68fbcf55691ccf137cd",
+  "assets": {
+    "kitten-tts-2-q2_0.gguf": "66c8d5ad02b4dbb0c7b3af59de218ea6376b4e0943bf9791807c3c2400864dd6",
+    "kitten-s3-meanflow-f32.gguf": "005a5c871d84f91fd222b03cc58eb05d9761d058df5740ce182625599267676b",
+    "bruno.lm.json": "e5810ec8720b79be598f43ccfbfac32ab06df070191e3afe17ee628640d5a319",
+    "bruno.s3.json": "69be324861eb751fa80f76288e73cd09fbf666522dc287fe2fd19826beae33a3"
+  },
+  "archives": {
+    "macos-arm64": "57757ceca6231af81f39541f34023838c1f03bb2edb97ead537da3aa8f5fdf06",
+    "linux-x86_64": "45783145e532c5dd808595804f5293604cf3d607b48438a14212af9632866704"
+  }
+}

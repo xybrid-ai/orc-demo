@@ -92,3 +92,7 @@ scripts, live Kitten/WarChief audio played, and Gemma's intro preload completed.
 No player/native builds or measurement runs were performed. Unity logged a
 streamed-clip PCM-analysis warning (the performer uses its live-output fallback)
 and a Search index startup exception; these are separate follow-ups.
+
+Historical Gemma and Kitten integration sources are retained in
+[docs/integration-history](docs/integration-history/README.md). Active code stays
+in `Assets/XybridAvatarDemo`; the historical installers should not be used.

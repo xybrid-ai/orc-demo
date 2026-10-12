@@ -486,3 +486,6 @@ mono_crash.*
 /Assets/Scenes.meta
 /Assets/InputSystem_Actions.inputactions
 /Assets/InputSystem_Actions.inputactions.meta
+
+# Archived hand-written test project is source, not generated Unity glue.
+!/docs/integration-history/kitten-troll-spike/Tests/SpikeChecks.csproj
