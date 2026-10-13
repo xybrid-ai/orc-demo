@@ -1,0 +1,35 @@
+.gitignore
+  s_470da3fc83e532::t_253a7e63813549 494-496
+Assets/XybridAvatarDemo/Runtime/GatekeeperLiveSpeech.cs
+  s_470da3fc83e532::t_93ca2b15aece10 26-28,258-260,279
+Assets/XybridAvatarDemo/Runtime/GatekeeperSpeechControls.cs
+  s_470da3fc83e532::t_435532f7c76792 76
+Assets/XybridAvatarDemo/Runtime/PhononNativeSpeechProvider.cs
+  s_470da3fc83e532::t_ae481379d12632 8-10,17,31-39,48,52-64,68,73-74,135-137,139,143-144,158-163,172,177
+tools/phonon-zzz-native/bridge.zig
+  s_470da3fc83e532::t_de9fb4ed6f8f28 1-137
+tools/phonon-zzz-native/build.zig
+  s_470da3fc83e532::t_f3372111389a0b 1-33
+tools/phonon-zzz-native/clean.sh
+  s_470da3fc83e532::t_c4fe9364060f24 1-8
+tools/phonon_smoke.py
+  s_470da3fc83e532::t_b59128aeec222e 5,17-18,27-28,40,42-44
+tools/setup_phonon_zzz.py
+  s_470da3fc83e532::t_cba154306d4066 1-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "9eb50f8c6ce56ae3f824437ff997a5de2f6146b1",
+  "prompts": {},
+  "sessions": {
+    "s_470da3fc83e532": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a136a0-f4bb-78c1-875e-3d940ef26bbe",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    }
+  }
+}
