@@ -6,18 +6,24 @@ using System.Threading.Tasks;
 public sealed class PlaceholderGatekeeperLineSource : IGatekeeperLineSource
 {
     private int replyIndex, idleIndex;
+    private readonly bool debugImmediate;
     private bool greetingDelivered, ended;
     public GatekeeperPresentation Presentation { get; private set; } = Prompt();
     public IEnumerable<GatekeeperScenario.Line> AnticipatedLines => Array.Empty<GatekeeperScenario.Line>();
-    private static GatekeeperPresentation Prompt() => new GatekeeperPresentation
+    public PlaceholderGatekeeperLineSource(bool skipGreeting = false)
+    {
+        debugImmediate = skipGreeting; greetingDelivered = skipGreeting;
+        Presentation = Prompt(debugImmediate ? 0 : 8);
+    }
+    private static GatekeeperPresentation Prompt(float idleSeconds = 8) => new GatekeeperPresentation
     {
         InputSlot = GatekeeperInputSlot.Reply, Placeholder = "Say anything", CharacterLimit = 240,
-        PersistentText = true, PointerInterrupts = false, ShowInterruptButton = false
+        IdleSeconds = idleSeconds, PersistentText = true, PointerInterrupts = false, ShowInterruptButton = false
     };
     public async Task<GatekeeperScenario.Line> NextLineAsync(GatekeeperConversationState state, GatekeeperPlayerInput input, CancellationToken cancellation)
     {
         cancellation.ThrowIfCancellationRequested();
-        Presentation = Prompt();
+        Presentation = Prompt(debugImmediate ? 0 : 8);
         if (ended) { Presentation.Ended = true; Presentation.InputSlot = GatekeeperInputSlot.None; return null; }
         if (!greetingDelivered && input.Kind == GatekeeperInputKind.Start)
         {
@@ -63,5 +69,5 @@ public sealed class PlaceholderGatekeeperLineSource : IGatekeeperLineSource
         return Task.FromResult(lines[index]);
     }
     private static GatekeeperScenario.Line Line(string id, string text, string emotion, float intensity, int delta = 0) => new GatekeeperScenario.Line
-    { id = id, text = text, emotion = emotion, intensity = intensity, patience_delta = delta, ends_scene = false, delivery = "" };
+    { debugSource = "placeholder", id = id, text = text, emotion = emotion, intensity = intensity, patience_delta = delta, ends_scene = false, delivery = "" };
 }

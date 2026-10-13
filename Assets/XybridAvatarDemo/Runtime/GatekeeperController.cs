@@ -30,6 +30,27 @@ public sealed class GatekeeperController : MonoBehaviour
     // Where the wait before each line's first audio went; raised once the audio starts (or the subtitle, without a voice).
     public event Action<GatekeeperLineTiming> TimingRecorded;
     public GatekeeperLineTiming LastTiming { get; private set; }
+    public sealed class DebugLine
+    {
+        public GatekeeperScenario.Line line;
+        public int patienceBefore, patienceAfter;
+        public GatekeeperLiveSpeech.Generated voice;
+        public string voiceError;
+    }
+    public readonly List<DebugLine> DebugLines = new List<DebugLine>();
+    private DebugLine debugLine;
+    public void DebugFreeForm(string name, string business, string approaches, GatekeeperOutcome ending, int patience)
+    {
+        var encounter = new GatekeeperEncounter(Mathf.Clamp(patience, 0, 5), 5, true);
+        encounter.CaptureName(name, scenario.nameBlocklist, "Mira");
+        encounter.CaptureBusiness(business, scenario.nameBlocklist);
+        encounter.FinishStory(ending);
+        var state = new GatekeeperConversationState(encounter) { GateOpenRequested = ending == GatekeeperOutcome.Passed || ending == GatekeeperOutcome.Liked };
+        foreach (var approach in (approaches ?? "").Split(',')) if (!string.IsNullOrWhiteSpace(approach)) state.RecordApproach(approach.Trim());
+        IGatekeeperLineSource next = scenario.debugUsePlaceholderReplies ? (IGatekeeperLineSource)new PlaceholderGatekeeperLineSource(true)
+            : new FreeFormGatekeeperLineSource(scenario, GatekeeperNpcModel.Prepare(scenario), true);
+        UseLineSource(next, state);
+    }
     private IGatekeeperLineSource source;
     private GatekeeperConversationState conversation;
     private GatekeeperEncounter Encounter => conversation?.Encounter;
@@ -38,6 +59,16 @@ public sealed class GatekeeperController : MonoBehaviour
     public bool IsReaction => Prompt.IsReaction;
     public bool IsInterruptionReaction => Prompt.ProtectedReaction;
     public bool AcceptsText => IsWaiting && Prompt.InputSlot != GatekeeperInputSlot.None;
+    [NonSerialized] private string queuedReply;
+    public bool HasQueuedReply => !string.IsNullOrWhiteSpace(queuedReply);
+    public string QueuedReplyText => queuedReply ?? "";
+    // A persistent free-form field remains editable during voice preparation/playback.
+    // Accept one reply without interrupting any clause; the performer submits it after
+    // the current line finishes, provided the encounter has not ended.
+    private bool CanQueueReply => !HasQueuedReply && Prompt.PersistentText && Prompt.InputSlot == GatekeeperInputSlot.Reply
+        && Patience > 0 && CurrentLine != null && !CurrentLine.ends_scene
+        && (State == Phase.PreparingSpeech || State == Phase.Speaking);
+    public bool CanSubmitText => !HasQueuedReply && (AcceptsText || CanQueueReply);
     public bool GateOpenRequested => conversation?.GateOpenRequested ?? false;
     public bool IsWaitingForGate => State == Phase.GateOpening;
     public IReadOnlyList<GatekeeperChoice> CurrentChoices => Prompt.Choices;
@@ -45,6 +76,8 @@ public sealed class GatekeeperController : MonoBehaviour
     public string Business => Encounter?.Business ?? "";
     public bool BusinessWasAssigned => Encounter?.BusinessWasAssigned ?? false;
     public Phase State { get; private set; }
+    private float phaseStartedAt;
+    public float PhaseElapsed => Mathf.Max(0, Time.realtimeSinceStartup - phaseStartedAt);
     public int SpeechStartedFrame { get; private set; } = -1;
     public string CurrentText { get; private set; } = "";
     public string CurrentLineId { get; private set; } = "";
@@ -89,7 +122,14 @@ public sealed class GatekeeperController : MonoBehaviour
     public int PreparedReactionCount => reactions?.Count ?? 0;
     private void Awake() { reactions = new GatekeeperReactions(); }
 
-    private IEnumerator Start() { if (autoStart) { yield return new WaitForSecondsRealtime(.5f); Restart(); } }
+    private IEnumerator Start()
+    {
+        if (!autoStart) yield break;
+        int startupRevision = revision;
+        yield return new WaitForSecondsRealtime(.5f);
+        // A debug jump or suspension during startup owns the new conversation.
+        if (autoStart && revision == startupRevision && !suspended) Restart();
+    }
     public bool Restart()
     {
         if (suspended) return false;
@@ -126,8 +166,15 @@ public sealed class GatekeeperController : MonoBehaviour
     }
     public bool Submit(string text)
     {
-        if (!AcceptsText) return false;
+        if (!CanSubmitText) return false;
         if (Prompt.InputSlot == GatekeeperInputSlot.Reply && (string.IsNullOrWhiteSpace(text) || text.Length > Prompt.CharacterLimit)) return false;
+        if (!AcceptsText)
+        {
+            queuedReply = text;
+            if (State == Phase.Speaking) character.ResumePlayback();
+            Changed?.Invoke();
+            return true;
+        }
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Text, text)); return true;
     }
     public bool Choose(int index)
@@ -215,6 +262,15 @@ public sealed class GatekeeperController : MonoBehaviour
                     MarkTrigger("gate opened");
                     input = new GatekeeperPlayerInput(GatekeeperInputKind.GateOpened); continue;
                 }
+                if (HasQueuedReply && !Prompt.Ended && Prompt.InputSlot == GatekeeperInputSlot.Reply)
+                {
+                    input = new GatekeeperPlayerInput(GatekeeperInputKind.Text, queuedReply);
+                    queuedReply = null;
+                    MarkTrigger("queued typed input");
+                    SetState(Phase.Inactive);
+                    continue;
+                }
+                queuedReply = null;
                 performance = null;
                 SetState(Prompt.Ended ? Phase.Ended : Prompt.InputSlot == GatekeeperInputSlot.Name ? Phase.AwaitingName
                     : Prompt.InputSlot == GatekeeperInputSlot.Business ? Phase.AwaitingBusiness : Phase.AwaitingInput);
@@ -233,7 +289,9 @@ public sealed class GatekeeperController : MonoBehaviour
     {
         SetState(Phase.Inactive);
         CurrentText = line.text; CurrentLineId = line.id; CurrentLine = line;
-        CurrentWasLive = line.audio == null || liveSpeech.provider != GatekeeperLiveSpeech.Provider.Kokoro;
+        CurrentWasLive = true;
+        debugLine = new DebugLine { line = line, patienceBefore = Patience, patienceAfter = Patience };
+        DebugLines.Add(debugLine);
         LastGenerated = null;
         CurrentFallback = VoiceFallback.None;
         float started = Time.realtimeSinceStartup;
@@ -245,36 +303,10 @@ public sealed class GatekeeperController : MonoBehaviour
         {
             try { current = liveSpeech.Prepare(line.text, true); }
             catch (Exception error) { failure = "synthesis failed: " + Clause(error.Message); }
-            AudioClip reaction = null;
-            TextAsset reactionTrack = null;
-            if (liveSpeech.provider == GatekeeperLiveSpeech.Provider.Kokoro)
-                reaction = reactions.Next(line.emotion, Mood, out reactionId, out reactionTrack);
-            if (reaction != null)
-            {
-                var affect = scenario.Voice(Mood);
-                character.SetAffect(affect.pitch, affect.volume, affect.anger, affect.amusement);
-                reactionPlayAt = GatekeeperLineTiming.Now;
-                character.PlayLine(reaction, reactionTrack);
-                reactionStarted = Time.realtimeSinceStartup; IsPreparedReaction = true;
-            }
         }
-        try
-        {
-            foreach (var upcoming in source.AnticipatedLines)
-                if (upcoming.audio == null || liveSpeech.provider != GatekeeperLiveSpeech.Provider.Kokoro)
-                {
-                    var prepared = liveSpeech.Prepare(upcoming.text);
-                    if (!prefetch.Contains(prepared)) prefetch.Add(prepared);
-                }
-        }
-        catch (Exception error) { Debug.LogWarning("[Gatekeeper voice] Could not queue upcoming lines: " + error.Message, this); }
         if (current != null || IsPreparedReaction)
         {
             SetState(Phase.PreparingSpeech);
-            // A cached voice can already be ready when the line is selected. Give its opening
-            // reaction a single audible 80 ms beat; on-demand synthesis naturally covers this.
-            while (IsPreparedReaction && version == revision && Time.realtimeSinceStartup - reactionStarted < .08f)
-            { ObserveReaction(); yield return null; }
         }
         if (current != null)
         {
@@ -298,7 +330,7 @@ public sealed class GatekeeperController : MonoBehaviour
         }
         if (version != revision) yield break;
         IsPreparedReaction = false;
-        Encounter.ChangePatience(line.patience_delta); conversation.Record("Troll", line.text);
+        Encounter.ChangePatience(line.patience_delta); debugLine.patienceAfter = Patience; debugLine.voice = LastGenerated; conversation.Record("Troll", line.text);
         if (failure == null)
         {
             var voice = scenario.Voice(Mood);
@@ -324,10 +356,32 @@ public sealed class GatekeeperController : MonoBehaviour
         PlaybackPreparationSeconds = Time.realtimeSinceStartup - started;
         LineStarted?.Invoke(line);
         SetState(Phase.Speaking);
+        var firstClause = LastGenerated;
+        int clauseCount = firstClause?.clauses?.Length ?? 1;
+        for (int clauseIndex = 0; clauseIndex < clauseCount && version == revision; clauseIndex++)
+        {
+            if (clauseIndex > 0)
+            {
+                var next = firstClause.clauses[clauseIndex];
+                SetState(Phase.PreparingSpeech);
+                float clauseDeadline = Time.realtimeSinceStartup + liveSpeech.WaitBudget;
+                while (!next.IsCompleted && version == revision && Time.realtimeSinceStartup < clauseDeadline) yield return null;
+                if (version != revision) yield break;
+                if (!next.IsCompleted || next.IsCanceled || next.IsFaulted) { ReportVoiceFailure(line, "clause synthesis failed"); break; }
+                LastGenerated = liveSpeech.Materialize(next);
+                playAt = GatekeeperLineTiming.Now;
+                character.PlayLine(LastGenerated.clip, LastGenerated.track);
+                CurrentLineSeconds += LastGenerated.clip.length;
+                SetState(Phase.Speaking);
+            }
         bool heard = false;
         GatekeeperLineTiming timing = null;
-        while (character.IsSpeaking && version == revision)
+        // The AudioSource owns completion. A stale logical pause must not strand a
+        // queued turn after a complete clause has stopped playing.
+        while (version == revision)
         {
+            if (HasQueuedReply && character.IsPlaybackPaused) character.ResumePlayback();
+            if (!character.speech.isPlaying && !character.IsPlaybackPaused && !AudioListener.pause) break;
             if (LastGenerated?.stream != null)
             {
                 CurrentLineSeconds = LastGenerated.stream.DurationSeconds;
@@ -362,6 +416,7 @@ public sealed class GatekeeperController : MonoBehaviour
         if (timing != null && CurrentWasLive && !LastGenerated.cuesMaterialized)
             StartCoroutine(FinishAnalysisTiming(timing, LastGenerated));
         if (version == revision) character.StopSpeech();
+        }
     }
     private void ObserveReaction()
     {
@@ -453,6 +508,7 @@ public sealed class GatekeeperController : MonoBehaviour
     }
     private void ReportVoiceFailure(GatekeeperScenario.Line line, string message)
     {
+        if (debugLine != null) debugLine.voiceError = message;
         VoiceFailureCount++;
         LastVoiceFailure = "Line '" + line.id + "': " + message + ".";
         Debug.LogWarning("[Gatekeeper voice] " + LastVoiceFailure, this);
@@ -460,6 +516,7 @@ public sealed class GatekeeperController : MonoBehaviour
     private static string Clause(string message) => string.IsNullOrWhiteSpace(message) ? "unknown error" : message.Trim().TrimEnd('.');
     private void Cancel()
     {
+        queuedReply = null;
         revision++; IsSilentLine = false; IsPreparedReaction = false;
         requestCancellation.Cancel(); requestCancellation.Dispose(); requestCancellation = new CancellationTokenSource();
         if (liveSpeech != null) liveSpeech.InterruptPending();
@@ -468,7 +525,7 @@ public sealed class GatekeeperController : MonoBehaviour
     }
     private void SetState(Phase phase)
     {
-        State = phase; if (phase == Phase.Speaking) SpeechStartedFrame = Time.frameCount;
+        State = phase; phaseStartedAt = Time.realtimeSinceStartup; if (phase == Phase.Speaking) SpeechStartedFrame = Time.frameCount;
         if (IsWaiting) NotifyActivity(); Changed?.Invoke();
     }
     // Stops at a Try again state. Only for errors that leave no line to show; voice failures never get here.

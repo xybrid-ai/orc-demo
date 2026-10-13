@@ -38,14 +38,30 @@ public sealed class GatekeeperView : MonoBehaviour
         bool accepting = gatekeeper.AcceptsText;
         inputRow.SetActive(prompt.PersistentText || accepting);
         input.characterLimit = prompt.CharacterLimit;
-        if (input.placeholder is Text placeholder) placeholder.text = prompt.Placeholder;
         input.interactable = prompt.PersistentText || accepting;
-        send.interactable = accepting;
+        send.interactable = gatekeeper.CanSubmitText;
+        RefreshSubmissionStatus();
         bool ended = gatekeeper.State == GatekeeperController.Phase.Ended || gatekeeper.State == GatekeeperController.Phase.VoiceFailed;
         action.gameObject.SetActive(gatekeeper.State == GatekeeperController.Phase.Speaking && prompt.ShowInterruptButton && !gatekeeper.IsInterruptionReaction || ended);
         actionText.text = ended ? "Try again" : prompt.InterruptLabel;
         RefreshChoices();
         if (accepting) input.ActivateInputField();
+    }
+
+    private void RefreshSubmissionStatus()
+    {
+        if (gatekeeper == null || input == null || send == null) return;
+        string elapsed = gatekeeper.PhaseElapsed.ToString("0") + " s";
+        if (input.placeholder is Text placeholder)
+            placeholder.text = gatekeeper.HasQueuedReply
+                ? gatekeeper.State == GatekeeperController.Phase.PreparingSpeech
+                    ? "Queued — current voice preparing, " + elapsed : "Queued — waiting for current speech"
+                : gatekeeper.State == GatekeeperController.Phase.PreparingLine ? "Thinking… " + elapsed
+                : gatekeeper.State == GatekeeperController.Phase.PreparingSpeech ? "Preparing voice… " + elapsed
+                : gatekeeper.Prompt.Placeholder;
+        var label = send.GetComponentInChildren<Text>(true);
+        if (label != null) label.text = gatekeeper.HasQueuedReply ? "Queued"
+            : gatekeeper.State == GatekeeperController.Phase.PreparingLine ? "Thinking" : "Send";
     }
 
     public void Submit()
@@ -58,6 +74,10 @@ public sealed class GatekeeperView : MonoBehaviour
     private void InputActivity(string unused) { gatekeeper.NotifyActivity(); }
     private void Update()
     {
+        RefreshSubmissionStatus();
+        // A draft is activity even while the player pauses to read or think.
+        if (gatekeeper != null && input != null && inputRow.activeInHierarchy && !string.IsNullOrWhiteSpace(input.text))
+            gatekeeper.NotifyActivity();
         if (gatekeeper == null || !gatekeeper.Prompt.PointerInterrupts || gatekeeper.State != GatekeeperController.Phase.Speaking || gatekeeper.IsInterruptionReaction) return;
         // The click that selected a choice can still be pressed this frame.
         if (Time.frameCount <= gatekeeper.SpeechStartedFrame) return;

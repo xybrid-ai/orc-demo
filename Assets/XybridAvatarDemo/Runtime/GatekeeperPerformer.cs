@@ -45,7 +45,8 @@ public sealed class GatekeeperPerformer : MonoBehaviour
     private Driven spine, chest, upperChest, neck, head, eyeL, eyeR, clavL, clavR, earL, earR;
     private Transform root;
     private Vector3 eyeFwdL, eyeFwdR, headFwd, headUp;
-    private bool ready;
+    // The flag must reset with its nonserializable bone, shape and RNG caches.
+    [NonSerialized] private bool ready;
     private System.Random rng;
     private float clock;
 

@@ -10,25 +10,28 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
     private readonly GatekeeperNpcModel model;
     private readonly string[] expulsion;
     private int fallbackIndex, idleIndex, expulsionIndex;
+    private readonly bool debugImmediate;
     private bool greetingDelivered, ended, expelling;
     public GatekeeperPresentation Presentation { get; private set; } = Prompt();
     public IEnumerable<GatekeeperScenario.Line> AnticipatedLines => Array.Empty<GatekeeperScenario.Line>();
     public FreeFormGatekeeperLineSource() : this(UnityEngine.Object.FindFirstObjectByType<GatekeeperController>().scenario) { }
     private FreeFormGatekeeperLineSource(GatekeeperScenario scenario) : this(scenario, GatekeeperNpcModel.Prepare(scenario)) { }
-    public FreeFormGatekeeperLineSource(GatekeeperScenario scenario, GatekeeperNpcModel model)
+    public FreeFormGatekeeperLineSource(GatekeeperScenario scenario, GatekeeperNpcModel model, bool skipGreeting = false)
     {
         this.scenario = scenario; this.model = model;
+        debugImmediate = skipGreeting; greetingDelivered = skipGreeting;
+        Presentation = Prompt(debugImmediate ? 0 : 8);
         expulsion = scenario.ReadStory().nodes.Find(n => n.id == "expelled").variants[0].line_ids;
     }
-    private static GatekeeperPresentation Prompt() => new GatekeeperPresentation
+    private static GatekeeperPresentation Prompt(float idleSeconds = 8) => new GatekeeperPresentation
     {
         InputSlot = GatekeeperInputSlot.Reply, Placeholder = "Say anything", CharacterLimit = 240,
-        PersistentText = true, PointerInterrupts = false, ShowInterruptButton = false
+        IdleSeconds = idleSeconds, PersistentText = true, PointerInterrupts = false, ShowInterruptButton = false
     };
     public async Task<GatekeeperScenario.Line> NextLineAsync(GatekeeperConversationState state, GatekeeperPlayerInput input, CancellationToken cancellation)
     {
         cancellation.ThrowIfCancellationRequested();
-        Presentation = Prompt();
+        Presentation = Prompt(debugImmediate ? 0 : 8);
         // Check the patience applied by the performer, including the last model
         // reply, before accepting another input. Play the complete authored ending.
         if (expelling || state.Encounter.Patience <= 0)
@@ -57,7 +60,11 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
             state.Record("Player", input.Text);
             var reply = await model.ReplyAsync(snapshot, input.Text, cancellation);
             cancellation.ThrowIfCancellationRequested();
+            bool fallback = reply == null;
             reply = reply ?? Fallback();
+            reply.debugSource = fallback ? "LLM fallback" : "LLM";
+            reply.debugRaw = model.LastRawReply ?? "";
+            reply.debugModelSeconds = model.LastReplySeconds;
             reply.patience_delta = Math.Max(-1, Math.Min(1, reply.patience_delta));
             GatekeeperLineSources.ValidateOutput(reply);
             // Expulsion takes priority on the next Continue after patience is applied.

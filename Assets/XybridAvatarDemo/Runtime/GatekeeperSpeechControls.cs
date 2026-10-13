@@ -2,68 +2,95 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Runtime-only UI. Never adds an editor component or changes the saved scene.
+// Runtime debug controls; summary edits are applied by Jump, without saving the scene.
 public sealed class GatekeeperSpeechControls : MonoBehaviour
 {
     public GatekeeperController controller;
     private bool visible = true;
+    public string debugName = "Mira", debugBusiness = "selling turnips", debugApproaches = "bribe";
+    public int debugPatience = 3;
+    public GatekeeperOutcome debugEnding = GatekeeperOutcome.Passed;
+    private Vector2 scroll;
+    private float nextSnapshot;
+    private void SaveSnapshot()
+    {
+        if (controller == null || Time.realtimeSinceStartup < nextSnapshot) return;
+        nextSnapshot = Time.realtimeSinceStartup + 1;
+        var a = controller.character; var audio = a != null ? a.speech : null;
+        var npc = controller.GetComponent<GatekeeperNpcModel>();
+        var state = new System.Text.StringBuilder().AppendLine("UTC: " + DateTime.UtcNow.ToString("O"))
+            .AppendLine("Phase: " + controller.State + "; queued: " + controller.HasQueuedReply + "; reply: " + controller.QueuedReplyText)
+            .AppendLine("Audio: playing=" + audio?.isPlaying + "; paused=" + a?.IsPlaybackPaused + "; listenerPaused=" + AudioListener.pause + "; loop=" + audio?.loop)
+            .AppendLine("Samples: " + audio?.timeSamples + " / " + audio?.clip?.samples + "; pitch=" + audio?.pitch)
+            .AppendLine("NPC: ready=" + npc?.IsReady + "; error=" + npc?.LastError)
+            .AppendLine("Player: " + controller.PlayerName + "; business=" + controller.Business)
+            .AppendLine("History:");
+        if (controller.Conversation != null) foreach (var entry in controller.Conversation.History) state.AppendLine(entry);
+        state.AppendLine("Lines:");
+        foreach (var entry in controller.DebugLines)
+            state.AppendLine(entry.line.debugSource + ": " + entry.line.text + "\nRaw: " + entry.line.debugRaw);
+        try {
+            string folder = System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug");
+            System.IO.Directory.CreateDirectory(folder);
+            System.IO.File.WriteAllText(System.IO.Path.Combine(folder, "session-state.txt"), state.ToString());
+        } catch (System.IO.IOException) { } catch (UnauthorizedAccessException) { }
+    }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
         var controller = UnityEngine.Object.FindFirstObjectByType<GatekeeperController>();
         if (controller == null) return;
         controller.gameObject.AddComponent<GatekeeperSpeechControls>().controller = controller;
-        if (Array.IndexOf(Environment.GetCommandLineArgs(), "-xybridSpeechTest") >= 0)
-            controller.gameObject.AddComponent<GatekeeperSpeechValidation>().controller = controller;
     }
+    public void Jump() => controller.DebugFreeForm(debugName, debugBusiness, debugApproaches, debugEnding, debugPatience);
     private void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.f4Key.wasPressedThisFrame) visible = !visible;
-    }
-    private void Select(GatekeeperLiveSpeech.Provider provider, bool sentences, bool streaming)
-    {
-        controller.Suspend(); controller.liveSpeech.SelectProvider(provider, sentences, streaming); controller.Resume();
+        SaveSnapshot();
+        if (Keyboard.current == null) return;
+        if (Keyboard.current.f4Key.wasPressedThisFrame) visible = !visible;
+        if (Keyboard.current.f5Key.wasPressedThisFrame) Jump();
     }
     private void OnGUI()
     {
         if (!visible || controller == null || controller.liveSpeech == null) return;
+        GUILayout.BeginArea(new Rect(12, 12, Mathf.Min(590, Screen.width - 24), Mathf.Max(200, Screen.height - 170)), GUI.skin.box);
+        scroll = GUILayout.BeginScrollView(scroll);
+        GUILayout.Label("Trola debug — F4 hides, F5 jumps to free-form");
+        GUILayout.Label("Name"); debugName = GUILayout.TextField(debugName, 40);
+        GUILayout.Label("Business"); debugBusiness = GUILayout.TextField(debugBusiness, 100);
+        GUILayout.Label("Approaches (comma separated)"); debugApproaches = GUILayout.TextField(debugApproaches, 100);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Patience " + debugPatience);
+        debugPatience = Mathf.RoundToInt(GUILayout.HorizontalSlider(debugPatience, 0, 5));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        foreach (var ending in new[] { GatekeeperOutcome.Passed, GatekeeperOutcome.Refused, GatekeeperOutcome.Liked })
+            if (GUILayout.Toggle(debugEnding == ending, ending == GatekeeperOutcome.Passed ? "Passage" : ending.ToString(), GUI.skin.button)) debugEnding = ending;
+        GUILayout.EndHorizontal();
+        if (GUILayout.Button("Jump / apply summary")) Jump();
+        if (GUILayout.Button(controller.scenario.debugUsePlaceholderReplies ? "Replies: placeholder — use Gemma" : "Replies: Gemma — use placeholder"))
+        { controller.scenario.debugUsePlaceholderReplies = !controller.scenario.debugUsePlaceholderReplies; Jump(); }
+        if (GUILayout.Button("Restart authored encounter")) controller.Restart();
         var speech = controller.liveSpeech;
-        GUILayout.BeginArea(new Rect(12, Screen.height - 270, 460, 260), GUI.skin.box);
-        GUILayout.Label("Voice selection (F4 hides; switching restarts the encounter)");
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Kokoro")) Select(GatekeeperLiveSpeech.Provider.Kokoro, false, false);
-        if (GUILayout.Button("Kitten full line")) Select(GatekeeperLiveSpeech.Provider.Kitten, false, true);
-        if (GUILayout.Button("Kitten sentences")) Select(GatekeeperLiveSpeech.Provider.Kitten, true, true);
-        GUILayout.EndHorizontal();
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Kitten + Rhubarb")) Select(GatekeeperLiveSpeech.Provider.Kitten, false, false);
-        if (GUILayout.Button("Stop / restart")) controller.Restart();
-#if XYBRID_KITTEN_RC4_SDK
-        if (GUILayout.Button("Kitten SDK")) Select(GatekeeperLiveSpeech.Provider.KittenSdk, false, true);
-#endif
-        GUILayout.EndHorizontal();
-        string voiceName = speech.kittenVoice == "warchief" ? "WarChief" : speech.kittenVoice;
-        GUILayout.Label("Dialogue voice: " + speech.provider + (speech.provider == GatekeeperLiveSpeech.Provider.Kitten ? " / " + voiceName : "") + (speech.provider == GatekeeperLiveSpeech.Provider.KittenSdk
-            ? " / metadata settings" : speech.sentenceChunks ? " / sentence delivery" : ""));
-        if (!string.IsNullOrEmpty(controller.CurrentText) && (controller.IsPreparedReaction || !controller.CurrentWasLive))
-            GUILayout.Label("Current audio: prerecorded Kokoro.");
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Replies: " + (controller.scenario.debugUsePlaceholderReplies ? "Placeholder (debug)" : "Gemma4NPC / local Q4"));
-        if (GUILayout.Button(controller.scenario.debugUsePlaceholderReplies ? "Use model" : "Debug placeholder"))
-        {
-            controller.scenario.debugUsePlaceholderReplies = !controller.scenario.debugUsePlaceholderReplies;
-            controller.Restart();
-        }
-        GUILayout.EndHorizontal();
+        GUILayout.Label("Voice: live " + speech.provider + " / " + speech.kittenVoice + "; " + speech.kittenThreads + " threads; Accelerate " + speech.accelerate);
+        GUILayout.Label("Complete clauses; original WAVs: " + System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug"));
         var npc = controller.GetComponent<GatekeeperNpcModel>();
         if (npc != null && !string.IsNullOrEmpty(npc.LastError)) GUILayout.Label("NPC: " + npc.LastError);
-        var data = controller.LastGenerated;
-        if (data?.outcome != null)
-            GUILayout.Label(data.outcome.completion + ": first packet " + (data.outcome.firstPacketSeconds * 1000).ToString("0")
-                + " ms; synthesis " + (data.outcome.synthesisSeconds * 1000).ToString("0") + " ms");
-        if (data?.stream != null)
-            GUILayout.Label("Audio " + data.stream.DurationSeconds.ToString("0.0") + " s; buffer underrun " + (data.stream.GapSeconds * 1000).ToString("0") + " ms");
-        if (!string.IsNullOrEmpty(speech.LastProviderError)) GUILayout.Label(speech.LastProviderError + " — select Kokoro to fall back.");
-        GUILayout.EndArea();
+        GUILayout.Label("Conversation: " + controller.State + " (" + controller.PhaseElapsed.ToString("0") + " s); Send " + (controller.HasQueuedReply ? "queued until speech finishes" : controller.CanSubmitText ? "available" : "waiting"));
+        GUILayout.Label("Current patience: " + controller.Patience);
+        for (int i = controller.DebugLines.Count - 1; i >= 0; i--)
+        {
+            var entry = controller.DebugLines[i]; var line = entry.line;
+            GUILayout.Label(line.id + " [" + line.debugSource + "] " + line.text);
+            GUILayout.Label("Parsed: " + line.emotion + " / " + line.intensity.ToString("0.00") + "; patience delta " + line.patience_delta + "; " + entry.patienceBefore + " → " + entry.patienceAfter);
+            double voice = entry.voice?.totalSynthesisSeconds ?? 0;
+            double audio = entry.voice?.totalAudioSeconds ?? 0;
+            GUILayout.Label("Language model " + line.debugModelSeconds.ToString("0.00") + " s; voice " + voice.ToString("0.00") + " s; audio " + audio.ToString("0.00") + " s; RTF " + (audio > 0 ? (voice / audio).ToString("0.00") : "pending"));
+            GUILayout.Label("Raw model output: " + (string.IsNullOrEmpty(line.debugRaw) ? "(no model call)" : line.debugRaw));
+            if (!string.IsNullOrEmpty(entry.voiceError)) GUILayout.Label(entry.voiceError);
+            if (!string.IsNullOrEmpty(entry.voice?.debugAudioPath)) GUILayout.Label(entry.voice.debugAudioPath);
+            GUILayout.Space(8);
+        }
+        GUILayout.EndScrollView(); GUILayout.EndArea();
     }
 }
