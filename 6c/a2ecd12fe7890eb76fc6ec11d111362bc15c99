@@ -1,0 +1,19 @@
+Assets/XybridAvatarDemo/Runtime/GatekeeperScenario.cs
+  s_6136e4637afd91::t_a90174a13f1e52 11-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "6ca2ecd12fe7890eb76fc6ec11d111362bc15c99",
+  "prompts": {},
+  "sessions": {
+    "s_6136e4637afd91": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01a1327a-0e92-76a0-8c94-71ef462446e0",
+        "model": "unknown"
+      },
+      "human_author": "Glenn Sonna <3216616+theGlenn@users.noreply.github.com>"
+    }
+  }
+}
