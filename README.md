@@ -1,7 +1,8 @@
 # Orc Demo
 
 A standalone Unity gatekeeper encounter: authored dialogue hands off to local
-Gemma4NPC-E2B, with live KittenTTS 2 speech in the paired WarChief voice.
+Gemma4NPC-E2B, with live Phonon speech using a separately supplied cloned voice.
+KittenTTS 2 / paired WarChief remains an optional provider.
 The NPC Tavern remains a separate project:
 https://github.com/xybrid-ai/xybrid-unity-tavern.
 
@@ -9,8 +10,8 @@ https://github.com/xybrid-ai/xybrid-unity-tavern.
 
 Use **Unity 6000.6.4f1**, URP 17.6.0 and Xybrid Unity SDK **0.9.0**
 (resolved through OpenUPM by `Packages/manifest.json`). This project currently
-uses the direct zzz **rc.4** macOS ARM64 Kitten bridge, not the uninstalled
-0.10.1 SDK adapter.
+uses the pinned **ptts 0.4.0-rc.1** CPU Phonon bridge for macOS ARM64 and
+retains the direct zzz **rc.4** Kitten bridge. The SDK remains 0.9.0.
 
 1. Clone this repository. No Git LFS is required.
 2. Restore the local dependencies below. With an existing licensed installation:
@@ -20,7 +21,9 @@ uses the direct zzz **rc.4** macOS ARM64 Kitten bridge, not the uninstalled
    storage without linking the projects together.
 3. Run `python3 tools/local_assets.py` to check required paths, sizes and importer
    metadata. Add `--verify-hashes` for recorded model/plugin hashes.
-4. Open in Unity, then open
+4. Follow [Phonon setup](docs/phonon-integration.md) to build the plugin and stage
+   your matching checkpoint and cloned safetensors. These inputs stay local.
+5. Open in Unity, then open
    `Assets/XybridAvatarDemo/GoblinSpeakingDemo.unity` and press Play.
 
 The orc scene is the sole scene in Build Settings. Only this encounter's source,

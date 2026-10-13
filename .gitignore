@@ -489,3 +489,5 @@ mono_crash.*
 
 # Archived hand-written test project is source, not generated Unity glue.
 !/docs/integration-history/kitten-troll-spike/Tests/SpikeChecks.csproj
+
+/tools/phonon-native/target/

@@ -19,9 +19,13 @@ using UnityEngine;
 // runs from a short per-user folder holding a copy of the shipped binary and a link to its res/ folder.
 public sealed class GatekeeperLiveSpeech : MonoBehaviour
 {
-    public enum Provider { Kokoro, Kitten, KittenSdk }
+    public enum Provider { Kokoro, Kitten, KittenSdk, Phonon }
     public Provider provider = Provider.Kokoro;
     public bool startWithKitten = true;
+    public bool startWithPhonon = true;
+    public string phononCheckpoint = "Phonon";
+    public string phononVoiceFile = "Phonon/voice.safetensors";
+    public int phononThreads = 6;
     public bool sentenceChunks = true;
     public bool streamKitten = true;
     public bool accelerate = true;
@@ -36,7 +40,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     public volatile bool NativeCallRunning;
     public double ProviderOpenSeconds { get; private set; }
     public double ProviderLoadSeconds { get; private set; }
-    public bool NativeOpenMeasured => provider == Provider.Kitten;
+    public bool NativeOpenMeasured => provider == Provider.Kitten || provider == Provider.Phonon;
     // SDK model loading is lazy; the first call includes native open and synthesis together.
     public double ProviderFirstCallSeconds => warmup != null && warmup.Status == TaskStatus.RanToCompletion
         ? warmup.Result.synthesisSeconds : 0;
@@ -116,7 +120,8 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     public string RhubarbPath => Resolve(rhubarbExecutable);
     public string ModelPath => Resolve(modelBundle);
     public bool Stalled => stalled;
-    public float WaitBudget => provider != Provider.Kokoro ? Math.Max(120, preparationTimeout)
+    public float WaitBudget => provider == Provider.Phonon ? Math.Max(1, preparationTimeout)
+        : provider != Provider.Kokoro ? Math.Max(120, preparationTimeout)
         : stalled ? Mathf.Min(stalledPreparationTimeout, preparationTimeout) : preparationTimeout;
     public void NoteTimeout() { stalled = true; }
     private static string Resolve(string path) => Path.IsPathRooted(path) ? path : Path.Combine(Application.streamingAssetsPath, path);
@@ -124,6 +129,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     private void Awake()
     {
         if (startWithKitten) { provider = Provider.Kitten; streamKitten = true; }
+        if (startWithPhonon) provider = Provider.Phonon;
         var args = Environment.GetCommandLineArgs();
         int speechAt = Array.IndexOf(args, "-xybridSpeech");
         if (speechAt >= 0 && speechAt + 1 < args.Length && Enum.TryParse(args[speechAt + 1], true, out Provider selected)) provider = selected;
@@ -246,6 +252,8 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         bool sentences = sentenceChunks, useAccelerate = accelerate;
         uint threads = (uint)Mathf.Clamp(kittenThreads, 1, 64);
         string kitten = Resolve(kittenDirectory);
+        string phonon = Resolve(phononCheckpoint), clonedVoice = Resolve(phononVoiceFile);
+        uint phononThreadCount = (uint)Mathf.Clamp(phononThreads, 1, 64);
         string voicePair = kittenVoice;
         if (string.IsNullOrWhiteSpace(voicePair) || Path.GetFileName(voicePair) != voicePair)
             throw new ArgumentException("Choose a Kitten voice filename prefix, such as warchief.");
@@ -263,12 +271,14 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                 owner.lifetime.Token.ThrowIfCancellationRequested();
                 var openTimer = Stopwatch.StartNew();
                 model = selected == Provider.Kokoro ? (IGatekeeperSpeechProvider)new KokoroSpeechProvider(bundle, voice)
+                    : selected == Provider.Phonon ? new PhononNativeSpeechProvider(phonon, clonedVoice, phononThreadCount)
                     : selected == Provider.KittenSdk ? new KittenSdkSpeechProvider(kitten)
                     : new KittenNativeSpeechProvider(Path.Combine(kitten, "kitten-tts-2-q2_0.gguf"),
                         Path.Combine(kitten, "kitten-s3-meanflow-f32.gguf"), Path.Combine(kitten, voicePair + ".lm.json"),
                         Path.Combine(kitten, voicePair + ".s3.json"), threads, sentences, useAccelerate);
                 ProviderLoadSeconds = openTimer.Elapsed.TotalSeconds;
-                ProviderOpenSeconds = model is KittenNativeSpeechProvider native ? native.OpenSeconds : 0;
+                ProviderOpenSeconds = model is KittenNativeSpeechProvider native ? native.OpenSeconds
+                    : model is PhononNativeSpeechProvider phononNative ? phononNative.OpenSeconds : 0;
                 if (selected == Provider.Kitten) ResidentKittenVoice = voicePair;
                 while (true)
                 {
@@ -276,6 +286,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                     Request request;
                     lock (owner.gate) { request = owner.queue.First.Value; owner.queue.RemoveFirst(); }
                     var cancel = CancellationTokenSource.CreateLinkedTokenSource(owner.lifetime.Token, request.session);
+                    if (selected == Provider.Phonon) cancel.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, request.budget)));
 
                     try
                     {
