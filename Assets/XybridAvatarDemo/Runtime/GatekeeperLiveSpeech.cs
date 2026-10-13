@@ -23,6 +23,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     public Provider provider = Provider.Kokoro;
     public bool startWithKitten = true;
     public bool startWithPhonon = true;
+    public PhononEngine phononEngine = PhononEngine.Zzz407;
+    public string phononZzzBundle = "PhononZzz/model.gguf";
+    public string phononZzzVoice = "trola_clone";
     public string phononCheckpoint = "Phonon";
     public string phononVoiceFile = "Phonon/voice.safetensors";
     public int phononThreads = 6;
@@ -252,7 +255,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         bool sentences = sentenceChunks, useAccelerate = accelerate;
         uint threads = (uint)Mathf.Clamp(kittenThreads, 1, 64);
         string kitten = Resolve(kittenDirectory);
-        string phonon = Resolve(phononCheckpoint), clonedVoice = Resolve(phononVoiceFile);
+        PhononEngine engine = phononEngine;
+        string phonon = Resolve(engine == PhononEngine.Zzz407 ? phononZzzBundle : phononCheckpoint);
+        string clonedVoice = engine == PhononEngine.Zzz407 ? phononZzzVoice : Resolve(phononVoiceFile);
         uint phononThreadCount = (uint)Mathf.Clamp(phononThreads, 1, 64);
         string voicePair = kittenVoice;
         if (string.IsNullOrWhiteSpace(voicePair) || Path.GetFileName(voicePair) != voicePair)
@@ -271,7 +276,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                 owner.lifetime.Token.ThrowIfCancellationRequested();
                 var openTimer = Stopwatch.StartNew();
                 model = selected == Provider.Kokoro ? (IGatekeeperSpeechProvider)new KokoroSpeechProvider(bundle, voice)
-                    : selected == Provider.Phonon ? new PhononNativeSpeechProvider(phonon, clonedVoice, phononThreadCount)
+                    : selected == Provider.Phonon ? new PhononNativeSpeechProvider(phonon, clonedVoice, phononThreadCount, engine)
                     : selected == Provider.KittenSdk ? new KittenSdkSpeechProvider(kitten)
                     : new KittenNativeSpeechProvider(Path.Combine(kitten, "kitten-tts-2-q2_0.gguf"),
                         Path.Combine(kitten, "kitten-s3-meanflow-f32.gguf"), Path.Combine(kitten, voicePair + ".lm.json"),

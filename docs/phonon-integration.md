@@ -1,6 +1,8 @@
 # Live Phonon voice
 
-Phonon is the default voice on the integration branch. It feeds the existing
+This page describes the original xn-ptts integration. The branch above it
+selects [zzz PR #407](phonon-zzz407.md); choose `XnPtts` in the inspector to
+use the original provider. Phonon remains the default voice. It feeds the existing
 complete-clause playback, saved debug audio, Rhubarb analysis and smoothed jaw
 through `IGatekeeperSpeechProvider`. Every request generates fresh audio; debug
 WAVs are evidence and are never replayed as a voice cache.

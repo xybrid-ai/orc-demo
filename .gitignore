@@ -491,3 +491,6 @@ mono_crash.*
 !/docs/integration-history/kitten-troll-spike/Tests/SpikeChecks.csproj
 
 /tools/phonon-native/target/
+
+/tools/phonon-zzz-native/.zig-cache/
+/tools/phonon-zzz-native/zig-out/

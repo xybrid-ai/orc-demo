@@ -10,7 +10,8 @@ https://github.com/xybrid-ai/xybrid-unity-tavern.
 
 Use **Unity 6000.6.4f1**, URP 17.6.0 and Xybrid Unity SDK **0.9.0**
 (resolved through OpenUPM by `Packages/manifest.json`). This project currently
-uses the pinned **ptts 0.4.0-rc.1** CPU Phonon bridge for macOS ARM64 and
+uses **zzz Phonon PR #407** (pinned to `9524f098`) on CPU/macOS ARM64,
+keeps **ptts 0.4.0-rc.1** selectable, and
 retains the direct zzz **rc.4** Kitten bridge. The SDK remains 0.9.0.
 
 1. Clone this repository. No Git LFS is required.
@@ -21,7 +22,7 @@ retains the direct zzz **rc.4** Kitten bridge. The SDK remains 0.9.0.
    storage without linking the projects together.
 3. Run `python3 tools/local_assets.py` to check required paths, sizes and importer
    metadata. Add `--verify-hashes` for recorded model/plugin hashes.
-4. Follow [Phonon setup](docs/phonon-integration.md) to build the plugin and stage
+4. Follow [zzz Phonon setup](docs/phonon-zzz407.md) to build the plugin and stage
    your matching checkpoint and cloned safetensors. These inputs stay local.
 5. Open in Unity, then open
    `Assets/XybridAvatarDemo/GoblinSpeakingDemo.unity` and press Play.
@@ -52,8 +53,8 @@ hashes. Imported/derived assets stay local even outside `Assets/Synty`.
   platform is macOS Apple Silicon; other native platforms need their own setup.
 - `Assets/StreamingAssets/KittenTTS2/`: `kitten-tts-2-q2_0.gguf`,
   `kitten-s3-meanflow-f32.gguf`, **both** `warchief.lm.json` and `warchief.s3.json`,
-  metadata/provenance. Never mix voice pairs. Startup uses Kitten/WarChief,
-  sentence chunks, Accelerate and six threads.
+  metadata/provenance. Never mix voice pairs. The optional Kitten/WarChief path
+  uses sentence chunks, Accelerate and six threads. Startup uses Phonon.
 - `Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/`: metadata and
   `Gemma4NPC-E2B-Q4_K_M.gguf`, from
   https://huggingface.co/chimbiwide/Gemma4NPC-E2B-GGUF.

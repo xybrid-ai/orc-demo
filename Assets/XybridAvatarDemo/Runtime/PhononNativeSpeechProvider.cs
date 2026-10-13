@@ -5,14 +5,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
-// CPU ptts 0.4.0-rc.1, raw checkpoint + external speaker-latent safetensors.
+public enum PhononEngine { XnPtts, Zzz407 }
+
+// Selectable CPU Phonon engines; each uses a distinct native library.
 // Worker-owned; the distinct library name cannot bind to the Kitten zzz plugin.
 public sealed class PhononNativeSpeechProvider : IGatekeeperSpeechProvider
 {
     [StructLayout(LayoutKind.Sequential)]
     private struct Result
     {
-        public uint sampleRate, channels, chunks, reserved;
+        public uint sampleRate, channels, chunks, limitedChunks;
         public ulong samples;
         public double firstPacketSeconds, totalSeconds;
     }
@@ -26,6 +28,15 @@ public sealed class PhononNativeSpeechProvider : IGatekeeperSpeechProvider
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern int orc_phonon_synthesize(IntPtr handle, IntPtr text, ulong call, AudioCallback callback, IntPtr user, out Result result, [Out] byte[] error, UIntPtr capacity);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void orc_phonon_cancel(IntPtr handle, ulong call);
     [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] private static extern void orc_phonon_close(IntPtr handle);
+    private static class ZzzNative
+    {
+        [DllImport("orc_phonon_zzz", CallingConvention = CallingConvention.Cdecl, EntryPoint = "orc_phonon_zzz_abi_version")] internal static extern uint orc_phonon_abi_version();
+        [DllImport("orc_phonon_zzz", CallingConvention = CallingConvention.Cdecl, EntryPoint = "orc_phonon_zzz_open")] internal static extern IntPtr orc_phonon_open(IntPtr directory, IntPtr voice, uint threads, [Out] byte[] error, UIntPtr capacity);
+        [DllImport("orc_phonon_zzz", CallingConvention = CallingConvention.Cdecl, EntryPoint = "orc_phonon_zzz_synthesize")] internal static extern int orc_phonon_synthesize(IntPtr handle, IntPtr text, ulong call, AudioCallback callback, IntPtr user, out Result result, [Out] byte[] error, UIntPtr capacity);
+        [DllImport("orc_phonon_zzz", CallingConvention = CallingConvention.Cdecl, EntryPoint = "orc_phonon_zzz_cancel")] internal static extern void orc_phonon_cancel(IntPtr handle, ulong call);
+        [DllImport("orc_phonon_zzz", CallingConvention = CallingConvention.Cdecl, EntryPoint = "orc_phonon_zzz_close")] internal static extern void orc_phonon_close(IntPtr handle);
+    }
+    private readonly bool zzz;
 
     private readonly object serial = new object(), handleGate = new object();
     private IntPtr handle;
@@ -34,22 +45,33 @@ public sealed class PhononNativeSpeechProvider : IGatekeeperSpeechProvider
     private int synthesisThread;
     public double OpenSeconds { get; }
 
-    public PhononNativeSpeechProvider(string checkpoint, string clonedVoice, uint threads = 6)
+    public PhononNativeSpeechProvider(string checkpoint, string clonedVoice, uint threads = 6, PhononEngine engine = PhononEngine.XnPtts)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.ProcessArchitecture != Architecture.Arm64)
             throw new PlatformNotSupportedException("The installed Phonon plugin targets Apple Silicon macOS.");
-        foreach (string file in new[] { "config.json", "tokenizer.json", "model.q8.gguf" })
-            if (!File.Exists(Path.Combine(checkpoint, file))) throw new FileNotFoundException("Phonon checkpoint file missing: " + file);
-        if (!File.Exists(clonedVoice)) throw new FileNotFoundException("Phonon cloned voice missing.", clonedVoice);
+        if (engine != PhononEngine.XnPtts && engine != PhononEngine.Zzz407) throw new ArgumentOutOfRangeException(nameof(engine));
+        zzz = engine == PhononEngine.Zzz407;
+        if (zzz)
+        {
+            if (!File.Exists(checkpoint)) throw new FileNotFoundException("Phonon zzz bundle missing.", checkpoint);
+            if (string.IsNullOrWhiteSpace(clonedVoice)) throw new ArgumentException("Choose a bundled Phonon voice.");
+        }
+        else
+        {
+            foreach (string file in new[] { "config.json", "tokenizer.json", "model.q8.gguf" })
+                if (!File.Exists(Path.Combine(checkpoint, file))) throw new FileNotFoundException("Phonon checkpoint file missing: " + file);
+            if (!File.Exists(clonedVoice)) throw new FileNotFoundException("Phonon cloned voice missing.", clonedVoice);
+        }
         if (threads < 1 || threads > 64) throw new ArgumentOutOfRangeException(nameof(threads));
         if (Marshal.SizeOf<Result>() != 40 || Marshal.OffsetOf<Result>(nameof(Result.samples)).ToInt32() != 16)
             throw new InvalidOperationException("Phonon native/managed result layout mismatch.");
-        if (orc_phonon_abi_version() != 1) throw new InvalidOperationException("Unsupported Orc Phonon bridge ABI.");
+        if ((zzz ? ZzzNative.orc_phonon_abi_version() : orc_phonon_abi_version()) != 1) throw new InvalidOperationException("Unsupported Orc Phonon bridge ABI.");
         var timer = Stopwatch.StartNew();
         using (var directory = new Utf8(checkpoint)) using (var voice = new Utf8(clonedVoice))
         {
             var error = new byte[512];
-            handle = orc_phonon_open(directory.pointer, voice.pointer, threads, error, (UIntPtr)error.Length);
+            handle = zzz ? ZzzNative.orc_phonon_open(directory.pointer, voice.pointer, threads, error, (UIntPtr)error.Length)
+                : orc_phonon_open(directory.pointer, voice.pointer, threads, error, (UIntPtr)error.Length);
             if (handle == IntPtr.Zero) throw new InvalidOperationException("Phonon open: " + ErrorText(error));
         }
         OpenSeconds = timer.Elapsed.TotalSeconds;
@@ -110,14 +132,16 @@ public sealed class PhononNativeSpeechProvider : IGatekeeperSpeechProvider
                 using (var input = new Utf8(text))
                 {
                     var error = new byte[512];
-                    int status = orc_phonon_synthesize(handle, input.pointer, thisCall, Callback, GCHandle.ToIntPtr(root), out var result, error, (UIntPtr)error.Length);
+                    Result result;
+                    int status = zzz ? ZzzNative.orc_phonon_synthesize(handle, input.pointer, thisCall, Callback, GCHandle.ToIntPtr(root), out result, error, (UIntPtr)error.Length)
+                        : orc_phonon_synthesize(handle, input.pointer, thisCall, Callback, GCHandle.ToIntPtr(root), out result, error, (UIntPtr)error.Length);
                     if (delivery.failure != null) throw new InvalidOperationException("Phonon audio delivery failed.", delivery.failure);
-                    if (status < 0) throw new InvalidOperationException("Phonon synthesis: " + ErrorText(error));
+                    if (status < 0 || status > 2) throw new InvalidOperationException("Phonon synthesis: " + ErrorText(error));
                     bool cancelled = cancellation.IsCancellationRequested || status == 1;
                     if (!cancelled && (result.sampleRate != 24000 || result.channels != 1 || result.samples == 0 || result.samples != delivery.next))
                         throw new InvalidDataException("Unexpected Phonon PCM result.");
-                    return new SpeechOutcome { completion = cancelled ? SpeechCompletion.Cancelled : SpeechCompletion.Completed,
-                        pcm = delivery.collected?.ToArray(), sampleRate = result.sampleRate, channels = result.channels, chunks = result.chunks,
+                    return new SpeechOutcome { completion = cancelled ? SpeechCompletion.Cancelled : status == 2 ? SpeechCompletion.Limited : SpeechCompletion.Completed,
+                        pcm = delivery.collected?.ToArray(), sampleRate = result.sampleRate, channels = result.channels, chunks = result.chunks, limitedChunks = result.limitedChunks,
                         synthesisSeconds = result.totalSeconds, firstPacketSeconds = result.firstPacketSeconds };
                 }
             }
@@ -131,7 +155,12 @@ public sealed class PhononNativeSpeechProvider : IGatekeeperSpeechProvider
 
     private void CancelActive(ulong expectedCall)
     {
-        lock (handleGate) if (active && callId == expectedCall && handle != IntPtr.Zero) orc_phonon_cancel(handle, expectedCall);
+        lock (handleGate) if (active && callId == expectedCall && handle != IntPtr.Zero) CancelNative(expectedCall);
+    }
+
+    private void CancelNative(ulong call)
+    {
+        if (zzz) ZzzNative.orc_phonon_cancel(handle, call); else orc_phonon_cancel(handle, call);
     }
 
     public void Dispose()
@@ -140,12 +169,12 @@ public sealed class PhononNativeSpeechProvider : IGatekeeperSpeechProvider
         {
             if (active && synthesisThread == Thread.CurrentThread.ManagedThreadId) throw new InvalidOperationException("Do not close Phonon from its callback.");
             disposing = true;
-            if (active) orc_phonon_cancel(handle, callId);
+            if (active) CancelNative(callId);
         }
         // Native stream drop joins upstream workers; never unload a handle while its callback is active.
         lock (serial) lock (handleGate)
         {
-            if (handle != IntPtr.Zero) { orc_phonon_close(handle); handle = IntPtr.Zero; }
+            if (handle != IntPtr.Zero) { if (zzz) ZzzNative.orc_phonon_close(handle); else orc_phonon_close(handle); handle = IntPtr.Zero; }
         }
     }
 
