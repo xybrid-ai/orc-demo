@@ -494,3 +494,9 @@ mono_crash.*
 
 /tools/phonon-zzz-native/.zig-cache/
 /tools/phonon-zzz-native/zig-out/
+
+# Headless NPC quality harness source and build output.
+!/tools/npc-quality/ScenarioChecks.csproj
+/tools/npc-quality/bin/
+/tools/npc-quality/obj/
+/tools/npc-quality/__pycache__/

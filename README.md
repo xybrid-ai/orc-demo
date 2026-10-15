@@ -73,6 +73,16 @@ and new input. Grammar constrains line JSON; sanitization and authored fallbacks
 protect speech. Patience changes by at most one and zero plays the authored
 expulsion. F4 retains placeholder dialogue and voice debugging.
 
+## Headless dialogue quality
+
+Use the [NPC quality harness](tools/npc-quality/README.md) to exercise Trola's
+actual prompts, six-exchange history, structured reply parser and authored
+encounter rules without launching Unity. It logs local model replies, first-token
+and completion timing, speech-ready JSON and state transitions. See the
+[model comparison and limits](docs/npc-quality-2026-10-15.md) before choosing a
+checkpoint. The demo's installed model and Phonon startup voice remain the
+local setup described above.
+
 ## Repository and release policy
 
 Run `python3 tools/check_repository.py` before committing or packaging source.
