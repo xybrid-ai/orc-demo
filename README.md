@@ -1,7 +1,8 @@
 # Orc Demo
 
 A standalone Unity gatekeeper encounter: authored dialogue hands off to local
-Gemma4NPC-E2B, with live KittenTTS 2 speech in the paired WarChief voice.
+Gemma4NPC-E2B, with live Phonon speech using a separately supplied cloned voice.
+KittenTTS 2 / paired WarChief remains an optional provider.
 The NPC Tavern remains a separate project:
 https://github.com/xybrid-ai/xybrid-unity-tavern.
 
@@ -9,8 +10,9 @@ https://github.com/xybrid-ai/xybrid-unity-tavern.
 
 Use **Unity 6000.6.4f1**, URP 17.6.0 and Xybrid Unity SDK **0.9.0**
 (resolved through OpenUPM by `Packages/manifest.json`). This project currently
-uses the direct zzz **rc.4** macOS ARM64 Kitten bridge, not the uninstalled
-0.10.1 SDK adapter.
+uses **zzz Phonon PR #407** (pinned to `9524f098`) on CPU/macOS ARM64,
+keeps **ptts 0.4.0-rc.1** selectable, and
+retains the direct zzz **rc.4** Kitten bridge. The SDK remains 0.9.0.
 
 1. Clone this repository. No Git LFS is required.
 2. Restore the local dependencies below. With an existing licensed installation:
@@ -20,7 +22,9 @@ uses the direct zzz **rc.4** macOS ARM64 Kitten bridge, not the uninstalled
    storage without linking the projects together.
 3. Run `python3 tools/local_assets.py` to check required paths, sizes and importer
    metadata. Add `--verify-hashes` for recorded model/plugin hashes.
-4. Open in Unity, then open
+4. Follow [zzz Phonon setup](docs/phonon-zzz407.md) to build the plugin and stage
+   your matching checkpoint and cloned safetensors. These inputs stay local.
+5. Open in Unity, then open
    `Assets/XybridAvatarDemo/GoblinSpeakingDemo.unity` and press Play.
 
 The orc scene is the sole scene in Build Settings. Only this encounter's source,
@@ -49,8 +53,8 @@ hashes. Imported/derived assets stay local even outside `Assets/Synty`.
   platform is macOS Apple Silicon; other native platforms need their own setup.
 - `Assets/StreamingAssets/KittenTTS2/`: `kitten-tts-2-q2_0.gguf`,
   `kitten-s3-meanflow-f32.gguf`, **both** `warchief.lm.json` and `warchief.s3.json`,
-  metadata/provenance. Never mix voice pairs. Startup uses Kitten/WarChief,
-  sentence chunks, Accelerate and six threads.
+  metadata/provenance. Never mix voice pairs. The optional Kitten/WarChief path
+  uses sentence chunks, Accelerate and six threads. Startup uses Phonon.
 - `Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/`: metadata and
   `Gemma4NPC-E2B-Q4_K_M.gguf`, from
   https://huggingface.co/chimbiwide/Gemma4NPC-E2B-GGUF.
@@ -68,6 +72,16 @@ includes the camp/persona, authored style examples, handoff summary, six exchang
 and new input. Grammar constrains line JSON; sanitization and authored fallbacks
 protect speech. Patience changes by at most one and zero plays the authored
 expulsion. F4 retains placeholder dialogue and voice debugging.
+
+## Headless dialogue quality
+
+Use the [NPC quality harness](tools/npc-quality/README.md) to exercise Trola's
+actual prompts, six-exchange history, structured reply parser and authored
+encounter rules without launching Unity. It logs local model replies, first-token
+and completion timing, speech-ready JSON and state transitions. See the
+[model comparison and limits](docs/npc-quality-2026-10-15.md) before choosing a
+checkpoint. The demo's installed model and Phonon startup voice remain the
+local setup described above.
 
 ## Repository and release policy
 

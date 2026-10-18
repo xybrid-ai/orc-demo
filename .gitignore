@@ -489,3 +489,14 @@ mono_crash.*
 
 # Archived hand-written test project is source, not generated Unity glue.
 !/docs/integration-history/kitten-troll-spike/Tests/SpikeChecks.csproj
+
+/tools/phonon-native/target/
+
+/tools/phonon-zzz-native/.zig-cache/
+/tools/phonon-zzz-native/zig-out/
+
+# Headless NPC quality harness source and build output.
+!/tools/npc-quality/ScenarioChecks.csproj
+/tools/npc-quality/bin/
+/tools/npc-quality/obj/
+/tools/npc-quality/__pycache__/

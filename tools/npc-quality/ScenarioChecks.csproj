@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems><AllowUnsafeBlocks>true</AllowUnsafeBlocks><LangVersion>9</LangVersion><SdkRoot Condition="'$(SdkRoot)' == ''">../../.context/npc-quality/sdk-0.9</SdkRoot><NpcSource Condition="'$(NpcSource)' == ''">../../Assets/XybridAvatarDemo/Runtime/GatekeeperNpcModel.cs</NpcSource></PropertyGroup>
+<ItemGroup><Compile Include="Stubs.cs"/><Compile Include="Program.cs"/><Compile Include="$(NpcSource)"/>
+<Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperScenario.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperEncounter.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperNames.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperStory.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/IGatekeeperLineSource.cs"/>
+<Compile Include="$(SdkRoot)/bindings/unity/Runtime/Bolt/*.cs"/></ItemGroup></Project>

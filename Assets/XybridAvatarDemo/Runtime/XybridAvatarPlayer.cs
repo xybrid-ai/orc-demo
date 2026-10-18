@@ -25,10 +25,12 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
     public string Script = "Welcome to the tavern. I am your local guide, powered by Xybrid. My voice runs on device, and my face follows every word. Pick a character, give them a voice, and bring your world to life.";
     private readonly List<Binding> bindings = new List<Binding>();
     private Cue[] cues = Array.Empty<Cue>();
-    private bool initialized, paused, started;
+    [NonSerialized] private bool initialized;
+    private bool paused, started;
     private float elapsed;
     private float anger, amusement, snarlRequest;
     public int CueCount { get { Initialize(); return cues.Length; } }
+    public bool IsPlaybackPaused => paused;
     public bool IsSpeaking => started && speech != null && (speech.isPlaying || paused);
     // Audio-clock time last evaluated; -1 when no line is playing.
     public float SpeechTime { get; private set; } = -1;
@@ -40,7 +42,8 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
     [Range(0, 1)] public float loudnessJawOpen = .5f;
     // Loudness envelope of the current clip when it has no cues; null when cues drive the mouth.
     private float[] jawEnvelope;
-    private float jawPeak;
+    private float jawPeak, jawSmoothed;
+    private readonly float[] jawSamples = new float[256];
     private const float JawHop = .01f;
     private float cuesArrivedAt = -1;
     public const float CueBlendSeconds = .15f;
@@ -82,11 +85,12 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
         StopSpeech();
         if (speech == null) speech = gameObject.AddComponent<AudioSource>();
         speech.clip = audio;
+        speech.loop = streaming; // Complete clauses finish once; only the packet ring loops.
         mouthCues = track;
         // A new line must never inherit the preceding line's mouth track.
         cues = track != null ? JsonUtility.FromJson<CueFile>(track.text).mouthCues : Array.Empty<Cue>();
         jawEnvelope = track == null && audio != null ? streaming ? Array.Empty<float>() : LoudnessEnvelope(audio) : null;
-        jawPeak = .05f; cuesArrivedAt = -1;
+        jawSmoothed = 0; jawPeak = .05f; cuesArrivedAt = -1;
         if (audio != null) Replay();
     }
 
@@ -136,6 +140,7 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
 
     private void LateUpdate()
     {
+        Initialize();
         elapsed += Time.unscaledDeltaTime;
         if (speech == null || speech.clip == null) { EvaluateAt(-1, elapsed); return; }
         float time = speech.timeSamples / (float)speech.clip.frequency;
@@ -153,6 +158,12 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
         if (speech.isPlaying) { speech.Pause(); paused = true; }
         else if (paused) { speech.UnPause(); paused = false; }
         else Replay();
+    }
+
+    public void ResumePlayback()
+    {
+        if (!paused || speech == null) return;
+        speech.UnPause(); paused = false;
     }
 
     public void Replay()
@@ -223,13 +234,16 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
         {
             // Streamed clips cannot be read ahead; follow the live output instead.
             if (!Application.isPlaying || speech == null) return 0;
-            var buffer = new float[256]; speech.GetOutputData(buffer, 0);
-            double sum = 0; foreach (float v in buffer) sum += v * v;
+            var buffer = jawSamples; speech.GetOutputData(buffer, 0);
+            double sum = 0, previous = 0, high = 0;
+            double alpha = 1 / (1 + 2 * Math.PI * 120 / AudioSettings.outputSampleRate);
+            foreach (float v in buffer) { high = alpha * (high + v - previous); previous = v; sum += high * high; }
             float rms = Mathf.Sqrt((float)(sum / buffer.Length));
             jawPeak = Mathf.Max(jawPeak * .998f, rms);
             level = Gate(rms / jawPeak);
         }
-        return loudnessJawOpen * level;
+        jawSmoothed = Mathf.Lerp(jawSmoothed, level, 1 - Mathf.Exp(-Time.unscaledDeltaTime / (level > jawSmoothed ? .045f : .10f)));
+        return loudnessJawOpen * jawSmoothed;
     }
 
     // RMS in 10 ms hops, opened fast and closed slower, normalised to the clip's 95th percentile
@@ -242,6 +256,8 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
         int size = Mathf.Max(1, Mathf.RoundToInt(JawHop * clip.frequency)), frames = Mathf.CeilToInt(clip.samples / (float)size);
         var envelope = new float[frames];
         float level = 0, attack = 1 - Mathf.Exp(-JawHop / .025f), release = 1 - Mathf.Exp(-JawHop / .08f);
+        double previousSample = 0, filtered = 0;
+        double highPass = 1 / (1 + 2 * Math.PI * 120 / clip.frequency);
         for (int f = 0; f < frames; f++)
         {
             double sum = 0; int count = 0;
@@ -249,18 +265,22 @@ public sealed class XybridAvatarPlayer : MonoBehaviour
             {
                 float mono = 0;
                 for (int c = 0; c < clip.channels; c++) mono += pcm[i * clip.channels + c];
-                mono /= clip.channels; sum += mono * mono; count++;
+                mono /= clip.channels;
+                filtered = highPass * (filtered + mono - previousSample); previousSample = mono;
+                sum += filtered * filtered; count++;
             }
             float rms = count > 0 ? Mathf.Sqrt((float)(sum / count)) : 0;
             level += (rms - level) * (rms > level ? attack : release);
             envelope[f] = level;
         }
         var sorted = (float[])envelope.Clone(); Array.Sort(sorted);
-        float reference = Mathf.Max(sorted[Mathf.Clamp(Mathf.RoundToInt(sorted.Length * .95f), 0, sorted.Length - 1)], 1e-4f);
-        for (int f = 0; f < frames; f++) envelope[f] = Gate(envelope[f] / reference);
+        float reference = sorted[Mathf.Clamp(Mathf.RoundToInt(sorted.Length * .95f), 0, sorted.Length - 1)];
+        // A low percentile estimates the continuous rumble; subtract it before normalization.
+        float noise = Mathf.Max(.012f, sorted[Mathf.Clamp(Mathf.RoundToInt(sorted.Length * .15f), 0, sorted.Length - 1)]);
+        for (int f = 0; f < frames; f++) envelope[f] = Gate((envelope[f] - noise) / Mathf.Max(reference - noise, 1e-4f));
         return envelope;
     }
-    private static float Gate(float level) => Mathf.Clamp01((level - .12f) / .88f);
+    private static float Gate(float level) => Mathf.Clamp01((level - .30f) / .70f);
 
     private static float Pose(string cue, string shape)
     {

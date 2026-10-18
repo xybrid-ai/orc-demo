@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+"""Build pinned PR #407 and convert the separately supplied Phonon clone."""
+import argparse
+import hashlib
+import importlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+NATIVE = ROOT / 'tools/phonon-zzz-native'
+REVISION = '9524f098f1d6fab3ce5a115d2ccb3e1861c4540c'
+WORK = ROOT / '.context/phonon-zzz407'
+PLUGIN = ROOT / 'Assets/XybridAvatarDemo/Plugins/macos-arm64/liborc_phonon_zzz.dylib'
+MODEL = ROOT / 'Assets/StreamingAssets/PhononZzz'
+
+
+def run(args, cwd=None):
+    subprocess.run(args, cwd=cwd, check=True)
+
+
+def sha(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--checkpoint', type=Path, required=True)
+    parser.add_argument('--voice', type=Path, required=True)
+    parser.add_argument('--engine-checkout', type=Path, default=WORK / 'engine')
+    parser.add_argument('--zig', default=shutil.which('zig') or '/opt/homebrew/bin/zig')
+    parser.add_argument('--skip-build', action='store_true')
+    args = parser.parse_args()
+    if sys.platform != 'darwin' or os.uname().machine != 'arm64':
+        parser.error('This trial requires Apple Silicon macOS.')
+    for path in [args.voice] + [args.checkpoint / n for n in ['config.json', 'tokenizer.json', 'model.q8.gguf']]:
+        if not path.is_file():
+            parser.error('Missing supplied asset: ' + str(path))
+    engine = args.engine_checkout.resolve()
+    if not (engine / '.git').exists():
+        engine.parent.mkdir(parents=True, exist_ok=True)
+        run(['git', 'clone', '--filter=blob:none', '--no-checkout',
+             'https://github.com/xybrid-ai/zzz-research.git', str(engine)])
+        run(['git', 'fetch', '--depth=1', 'origin', REVISION], engine)
+        run(['git', 'checkout', '--detach', REVISION], engine)
+    if subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=engine, text=True).strip() != REVISION:
+        parser.error('Engine checkout must be pinned to ' + REVISION)
+    run(['git', 'diff', '--exit-code', 'HEAD'], engine)
+    if not args.skip_build:
+        if subprocess.check_output([args.zig, 'version'], text=True).strip() != '0.16.0':
+            parser.error('Use Zig 0.16.0 stable.')
+        # The engine sources stay at the pinned revision. Only an untracked bridge
+        # is added so its relative imports share the upstream module identity.
+        shutil.copyfile(NATIVE / 'bridge.zig', engine / 'src/orc_phonon_bridge.zig')
+        run([args.zig, 'fmt', '--check', str(NATIVE / 'build.zig'), str(NATIVE / 'bridge.zig')])
+        run([args.zig, 'build', '-Doptimize=ReleaseFast', '-Dtarget=aarch64-macos.13.0',
+             '-Dengine-path=' + str(engine), '-j2'], NATIVE)
+    library = NATIVE / 'zig-out/lib/liborc_phonon_zzz.dylib'
+    if subprocess.check_output(['lipo', '-archs', str(library)], text=True).strip() != 'arm64':
+        parser.error('Expected ARM64 library.')
+    exports = subprocess.check_output(['nm', '-gU', str(library)], text=True)
+    for name in ['abi_version', 'open', 'synthesize', 'cancel', 'close']:
+        if '_orc_phonon_zzz_' + name not in exports:
+            parser.error('Missing native export: ' + name)
+    stage = WORK / 'source'
+    (stage / 'voices').mkdir(parents=True, exist_ok=True)
+    for name in ['config.json', 'tokenizer.json', 'model.q8.gguf']:
+        shutil.copyfile(args.checkpoint / name, stage / name)
+    # Pin the locally supplied clone's digest while retaining every upstream
+    # model/config/tokenizer, encoder and speaker-latent validation.
+    filename = 'clone.ba7a5a45@300.safetensors'
+    shutil.copyfile(args.voice, stage / 'voices' / filename)
+    sys.path.insert(0, str(engine / 'scripts'))
+    converter = importlib.import_module('convert_phonon_to_gguf')
+    converter.LATENTS_VOICE_SOURCES = {'trola_clone': (filename, sha(args.voice))}
+    MODEL.mkdir(parents=True, exist_ok=True)
+    converter.convert_speaker_latents(stage, MODEL / 'model.gguf', ['trola_clone'])
+    PLUGIN.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(library, PLUGIN)
+    meta = PLUGIN.with_suffix('.dylib.meta')
+    meta.write_text('''fileFormatVersion: 2
+guid: 5cc781bfe5314cba935d12bdca14bbed
+PluginImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  iconMap: {}
+  executionOrder: {}
+  defineConstraints: []
+  isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
+  platformData:
+  - first:
+      Any:
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
+      enabled: 1
+      settings:
+        CPU: ARM64
+        DefaultValueInitialized: true
+        OS: OSX
+  - first:
+      Standalone: OSXUniversal
+    second:
+      enabled: 1
+      settings:
+        CPU: ARM64
+  userData:
+  assetBundleName:
+  assetBundleVariant:
+''')
+    (MODEL / 'local-provenance.json').write_text(json.dumps({
+        'engineRevision': REVISION, 'zig': '0.16.0', 'backend': 'cpu', 'threads': 6,
+        'pluginSha256': sha(PLUGIN), 'bundleSha256': sha(MODEL / 'model.gguf'),
+    }, indent=2) + '\n')
+    print('Staged pinned zzz #407 Phonon and cloned voice. Private assets remain ignored.')
+
+
+if __name__ == '__main__':
+    main()

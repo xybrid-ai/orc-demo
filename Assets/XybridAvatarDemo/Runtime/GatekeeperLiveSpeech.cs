@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -17,9 +19,16 @@ using UnityEngine;
 // runs from a short per-user folder holding a copy of the shipped binary and a link to its res/ folder.
 public sealed class GatekeeperLiveSpeech : MonoBehaviour
 {
-    public enum Provider { Kokoro, Kitten, KittenSdk }
+    public enum Provider { Kokoro, Kitten, KittenSdk, Phonon }
     public Provider provider = Provider.Kokoro;
     public bool startWithKitten = true;
+    public bool startWithPhonon = true;
+    public PhononEngine phononEngine = PhononEngine.Zzz407;
+    public string phononZzzBundle = "PhononZzz/model.gguf";
+    public string phononZzzVoice = "trola_clone";
+    public string phononCheckpoint = "Phonon";
+    public string phononVoiceFile = "Phonon/voice.safetensors";
+    public int phononThreads = 6;
     public bool sentenceChunks = true;
     public bool streamKitten = true;
     public bool accelerate = true;
@@ -34,7 +43,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     public volatile bool NativeCallRunning;
     public double ProviderOpenSeconds { get; private set; }
     public double ProviderLoadSeconds { get; private set; }
-    public bool NativeOpenMeasured => provider == Provider.Kitten;
+    public bool NativeOpenMeasured => provider == Provider.Kitten || provider == Provider.Phonon;
     // SDK model loading is lazy; the first call includes native open and synthesis together.
     public double ProviderFirstCallSeconds => warmup != null && warmup.Status == TaskStatus.RanToCompletion
         ? warmup.Result.synthesisSeconds : 0;
@@ -56,7 +65,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
 
     public sealed class Generated
     {
-        public string text, cues, lipSyncError;
+        public string text, cues, lipSyncError, debugAudioPath;
+        public Task<Generated>[] clauses;
+        public double totalSynthesisSeconds, totalAudioSeconds;
         public byte[] pcm;
         public double synthesisSeconds, analysisSeconds;
         public Task<Analysis> analysis;
@@ -112,7 +123,8 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     public string RhubarbPath => Resolve(rhubarbExecutable);
     public string ModelPath => Resolve(modelBundle);
     public bool Stalled => stalled;
-    public float WaitBudget => provider != Provider.Kokoro ? Math.Max(120, preparationTimeout)
+    public float WaitBudget => provider == Provider.Phonon ? Math.Max(1, preparationTimeout)
+        : provider != Provider.Kokoro ? Math.Max(120, preparationTimeout)
         : stalled ? Mathf.Min(stalledPreparationTimeout, preparationTimeout) : preparationTimeout;
     public void NoteTimeout() { stalled = true; }
     private static string Resolve(string path) => Path.IsPathRooted(path) ? path : Path.Combine(Application.streamingAssetsPath, path);
@@ -120,6 +132,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     private void Awake()
     {
         if (startWithKitten) { provider = Provider.Kitten; streamKitten = true; }
+        if (startWithPhonon) provider = Provider.Phonon;
         var args = Environment.GetCommandLineArgs();
         int speechAt = Array.IndexOf(args, "-xybridSpeech");
         if (speechAt >= 0 && speechAt + 1 < args.Length && Enum.TryParse(args[speechAt + 1], true, out Provider selected)) provider = selected;
@@ -173,26 +186,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(resolvedText) || resolvedText.Contains("{") || resolvedText.Contains("}"))
             throw new ArgumentException("Resolve dialogue before synthesis.");
-        string key = provider + "\n" + voiceId + "\n" + resolvedText;
-        if (requests.TryGetValue(key, out var existing))
-        {
-            if (urgent && worker != null)
-            {
-                lock (worker.gate)
-                {
-                    var node = worker.queue.First;
-                    while (node != null)
-                    {
-                        if (node.Value.completion.Task == existing)
-                        {
-                            worker.queue.Remove(node); worker.queue.AddFirst(node); break;
-                        }
-                        node = node.Next;
-                    }
-                }
-            }
-            return existing;
-        }
+        string key = Guid.NewGuid().ToString("N");
         EnsureWorker();
         var request = new Request
         {
@@ -255,11 +249,16 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         if (worker != null) return;
         string bundle = ModelPath;
         string temporaryRoot = Path.Combine(Application.temporaryCachePath, "TrolaSpeech");
+        string debugRoot = Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug");
         string voice = voiceId;
         Provider selected = provider;
-        bool useStream = selected != Provider.Kokoro && streamKitten, sentences = sentenceChunks, useAccelerate = accelerate;
+        bool sentences = sentenceChunks, useAccelerate = accelerate;
         uint threads = (uint)Mathf.Clamp(kittenThreads, 1, 64);
         string kitten = Resolve(kittenDirectory);
+        PhononEngine engine = phononEngine;
+        string phonon = Resolve(engine == PhononEngine.Zzz407 ? phononZzzBundle : phononCheckpoint);
+        string clonedVoice = engine == PhononEngine.Zzz407 ? phononZzzVoice : Resolve(phononVoiceFile);
+        uint phononThreadCount = (uint)Mathf.Clamp(phononThreads, 1, 64);
         string voicePair = kittenVoice;
         if (string.IsNullOrWhiteSpace(voicePair) || Path.GetFileName(voicePair) != voicePair)
             throw new ArgumentException("Choose a Kitten voice filename prefix, such as warchief.");
@@ -277,12 +276,14 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                 owner.lifetime.Token.ThrowIfCancellationRequested();
                 var openTimer = Stopwatch.StartNew();
                 model = selected == Provider.Kokoro ? (IGatekeeperSpeechProvider)new KokoroSpeechProvider(bundle, voice)
+                    : selected == Provider.Phonon ? new PhononNativeSpeechProvider(phonon, clonedVoice, phononThreadCount, engine)
                     : selected == Provider.KittenSdk ? new KittenSdkSpeechProvider(kitten)
                     : new KittenNativeSpeechProvider(Path.Combine(kitten, "kitten-tts-2-q2_0.gguf"),
                         Path.Combine(kitten, "kitten-s3-meanflow-f32.gguf"), Path.Combine(kitten, voicePair + ".lm.json"),
                         Path.Combine(kitten, voicePair + ".s3.json"), threads, sentences, useAccelerate);
                 ProviderLoadSeconds = openTimer.Elapsed.TotalSeconds;
-                ProviderOpenSeconds = model is KittenNativeSpeechProvider native ? native.OpenSeconds : 0;
+                ProviderOpenSeconds = model is KittenNativeSpeechProvider native ? native.OpenSeconds
+                    : model is PhononNativeSpeechProvider phononNative ? phononNative.OpenSeconds : 0;
                 if (selected == Provider.Kitten) ResidentKittenVoice = voicePair;
                 while (true)
                 {
@@ -290,7 +291,8 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                     Request request;
                     lock (owner.gate) { request = owner.queue.First.Value; owner.queue.RemoveFirst(); }
                     var cancel = CancellationTokenSource.CreateLinkedTokenSource(owner.lifetime.Token, request.session);
-                    bool dispatched = false;
+                    if (selected == Provider.Phonon) cancel.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, request.budget)));
+
                     try
                     {
                         cancel.Token.ThrowIfCancellationRequested();
@@ -299,77 +301,71 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                         if (request.fault == Fault.SynthesisHangs) await Task.Delay(TimeSpan.FromSeconds(request.hangSeconds), cancel.Token).ConfigureAwait(false);
                         if (request.fault == Fault.SynthesisFails) throw new InvalidOperationException("Simulated synthesis failure.");
                         NativeCallRunning = true;
-                        if (useStream && !request.warmup)
+                        string[] texts = request.warmup ? new[] { request.text } : SplitClauses(request.text);
+                        var completions = texts.Select(_ => new TaskCompletionSource<Generated>(TaskCreationOptions.RunContinuationsAsynchronously)).ToArray();
+                        foreach (var completion in completions) Observe(completion.Task);
+                        Generated first = null;
+                        using var collected = new MemoryStream();
+                        string debugPath = Path.Combine(debugRoot, DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + "-" + Guid.NewGuid().ToString("N") + ".wav");
+                        try
                         {
-                            var stream = new GatekeeperPcmBuffer();
-                            var streamData = new Generated { text = request.text, stream = stream, cuesMaterialized = true,
-                                requestedAt = request.requestedAt, synthesisStartedAt = synthesisStarted };
-                            try
+                            for (int i = 0; i < texts.Length; i++)
                             {
-                                using (cancel.Token.Register(stream.Cancel))
+                                cancel.Token.ThrowIfCancellationRequested();
+                                long clauseStart = GatekeeperLineTiming.Now;
+                                var spoken = model.Synthesize(texts[i], cancel.Token);
+                                if (spoken.completion == SpeechCompletion.Cancelled) throw new OperationCanceledException(cancel.Token);
+                                byte[] pcm = spoken.pcm;
+                                if (pcm == null || pcm.Length < 2 || pcm.Length % 2 != 0) throw new InvalidOperationException("TTS returned no valid PCM.");
+                                var data = new Generated { text = texts[i], pcm = pcm, outcome = spoken,
+                                    synthesisSeconds = spoken.synthesisSeconds, requestedAt = request.requestedAt,
+                                    synthesisStartedAt = clauseStart, synthesisEndedAt = GatekeeperLineTiming.Now, debugAudioPath = debugPath };
+                                if (first == null) { first = data; first.clauses = completions.Select(c => c.Task).ToArray(); }
+                                first.totalSynthesisSeconds += spoken.synthesisSeconds;
+                                first.totalAudioSeconds += pcm.Length / 48000.0;
+                                collected.Write(pcm, 0, pcm.Length);
+                                spoken.pcm = null;
+                                var clauseRequest = new Request { text = texts[i], rhubarb = request.rhubarb, fault = request.fault, lipSyncTimeout = request.lipSyncTimeout };
+                                // Analysis owns its own cancellation registration; the synthesis worker can move on.
+                                var analysisCancel = CancellationTokenSource.CreateLinkedTokenSource(owner.lifetime.Token, request.session);
+                                data.analysis = Task.Run(async () =>
                                 {
-                                    streamData.outcome = model.Synthesize(request.text, cancel.Token, packet =>
+                                    bool acquired = false;
+                                    var result = new Analysis();
+                                    try
                                     {
-                                        cancel.Token.ThrowIfCancellationRequested();
-                                        stream.Append(packet);
-                                        if (streamData.synthesisEndedAt == 0)
-                                        {
-                                            // These tile the wait to FIRST packet; outcome retains full synthesis time.
-                                            streamData.synthesisEndedAt = streamData.analysisStartedAt = streamData.analysisEndedAt = GatekeeperLineTiming.Now;
-                                            streamData.synthesisSeconds = timer.Elapsed.TotalSeconds;
-                                            request.completion.TrySetResult(streamData);
-                                        }
-                                    });
-                                    if (streamData.outcome.completion == SpeechCompletion.Cancelled) throw new OperationCanceledException(cancel.Token);
-                                    if (streamData.synthesisEndedAt == 0) throw new InvalidOperationException("Kitten produced no audio.");
-                                    stream.Complete(streamData.outcome);
-                                    stalled = false;
-                                }
+                                        await owner.analysisSlots.WaitAsync(analysisCancel.Token).ConfigureAwait(false); acquired = true;
+                                        result.startedAt = GatekeeperLineTiming.Now;
+                                        result.cues = Analyze(pcm, clauseRequest, temporaryRoot, analysisCancel.Token);
+                                    }
+                                    catch (OperationCanceledException) { throw; }
+                                    catch (Exception error) { result.error = error.Message; }
+                                    finally { result.endedAt = GatekeeperLineTiming.Now; analysisCancel.Dispose(); if (acquired) owner.analysisSlots.Release(); }
+                                    return result;
+                                });
+                                Observe(data.analysis); owner.analyses.Add(data.analysis);
+                                completions[i].TrySetResult(data);
+                                if (i == 0) request.completion.TrySetResult(first);
                             }
-                            catch (Exception error) { stream.Complete(streamData.outcome, error); throw; }
-                            continue;
+                            if (!request.warmup)
+                            {
+                                Directory.CreateDirectory(debugRoot);
+                                WriteWav(debugPath, collected.ToArray());
+                                File.WriteAllText(Path.ChangeExtension(debugPath, ".txt"), request.text);
+                            }
+                            stalled = false;
                         }
-                        var spoken = model.Synthesize(request.text, cancel.Token);
-                        if (spoken.completion == SpeechCompletion.Cancelled) throw new OperationCanceledException(cancel.Token);
-                        byte[] pcm = spoken.pcm;
-                        double synth = timer.Elapsed.TotalSeconds;
-                        long synthesisEnded = GatekeeperLineTiming.Now;
-                        cancel.Token.ThrowIfCancellationRequested();
-                        if (pcm == null || pcm.Length < 2 || pcm.Length % 2 != 0) throw new InvalidOperationException("TTS returned no valid PCM.");
-                        var data = new Generated
+                        catch (Exception error)
                         {
-                            text = request.text, pcm = pcm, synthesisSeconds = synth, requestedAt = request.requestedAt, outcome = spoken,
-                            synthesisStartedAt = synthesisStarted, synthesisEndedAt = synthesisEnded
-                        };
-                        // Slot waiting belongs to analysis, never to synthesis or audio readiness.
-                        data.analysis = Task.Run(async () =>
-                        {
-                            bool acquired = false;
-                            var result = new Analysis();
-                            try
-                            {
-                                await owner.analysisSlots.WaitAsync(cancel.Token).ConfigureAwait(false); acquired = true;
-                                result.startedAt = GatekeeperLineTiming.Now;
-                                result.cues = Analyze(pcm, request, temporaryRoot, cancel.Token);
-                            }
-                            catch (OperationCanceledException) { throw; }
-                            catch (Exception exception) { result.error = exception.Message; }
-                            finally
-                            {
-                                result.endedAt = GatekeeperLineTiming.Now;
-                                cancel.Dispose(); if (acquired) owner.analysisSlots.Release();
-                            }
-                            return result;
-                        });
-                        Observe(data.analysis); owner.analyses.Add(data.analysis);
-                        dispatched = true;
-                        if (synth <= request.budget) stalled = false;
-                        request.completion.TrySetResult(data);
+                            foreach (var completion in completions)
+                                if (error is OperationCanceledException) completion.TrySetCanceled(); else completion.TrySetException(error);
+                            throw;
+                        }
                         owner.analyses.RemoveAll(task => task.IsCompleted);
                     }
                     catch (OperationCanceledException) { request.completion.TrySetCanceled(); }
                     catch (Exception exception) { request.completion.TrySetException(exception); }
-                    finally { NativeCallRunning = false; if (!dispatched) cancel.Dispose(); }
+                    finally { NativeCallRunning = false; cancel.Dispose(); }
                 }
             }
             catch (Exception exception)
@@ -396,6 +392,45 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         });
     }
 
+    // Publish complete clauses only. Pauses between clauses cannot truncate a word.
+    public static string[] SplitClauses(string text)
+    {
+        var clauses = Regex.Matches(text, @"[^,;:.!?—–]+[,;:.!?—–]*")
+            .Cast<Match>().Select(m => m.Value.Trim()).Where(t => t.Length > 0).ToArray();
+        if (clauses.Length == 0) throw new ArgumentException("Expected a spoken clause.");
+        return clauses;
+    }
+
+    public static void WriteWav(string path, byte[] pcm)
+    {
+        using var writer = new BinaryWriter(File.Create(path));
+        writer.Write(Encoding.ASCII.GetBytes("RIFF")); writer.Write(36 + pcm.Length);
+        writer.Write(Encoding.ASCII.GetBytes("WAVEfmt ")); writer.Write(16); writer.Write((short)1); writer.Write((short)1);
+        writer.Write(24000); writer.Write(48000); writer.Write((short)2); writer.Write((short)16);
+        writer.Write(Encoding.ASCII.GetBytes("data")); writer.Write(pcm.Length); writer.Write(pcm);
+    }
+    private static byte[] CleanForAnalysis(byte[] pcm)
+    {
+        // First-order 120 Hz high-pass and peak normalization, preserving sample count.
+        int count = pcm.Length / 2;
+        var filtered = new double[count];
+        double alpha = 1 / (1 + 2 * Math.PI * 120 / 24000), previous = 0, output = 0, peak = 0;
+        for (int i = 0; i < count; i++)
+        {
+            double sample = (short)(pcm[2 * i] | pcm[2 * i + 1] << 8) / 32768.0;
+            output = alpha * (output + sample - previous); previous = sample;
+            filtered[i] = output; peak = Math.Max(peak, Math.Abs(output));
+        }
+        var clean = new byte[pcm.Length];
+        double gain = peak > .0001 ? .9 / peak : 1;
+        for (int i = 0; i < count; i++)
+        {
+            short sample = (short)Math.Max(short.MinValue, Math.Min(short.MaxValue, filtered[i] * gain * 32767));
+            clean[2 * i] = (byte)sample; clean[2 * i + 1] = (byte)(sample >> 8);
+        }
+        return clean;
+    }
+
     private static string Quote(string text) => "\"" + text.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
     private static string Analyze(byte[] pcm, Request request, string root, CancellationToken token)
     {
@@ -408,13 +443,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         string wav = Path.Combine(directory, "speech.wav"), cues = Path.Combine(directory, "mouth.json"), transcript = Path.Combine(directory, "script.txt");
         try
         {
-            using (var writer = new BinaryWriter(File.Create(wav)))
-            {
-                writer.Write(Encoding.ASCII.GetBytes("RIFF")); writer.Write(36 + pcm.Length);
-                writer.Write(Encoding.ASCII.GetBytes("WAVEfmt ")); writer.Write(16); writer.Write((short)1); writer.Write((short)1);
-                writer.Write(24000); writer.Write(48000); writer.Write((short)2); writer.Write((short)16);
-                writer.Write(Encoding.ASCII.GetBytes("data")); writer.Write(pcm.Length); writer.Write(pcm);
-            }
+            WriteWav(wav, CleanForAnalysis(pcm));
             File.WriteAllText(transcript, request.text, new UTF8Encoding(false));
             var start = new ProcessStartInfo
             {
