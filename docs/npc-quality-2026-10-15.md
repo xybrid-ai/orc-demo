@@ -1,5 +1,7 @@
 # Trola model quality and limits — 2026-10-15
 
+Mac follow-up: [18 October installed-SDK measurements](npc-mac-quality-2026-10-18.md) found pooled full-reply medians of **2.82 s for E2B and 3.95 s for Gemma3NPC**. The figures below remain CPU-sandbox measurements.
+
 **Start with the existing Gemma3NPC-it Q4_K_M for the next Trola quality trial.**
 It gave the strongest player-name, business and offer recall in this headless
 comparison. Gemma4NPC E2B remains the fastest and least demanding runtime here,

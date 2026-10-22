@@ -83,6 +83,10 @@ and completion timing, speech-ready JSON and state transitions. See the
 checkpoint. The demo's installed model and Phonon startup voice remain the
 local setup described above.
 
+For a playable Apple Silicon Gemma3NPC trial, see the
+[trial build instructions](docs/gemma3-trial-build.md). Its build-only model
+selection leaves the Editor and ordinary E2B builds unchanged.
+
 ## Repository and release policy
 
 Run `python3 tools/check_repository.py` before committing or packaging source.

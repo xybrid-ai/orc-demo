@@ -13,7 +13,11 @@ using XybridBolt;
 // the main thread; loading, prefix priming and token pulls run on a serial worker.
 public sealed class GatekeeperNpcModel : MonoBehaviour
 {
+#if XYBRID_GEMMA3_TRIAL
+    public const string DirectoryName = "gemma3npc-it-q4";
+#else
     public const string DirectoryName = "gemma4npc-e2b-q4";
+#endif
     public bool IsReady => preparation != null && preparation.IsCompleted && model != null;
     public string LastError { get; private set; }
     public double LastReplySeconds { get; private set; }
@@ -57,6 +61,9 @@ public sealed class GatekeeperNpcModel : MonoBehaviour
             // that turn during the intro, keeping the character-card KV prefix.
             Generate("Greetings", 1, null, lifetime.Token);
             LastError = null;
+#if UNITY_STANDALONE_OSX
+            Debug.Log("[Trola] NPC ready: " + DirectoryName);
+#endif
         }
         catch (Exception error)
         {
