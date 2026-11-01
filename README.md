@@ -25,7 +25,10 @@ retains the direct zzz **rc.4** Kitten bridge. The SDK remains 0.9.0.
    metadata. Add `--verify-hashes` for recorded model/plugin hashes.
 4. Follow [zzz Phonon setup](docs/phonon-zzz.md) to build the plugin and stage
    your matching checkpoint and cloned safetensors. These inputs stay local.
-5. Open in Unity, then open
+5. Optional, for Vesper's voice: stage the [xn-ptts bridge](docs/phonon-integration.md)
+   with `tools/setup_phonon.py`, then run `python3 tools/setup_spirit_voice.py`
+   ([spirit setup](docs/spirit.md#setup)). Without them she shows subtitles only.
+6. Open in Unity, then open
    `Assets/XybridAvatarDemo/GoblinSpeakingDemo.unity` and press Play.
 
 The orc scene is the sole scene in Build Settings. Only this encounter's source,
@@ -67,6 +70,10 @@ hashes. Imported/derived assets stay local even outside `Assets/Synty`.
   `d808fcac6160f69139cca6583e3d66470f2b21fb3b6a1895ee01bf47a29f721e`.
 - The Kokoro `universal.xyb` fallback and Rhubarb Lip Sync 1.14.0 macOS tool
   and resources under `StreamingAssets`, for the retained debug/speech paths.
+- Optional and not in `local-assets.json`: Vesper's pinned Apache-2.0 stock
+  voice, `Assets/StreamingAssets/Phonon/spirit.safetensors` with its
+  provenance, staged by `tools/setup_spirit_voice.py`, and your own camp laugh
+  clips under `Assets/XybridAvatarDemo/Resources/CampAmbience/`.
 
 Gemma preloads during the intro and reuses the persona prompt prefix. Each turn
 includes the camp/persona, authored style examples, handoff summary, six exchanges
@@ -94,6 +101,13 @@ plan and a text-only Gemma writer. In Play Mode, a local d1 server on the Apple
 GPU classifies each free-form message when it is running; otherwise messages keep
 the existing dialogue path. See [decision-layer staging and checks](docs/decision-layer.md)
 for the server, the contract, recorded-decision replay and the focused Apple GPU probe.
+
+Vesper, an optional spirit in the player's head, advises at Trola's
+checkpoints with authored lines; the same local d1 labels the player's typed
+thoughts on a separate `/spirit` route. A procedural camp soundscape and
+tension music play with or without her. See [Vesper and the camp](docs/spirit.md)
+for setup, the F6 lens, F7 spirit, F8 ambience, Tab and Esc keys, and the
+`-xybridNoSpirit`, `-xybridNoAmbience` and `-xybridLens` flags.
 
 For a playable Apple Silicon Gemma3NPC trial, see the
 [trial build instructions](docs/gemma3-trial-build.md). Its build-only model

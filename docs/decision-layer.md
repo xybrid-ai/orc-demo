@@ -218,3 +218,153 @@ Raw receipts, package versions and source hashes are preserved locally under
 `.context/decision-spike/m5-max/`. The public checkpoint transfer was slow and
 required resuming byte ranges and recovering small runtime files; downloading
 and hash verification are excluded from the model timings above.
+
+## Vesper's thoughts: `POST /spirit`
+
+Vesper, the spirit in the player's head (`docs/spirit.md`), asks the same
+resident d1 what a typed thought means. `serve_decisions.py` serves
+`POST /spirit` beside `/decide`: the same process, model, lock and loopback
+binding, with its own question set. d1 only labels the thought;
+`SpiritPolicy.Answer` picks her authored line from the labels and the story
+graph. No spirit line is generated.
+
+**Questions** (one packed pass, five questions; Trola is "he" throughout):
+
+- `decision-spirit-questions.json`: `scope` (in_world, out_of_world,
+  role_override, unclear), `intent` (ask_advice, doubt, ask_about_trola,
+  agree, dismiss, state_plan, ask_about_spirit, ask_spirit_to_act, other) and
+  `plan` (flatter, bribe, threaten, ask_camp, pay_toll, share_joke,
+  demand_gate, none).
+- `decision-spirit-flags.json`: yes/no `reckless` and `to_trola`, raised at
+  P(yes) >= 0.5 like the fact slots.
+
+**Request**, validated like `/decide` (400 on any violation, 413, 415, 404 for
+other paths): `message` 1–80 characters; `name` ≤80; `business` ≤160; `stage`
+one of name, business, hub, reckoning, free_talk; `mood` one of furious,
+annoyed, wary, listening, warm (the C# band, never a patience number);
+`options` ≤4 labels of ≤40; `spirit_said` ≤240; `history` ≤6 turns, speakers
+Player or Spirit only, ≤240 characters each. The d1 state adds the setting,
+the spirit's role and Trola's card. Neither patience nor outcome is sent.
+
+**Reply**: `{scope, scope_confidence, intent, intent_confidence, plan,
+plan_confidence, flags[], flag_probabilities{reckless, to_trola}, seconds,
+input_tokens}`. A thought waits at most 1 s for the model lock (503 `busy`),
+under the client's 2 s `decision_timeout`, so it never joins a queue the
+client has stopped waiting for. Once a thought has started it runs to the end, even if the client
+has timed out or cancelled (the server does not notice a closed connection),
+and the lock is shared: a `/decide` that arrives meanwhile waits for that one
+thought. Trola's queue stays 3 s.
+
+**Unchanged for Trola**: `/decide` validation, state, reply, receipts and
+stdout lines are byte-identical (compared on two stub runs before and after
+the change), and `verify_decisions.py` passes unmodified. Spirit receipts
+carry `kind: "spirit"`; Trola's receipt lines keep exactly `{at, state,
+decision}`. The startup prime covers both sets, and `/health` gains
+`spirit_questions` and `spirit_prime_seconds` after the existing keys. A
+failed thought leaves `/health` alone: `ready` and `error` follow Trola's own
+decisions and the shared 4 s stall check, a good thought never clears a Trola
+failure, and recovery primes Trola's set only. When Trola's service and
+Vesper's director probe together after a failure, a probe that waited for the
+other's prime does not prime again (one still running after its 0.5 s wait
+reports not ready for that round). Vesper backs off on her own after a failed
+thought (5, 10 ... 30 s); one slower than `decision_timeout` only sends her
+next 2.5 s of thoughts to the keywords.
+**Restart the server** after updating: a server that predates `/spirit`
+answers 404 there and lacks `spirit_questions`, and Vesper then uses her
+keyword fallback.
+
+**Client**: `SpiritCore/SpiritDecisionClient.cs` implements `ISpiritDecider`
+with its own `HttpClient`, separate from `GatekeeperDecisionClient` and the
+service, so a slow or failed thought never changes the service's connection
+or backoff. On the server both routes share the model lock and the stall
+check, so only a thought that held the model past Trola's 3 s queue or the
+4 s stall limit could cost Trola a decision or a health probe. It accepts only
+loopback http, waits `decision_timeout` per thought (2 s in
+`SpiritLines.json`) and 1 s for health, and never mutates the caller's
+request: `Clip` enforces the limits above, keeps the last six Player/Spirit
+turns, and leaves `stage` and `mood` for the server to reject. To keep the
+prompt short, `SpiritDirector` sends `spirit_said` as her latest
+advice-bearing line and at most her last two turns, never repeating
+`spirit_said` as the final turn.
+`Map` turns unknown labels into Unclear / Other / None at zero confidence and
+names them in the decision detail. A 404 raises
+`SpiritEndpointMissingException`; `Problem(health)` reports a server that is
+not ready or has no `/spirit`; a timeout is a `TimeoutException`; a caller's
+cancellation only ever surfaces as `OperationCanceledException`. Her
+conversation never enters `GatekeeperConversationState`, so Gemma and Trola's
+d1 never see thoughts.
+
+**Verification** (no model): `verify_spirit_d1.py` runs the real server code
+with a stub engine and an old-server stand-in, the C# client checks
+(`SpiritClientChecks`: loopback, health with and without `spirit_questions`,
+404, label and flag mapping, unknown labels, `Clip`, 400s, server failure,
+cancellation before and in flight, the constructor's 1.2 s default timeout),
+the server checks (question set, prime, validation, state layout without
+patience, reply shape, receipts, a failed thought leaving health ready, a
+failed `/decide` recovering only through its prime, one prime for two
+concurrent probes, the 1 s queue), a replay of `decision-spirit-cases.json`
+through `SpiritPolicy.Answer`, and finally the unmodified
+`verify_decisions.py`:
+
+```sh
+python3 tools/npc-quality/verify_spirit_d1.py --dotnet <dotnet>
+```
+
+`decision-spirit-cases.json` keeps recorded d1 labels with the checkpoint they
+were replayed at and the family SpiritPolicy's rules expect. Like
+`decision-cases.json`, replaying them checks the C# rules, not d1.
+
+**Probe** (a measurement; run it only when asked): `probe_spirit.py` sends 30
+phrases through the spirit set, either in-process on MPS (`--model`, the same
+pinned checkpoint) or against a restarted server (`--url
+http://127.0.0.1:8765/`), and records labels, confidences and the expected
+labels beside them (never sent). It needs a fresh `--output` directory.
+The spirit set's d1 time on MPS, idle or in Play Mode, has not been measured;
+its longer prompt may take longer than Trola's 218–851 ms. The only spirit
+timings are the CPU sandbox probe below.
+
+### CPU sanity probe — November 1, 2026
+
+Twelve phrases ran through the spirit set on the pinned checkpoint in a Linux
+sandbox (CPU, BF16, 4 threads, 51–61 s per decision; these are not Mac
+timings and MPS labels may differ slightly). The first question wording filed
+five in-world thoughts as `unclear` ("are you sure?", "what should I do", "can
+you open the gate for me", "open the gate, troll!", "shut up"), raised
+`to_trola` on "I'll threaten him" (.53) and "can you open the gate for me" (.66), and
+`reckless` on "shut up". The wording was revised once: `scope` says short
+thoughts to the spirit with a clear purpose are in_world and narrows
+`unclear` to gibberish; `to_trola` no longer lists "you" and "open the gate"
+as cues and says questions to the spirit and "he/him" are not addressed to
+Trola; `plan` and `reckless` exclude asking the spirit to act and rudeness to
+the spirit. The six failing phrases were re-run with the revised wording:
+
+| Phrase | Revised wording: scope / intent / plan / reckless / to_trola | Rule → family |
+|---|---|---|
+| are you sure? | in_world .84 / doubt .79 / none .63 / .15 / .23 | 7 answer.doubt.camp |
+| what should I do | in_world .85 / ask_advice .89 / none .79 / .07 / .25 | 8 answer.advice.camp |
+| I'll threaten him | in_world .88 / state_plan .72 / threaten .97 / .97 / .43 | 3 plan.costly.threaten |
+| can you open the gate for me | in_world .90 / ask_spirit_to_act .63 / **demand_gate .84** / .11 / .14 | 4 answer.cannot_act |
+| open the gate, troll! | in_world .75 / ask_spirit_to_act .40 / demand_gate .83 / .66 / .64 | 3 plan.costly.threaten |
+| shut up | in_world .57 / dismiss .69 / threaten .52 / **.84** / .45 | 6 answer.dismiss |
+
+The other six kept their first-wording labels: "is he angry?" (hub, p1)
+in_world / ask_about_trola .84 → answer.read.furious; "I won't threaten him"
+agree .47, plan none, reckless .13 → answer.agree; "let's tell the stew joke"
+(reckoning, p2) share_joke .91 → plan.fatal.friendship; "who are you?"
+ask_about_spirit .88 → answer.self; "turn the wifi on" out_of_world .79 →
+answer.offworld; "ok thanks" agree .80 → answer.agree. Two labels stay off
+after the one revision: asking her to open the gate still reads as a
+demand_gate plan, and "shut up" still reads as reckless. The policy absorbs
+both: `ask_spirit_to_act` is answered before the plan rule unless the thought
+is reckless, and `dismiss`/`agree` ignore the `reckless` flag (a confident
+threaten or demand_gate plan still raises the alarm). All twelve recorded
+label sets are in `decision-spirit-cases.json` and replay through
+`SpiritPolicy.Answer` to the families above.
+
+Those twelve joined her opening into `spirit_said` and sent no history. The
+game sends her advice line as `spirit_said` and her other last two turns as
+history, so two more first-counsel cases were recorded in that shape (same
+sandbox, same wording): "are you sure?" in_world .87 / doubt .77 / none .73 /
+.14 / .26 and "why?" in_world .78 / doubt .74 / none .75 / .16 / .24, both
+rule 7 `answer.doubt.camp`. `probe_spirit.py`'s `hub1` context now sends that
+shape.

@@ -24,6 +24,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             .AppendLine("Samples: " + audio?.timeSamples + " / " + audio?.clip?.samples + "; pitch=" + audio?.pitch)
             .AppendLine("NPC: ready=" + npc?.IsReady + "; error=" + npc?.LastError)
             .AppendLine(controller.TryGetComponent(out GatekeeperDecisionService decisions) ? decisions.Describe() : "Decisions: not prepared")
+            .AppendLine(SpiritSignals.Describe())
             .AppendLine("Player: " + controller.PlayerName + "; business=" + controller.Business)
             .AppendLine("History:");
         if (controller.Conversation != null) foreach (var entry in controller.Conversation.History) state.AppendLine(entry);
@@ -80,6 +81,8 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             ? "Voice: live Phonon / cloned voice / " + (speech.phononEngine == PhononEngine.Zzz ? "zzz rc.9" : "xn-ptts 0.6.0") + "; " + speech.phononThreads + " CPU threads"
             : "Voice: live " + speech.provider + " / " + speech.kittenVoice + "; " + speech.kittenThreads + " threads; Accelerate " + speech.accelerate);
         GUILayout.Label("Complete clauses; original WAVs: " + System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug"));
+        // Always one label (IMGUI layout); "Spirit: not installed" when the spirit is absent or bailed out.
+        GUILayout.Label(SpiritSignals.Describe());
         var npc = controller.GetComponent<GatekeeperNpcModel>();
         if (npc != null && !string.IsNullOrEmpty(npc.LastError)) GUILayout.Label("NPC: " + npc.LastError);
         // Always one label: a button below can add the service mid-event.
