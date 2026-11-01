@@ -83,6 +83,7 @@ public sealed class SpiritDirector : MonoBehaviour
     private bool interruptedSince, tauntedSince;
     private string lastChoiceLabel = "", trolaLastLineId = "", lastError = "", inertReason = "", d1Problem = "connecting", loggedD1 = "";
     private string spiritSaid = ""; // d1's spirit_said: her latest advice-bearing line (see CarriesAdvice).
+    private int previews;
 
     private static double Now => Time.realtimeSinceStartupAsDouble;
     private bool Audible => Controller != null && (Controller.IsWaitingForPlayer || Controller.State == GatekeeperController.Phase.Ended);
@@ -691,6 +692,7 @@ public sealed class SpiritDirector : MonoBehaviour
         if (keyboard.f7Key.wasPressedThisFrame) ToggleSpirit();
         if (keyboard.f8Key.wasPressedThisFrame && Window.IsOpen) Abort(SpiritCloseReason.Escape); // F8 mutes the camp; she lets go too.
         if (keyboard.tabKey.wasPressedThisFrame) Summon();
+        if (keyboard.f9Key.wasPressedThisFrame && Voice.SelectNextVoice()) { Note("voice: " + Voice.VoiceName + " (F9)"); PreviewVoice(); }
     }
 
     private void Tick()
@@ -762,6 +764,20 @@ public sealed class SpiritDirector : MonoBehaviour
         if (!built || broken || inert) return;
         try { if (Window.IsOpen) Abort(SpiritCloseReason.Escape); }
         catch (Exception error) { Fail(error); }
+    }
+
+    // A voice audition from F4 or F9: her opening hub line in the current voice, without halo or holds. Only between
+    // moments and while Trola waits, so it never cuts him or her; a moment that opens meanwhile cuts the preview instead.
+    public bool CanPreviewVoice => Active && !Window.IsOpen && Voice != null && Voice.CanSynthesize;
+    public bool PreviewVoice()
+    {
+        if (!CanPreviewVoice) return false;
+        var line = Lines.lines.Find(l => l.family == "hub.open") ?? Lines.lines.Find(l => l.family == "intro");
+        if (line == null) return false;
+        string name = string.IsNullOrWhiteSpace(Controller.PlayerName) || Controller.NameWasAssigned ? SpiritLines.Traveller : Controller.PlayerName;
+        Voice.Say(new SpiritCue { LineId = "voice-preview", Family = "preview", Text = SpiritLines.Resolve(line.text, name, Controller.PlayerName, true) }, -++previews);
+        Note("voice preview: " + Voice.VoiceName);
+        return true;
     }
 
     // F7: off snaps her shut and removes every effect; on waits for the next checkpoint.

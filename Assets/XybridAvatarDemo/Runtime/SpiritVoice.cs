@@ -39,6 +39,10 @@ public sealed class SpiritVoice : MonoBehaviour
     public double LastStartSeconds { get; private set; }
     public bool LastPrefetched { get; private set; }
     public string VoiceName { get; private set; } = "";
+    // Voices staged by tools/setup_spirit_voice.py into StreamingAssets/Phonon/spirit-voices; F4 and F9 swap between them.
+    public sealed class VoiceOption { public string Key = "", Name = "", File = ""; }
+    public IReadOnlyList<VoiceOption> Voices => voices;
+    public string VoiceKey { get; private set; } = "";
 
     public event Action<SpiritCue> LineStarted;
     public event Action<SpiritCue> LineFinished;
@@ -46,6 +50,8 @@ public sealed class SpiritVoice : MonoBehaviour
     private sealed class Pending { public SpiritCue cue; public int token; public float requestedAt; }
     [Serializable] private sealed class Provenance { public string name = "", key = "", sha256 = ""; }
 
+    private const string VoiceLibrary = "Phonon/spirit-voices", VoicePreference = "Vesper.voice";
+    private readonly List<VoiceOption> voices = new List<VoiceOption>();
     private SpiritLines.Voice settings = new SpiritLines.Voice();
     private GatekeeperLiveSpeech engine;
     private AudioSource output, sfx;
@@ -58,7 +64,7 @@ public sealed class SpiritVoice : MonoBehaviour
     private int generation, errors;
     private bool built, filesPresent, armRequested, supportedEngine, sfxBroken;
     private float armRequestedAt, fadeRate;
-    private string checkpointPath = "", voicePath = "", warned = "";
+    private string checkpointPath = "", voicePath = "", voiceFile = "", warned = "";
 
     public static SpiritVoice Create(Transform parent, GatekeeperController controller, SpiritLines.Voice settings)
     {
@@ -84,9 +90,13 @@ public sealed class SpiritVoice : MonoBehaviour
         sfx = MakeSource("Spirit voice sfx", 16);
         sfx.volume = 1;
         supportedEngine = string.Equals(settings.engine, nameof(PhononEngine.XnPtts), StringComparison.OrdinalIgnoreCase);
-        checkpointPath = Resolve(settings.checkpoint); voicePath = Resolve(settings.voice_file);
-        CheckFiles();
+        checkpointPath = Resolve(settings.checkpoint); voiceFile = settings.voice_file; voicePath = Resolve(voiceFile);
         VoiceName = ReadVoiceName();
+        FindVoices();
+        // The last voice picked in F4 or with F9 wins over the staged default, when it is still staged.
+        var saved = voices.Find(v => v.Key == PlayerPrefs.GetString(VoicePreference, ""));
+        if (saved != null) Use(saved);
+        CheckFiles();
         if (controller != null) { controller.PlayerActed += OnPlayerActed; controller.Restarted += ResetSession; }
         StartCoroutine(PrerenderSounds());
     }
@@ -109,25 +119,65 @@ public sealed class SpiritVoice : MonoBehaviour
         if (!supportedEngine) { LastFailure = "unsupported spirit voice engine '" + settings.engine + "' (XnPtts only)"; return; }
         foreach (string file in CheckpointFiles)
             if (!File.Exists(Path.Combine(checkpointPath, file))) { LastFailure = "missing StreamingAssets/" + settings.checkpoint + "/" + file + "; run tools/setup_phonon.py"; return; }
-        if (!File.Exists(voicePath)) { LastFailure = "missing StreamingAssets/" + settings.voice_file + "; run python3 tools/setup_spirit_voice.py"; return; }
+        if (!File.Exists(voicePath)) { LastFailure = "missing StreamingAssets/" + voiceFile + "; run python3 tools/setup_spirit_voice.py"; return; }
         filesPresent = true;
     }
 
     // The staged voice's own name (setup_spirit_voice.py provenance) beats the JSON label after a by-ear swap.
     private string ReadVoiceName()
     {
+        var data = ReadProvenance(Path.Combine(Path.GetDirectoryName(voicePath) ?? "", Path.GetFileNameWithoutExtension(voicePath) + "-provenance.json"));
+        VoiceKey = data != null ? data.key ?? "" : "";
+        if (data != null && !string.IsNullOrWhiteSpace(data.name)) return data.name.Trim();
+        return string.IsNullOrWhiteSpace(settings.label) ? "spirit voice" : settings.label;
+    }
+
+    private static Provenance ReadProvenance(string receipt)
+    {
+        try { return File.Exists(receipt) ? JsonUtility.FromJson<Provenance>(File.ReadAllText(receipt)) : null; }
+        catch (Exception) { return null; } // Cosmetic only.
+    }
+
+    private void FindVoices()
+    {
+        voices.Clear();
         try
         {
-            string folder = Path.GetDirectoryName(voicePath) ?? "";
-            string receipt = Path.Combine(folder, Path.GetFileNameWithoutExtension(voicePath) + "-provenance.json");
-            if (File.Exists(receipt))
+            string folder = Resolve(VoiceLibrary);
+            if (!Directory.Exists(folder)) return;
+            foreach (string file in Directory.GetFiles(folder, "*.safetensors"))
             {
-                var data = JsonUtility.FromJson<Provenance>(File.ReadAllText(receipt));
-                if (data != null && !string.IsNullOrWhiteSpace(data.name)) return data.name.Trim();
+                string key = Path.GetFileNameWithoutExtension(file);
+                var data = ReadProvenance(Path.ChangeExtension(file, ".json"));
+                voices.Add(new VoiceOption { Key = key, Name = data != null && !string.IsNullOrWhiteSpace(data.name) ? data.name.Trim() : key, File = VoiceLibrary + "/" + key + ".safetensors" });
             }
+            voices.Sort((a, b) => string.CompareOrdinal(a.Name, b.Name));
         }
-        catch (Exception) { } // Cosmetic only.
-        return string.IsNullOrWhiteSpace(settings.label) ? "spirit voice" : settings.label;
+        catch (Exception error) { Warn("her voice library is unreadable: " + error.Message); }
+    }
+
+    private void Use(VoiceOption option) { VoiceKey = option.Key; VoiceName = option.Name; voiceFile = option.File; voicePath = Resolve(voiceFile); }
+
+    // Swaps her voice for the rest of the session and remembers it. The line in progress stops, audio prefetched in the
+    // old voice is dropped, and the engine reopens on the new file at once (xn opens a voice in about 30 ms).
+    public bool SelectVoice(string key)
+    {
+        var option = voices.Find(v => v.Key == key);
+        if (!built || option == null || option.Key == VoiceKey) return false;
+        Stop(.05f);
+        Use(option);
+        warned = ""; LastFailure = "";
+        CheckFiles();
+        if (engine != null) { engine.SelectPhononVoice(voiceFile); if (filesPresent) engine.Warm(); }
+        PlayerPrefs.SetString(VoicePreference, key); PlayerPrefs.Save();
+        return true;
+    }
+
+    public bool SelectNextVoice()
+    {
+        if (voices.Count < 2) return false;
+        int at = voices.FindIndex(v => v.Key == VoiceKey);
+        return SelectVoice(voices[(at + 1) % voices.Count].Key);
     }
 
     private IEnumerator PrerenderSounds()
@@ -168,7 +218,7 @@ public sealed class SpiritVoice : MonoBehaviour
         var speech = host.AddComponent<GatekeeperLiveSpeech>();
         speech.startWithKitten = false; speech.startWithPhonon = true;
         speech.provider = GatekeeperLiveSpeech.Provider.Phonon; speech.phononEngine = PhononEngine.XnPtts;
-        speech.phononCheckpoint = settings.checkpoint; speech.phononVoiceFile = settings.voice_file;
+        speech.phononCheckpoint = settings.checkpoint; speech.phononVoiceFile = voiceFile;
         speech.phononThreads = Threads; speech.preparationTimeout = Mathf.Max(1, settings.preparation_timeout);
         speech.rhubarbExecutable = NoLipSync;
         speech.simulatedFault = GatekeeperLiveSpeech.Fault.None; speech.debugFolder = DebugFolder;
