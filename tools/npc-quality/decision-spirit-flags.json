@@ -1,0 +1,10 @@
+{
+  "reckless": {
+    "type": "noul",
+    "instructions": "Does player_message say the player will insult, threaten, attack, trick or make demands of Trola, or do something else likely to anger him? Refusing to do so (I won't threaten him) is not reckless, and rudeness to the spirit itself is not reckless."
+  },
+  "to_trola": {
+    "type": "noul",
+    "instructions": "Is player_message spoken out loud to Trola himself, calling him troll or Trola or giving him an order, rather than thought to the spirit? A question to the spirit (can you, are you, what should I) is not, and a message that calls Trola he or him is not."
+  }
+}

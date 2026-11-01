@@ -127,6 +127,20 @@ client against `serve_decisions.py` with a stub engine:
 python3 tools/npc-quality/verify_decisions.py
 ```
 
+Vesper's checks need no model or Unity either. `verify_spirit.py` runs the
+spirit core suites (advisor, `SpiritLines.json` validation, policy, window,
+keywords) and the procedural audio suite, and compares the advisor table with
+`spirit_advisor_brute.py`; `--lines PATH` validates a draft lines file.
+`verify_spirit_d1.py` runs the `/spirit` route of `serve_decisions.py` with a
+stub engine against the C# client, replays `decision-spirit-cases.json`
+through the policy, then runs `verify_decisions.py`. See
+[tuning `SpiritLines.json`](../../docs/spirit.md#tuning-spiritlinesjson):
+
+```sh
+python3 tools/npc-quality/verify_spirit.py
+python3 tools/npc-quality/verify_spirit_d1.py
+```
+
 See [decision-layer staging](../../docs/decision-layer.md) for the local d1
 server used in Play Mode and the separate, explicitly requested four-case d1/MPS
 feasibility probe. Replays do not measure

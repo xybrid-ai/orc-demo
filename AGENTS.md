@@ -13,5 +13,8 @@ Preserve complete-clause playback and six Phonon threads. Keep the optional
 Kitten rc.4 provider, paired WarChief voice, sentenceChunks=true, Accelerate
 and six Kitten threads. Do not upgrade the SDK as part of voice integration.
 See docs/phonon-zzz.md and docs/phonon-integration.md for local staging and the native build boundary.
+Vesper, the spirit, speaks through a second XnPtts engine on the same checkpoint
+with a stock Apache-2.0 voice: stage it with python3 tools/setup_spirit_voice.py.
+Her lines are authored, chosen by rules from d1 /spirit labels; see docs/spirit.md.
 Default validation: one Editor confirmation; no builds or measurement suites
 unless explicitly requested. See README.md for external dependency limits.

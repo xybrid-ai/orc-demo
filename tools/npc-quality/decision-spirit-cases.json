@@ -1,0 +1,689 @@
+[
+  {
+    "id": "doubt_sure",
+    "message": "are you sure?",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "are you sure?",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "doubt",
+      "plan": "none"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.8391839222171261,
+      "intent": "doubt",
+      "intent_confidence": 0.7853036573442795,
+      "plan": "none",
+      "plan_confidence": 0.6264054424193034,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.1477359925444216,
+        "to_trola": 0.22880952207337427
+      }
+    },
+    "expected_rule": 7,
+    "expected_family": "answer.doubt.camp",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "advice_what",
+    "message": "what should I do",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "what should I do",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "ask_advice",
+      "plan": "none"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.84717434908415,
+      "intent": "ask_advice",
+      "intent_confidence": 0.8943352477448079,
+      "plan": "none",
+      "plan_confidence": 0.7909051388982851,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.07422322192156361,
+        "to_trola": 0.2544822299746939
+      }
+    },
+    "expected_rule": 8,
+    "expected_family": "answer.advice.camp",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "doubt_sure_runtime",
+    "message": "are you sure?",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "are you sure?",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": [
+        {
+          "speaker": "Spirit",
+          "text": "Careful, Mira. This one's sensitive, don't rub him the wrong way."
+        },
+        {
+          "speaker": "Spirit",
+          "text": "You can answer me. Just think it."
+        }
+      ]
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "doubt",
+      "plan": "none"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.8678560557382011,
+      "intent": "doubt",
+      "intent_confidence": 0.769158355292121,
+      "plan": "none",
+      "plan_confidence": 0.7323419821419359,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.13635093557029618,
+        "to_trola": 0.26344962851666953
+      }
+    },
+    "expected_rule": 7,
+    "expected_family": "answer.doubt.camp",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; the first counsel as SpiritDirector sends it (spirit_said = her advice line, history = her other last two turns)"
+  },
+  {
+    "id": "why_runtime",
+    "message": "why?",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "why?",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": [
+        {
+          "speaker": "Spirit",
+          "text": "Careful, Mira. This one's sensitive, don't rub him the wrong way."
+        },
+        {
+          "speaker": "Spirit",
+          "text": "You can answer me. Just think it."
+        }
+      ]
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "doubt",
+      "plan": "none"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.7753006403662005,
+      "intent": "doubt",
+      "intent_confidence": 0.742534260406959,
+      "plan": "none",
+      "plan_confidence": 0.7545577290084253,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.16305944757031893,
+        "to_trola": 0.23716005280164998
+      }
+    },
+    "expected_rule": 7,
+    "expected_family": "answer.doubt.camp",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; the first counsel as SpiritDirector sends it (spirit_said = her advice line, history = her other last two turns)"
+  },
+  {
+    "id": "trola_angry",
+    "message": "is he angry?",
+    "request": {
+      "stage": "hub",
+      "mood": "furious",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "What are you doing? Are you trying to get us killed, Mira? Mend it. Ask about his camp.",
+      "message": "is he angry?",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 1,
+      "hub_rounds_done": 1,
+      "used": [
+        "threaten"
+      ]
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "ask_about_trola",
+      "plan": "none"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.6892903996737113,
+      "intent": "ask_about_trola",
+      "intent_confidence": 0.841213610871841,
+      "plan": "none",
+      "plan_confidence": 0.6507224056703221,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.0939333636309137,
+        "to_trola": 0.3420312613912599
+      }
+    },
+    "expected_rule": 9,
+    "expected_family": "answer.read.furious",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; first question wording before the scope/plan/reckless/to_trola revision; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "plan_threaten",
+    "message": "I'll threaten him",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "I'll threaten him",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "state_plan",
+      "plan": "threaten",
+      "reckless": true
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.8793440145748235,
+      "intent": "state_plan",
+      "intent_confidence": 0.7186282691913215,
+      "plan": "threaten",
+      "plan_confidence": 0.9681922952350434,
+      "flags": [
+        "reckless"
+      ],
+      "flag_probabilities": {
+        "reckless": 0.9687758133922248,
+        "to_trola": 0.4303569097894846
+      }
+    },
+    "expected_rule": 3,
+    "expected_family": "plan.costly.threaten",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "plan_no_threat",
+    "message": "I won't threaten him",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "I won't threaten him",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "plan": "none",
+      "reckless": false
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.7422873659832111,
+      "intent": "agree",
+      "intent_confidence": 0.47065268716246655,
+      "plan": "none",
+      "plan_confidence": 0.7938764408858761,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.13362264652269543,
+        "to_trola": 0.15678180161127034
+      }
+    },
+    "expected_rule": 6,
+    "expected_family": "answer.agree",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; first question wording before the scope/plan/reckless/to_trola revision; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "plan_joke",
+    "message": "let's tell the stew joke",
+    "request": {
+      "stage": "reckoning",
+      "mood": "annoyed",
+      "options": [
+        "Offer a fair toll",
+        "Share the joke",
+        "Demand the gate"
+      ],
+      "spirit_said": "Not the joke, he isn't laughing today. Pay him.",
+      "message": "let's tell the stew joke",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Reckoning",
+      "node": "reckoning",
+      "patience": 2,
+      "hub_rounds_done": 2,
+      "used": [
+        "threaten",
+        "camp"
+      ]
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "state_plan",
+      "plan": "share_joke"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.47030853883979956,
+      "intent": "state_plan",
+      "intent_confidence": 0.3691724807379302,
+      "plan": "share_joke",
+      "plan_confidence": 0.910551217733825,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.183106521027646,
+        "to_trola": 0.15371746694857863
+      }
+    },
+    "expected_rule": 5,
+    "expected_family": "plan.fatal.friendship",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; first question wording before the scope/plan/reckless/to_trola revision; empty history"
+  },
+  {
+    "id": "who_are_you",
+    "message": "who are you?",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "who are you?",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "ask_about_spirit"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.6727828420798386,
+      "intent": "ask_about_spirit",
+      "intent_confidence": 0.8808246667017688,
+      "plan": "none",
+      "plan_confidence": 0.5037755388401113,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.025453063830758762,
+        "to_trola": 0.19020046722272987
+      }
+    },
+    "expected_rule": 10,
+    "expected_family": "answer.self",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; first question wording before the scope/plan/reckless/to_trola revision; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "act_open",
+    "message": "can you open the gate for me",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "can you open the gate for me",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "ask_spirit_to_act",
+      "plan": "none",
+      "to_trola": false
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.9042001529049036,
+      "intent": "ask_spirit_to_act",
+      "intent_confidence": 0.6262539923502247,
+      "plan": "demand_gate",
+      "plan_confidence": 0.840558866038164,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.11109574429890104,
+        "to_trola": 0.13912598501014872
+      }
+    },
+    "expected_rule": 4,
+    "expected_family": "answer.cannot_act",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "to_trola_open",
+    "message": "open the gate, troll!",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "open the gate, troll!",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "to_trola": true,
+      "plan": "demand_gate"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.7513285360733114,
+      "intent": "ask_spirit_to_act",
+      "intent_confidence": 0.40041610101021363,
+      "plan": "demand_gate",
+      "plan_confidence": 0.8321499413548463,
+      "flags": [
+        "reckless",
+        "to_trola"
+      ],
+      "flag_probabilities": {
+        "reckless": 0.6579687386087401,
+        "to_trola": 0.6366353668498197
+      }
+    },
+    "expected_rule": 3,
+    "expected_family": "plan.costly.threaten",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "wifi",
+    "message": "turn the wifi on",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "turn the wifi on",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "out_of_world"
+    },
+    "recorded": {
+      "scope": "out_of_world",
+      "scope_confidence": 0.790930987120582,
+      "intent": "other",
+      "intent_confidence": 0.8589547547675104,
+      "plan": "none",
+      "plan_confidence": 0.9338520293285714,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.034178733152988895,
+        "to_trola": 0.05001378720628955
+      }
+    },
+    "expected_rule": 1,
+    "expected_family": "answer.offworld",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; first question wording before the scope/plan/reckless/to_trola revision; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "thanks",
+    "message": "ok thanks",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "ok thanks",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "agree",
+      "plan": "none"
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.5100024486005745,
+      "intent": "agree",
+      "intent_confidence": 0.8034136487899571,
+      "plan": "none",
+      "plan_confidence": 0.9070391982173099,
+      "flags": [],
+      "flag_probabilities": {
+        "reckless": 0.03052506474269055,
+        "to_trola": 0.04091648572266137
+      }
+    },
+    "expected_rule": 6,
+    "expected_family": "answer.agree",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; first question wording before the scope/plan/reckless/to_trola revision; spirit_said joins her whole opening, empty history"
+  },
+  {
+    "id": "shut_up",
+    "message": "shut up",
+    "request": {
+      "stage": "hub",
+      "mood": "wary",
+      "options": [
+        "Flatter",
+        "Bribe",
+        "Threaten",
+        "Ask about the camp"
+      ],
+      "spirit_said": "Careful, Mira. This one's sensitive, don't rub him the wrong way. Ask about his camp. Nobody ever asks the gatekeeper.",
+      "message": "shut up",
+      "name": "Mira",
+      "business": "selling turnips",
+      "history": []
+    },
+    "checkpoint": {
+      "stage": "Hub",
+      "node": "hub",
+      "patience": 3,
+      "hub_rounds_done": 0,
+      "used": []
+    },
+    "expected_labels": {
+      "scope": "in_world",
+      "intent": "dismiss",
+      "plan": "none",
+      "reckless": false
+    },
+    "recorded": {
+      "scope": "in_world",
+      "scope_confidence": 0.5708458606137862,
+      "intent": "dismiss",
+      "intent_confidence": 0.6855549922175698,
+      "plan": "threaten",
+      "plan_confidence": 0.5230834577151131,
+      "flags": [
+        "reckless"
+      ],
+      "flag_probabilities": {
+        "reckless": 0.8401043183936288,
+        "to_trola": 0.45340308680770647
+      }
+    },
+    "expected_rule": 6,
+    "expected_family": "answer.dismiss",
+    "source": "d1-2B@10e7671d CPU BF16 sandbox probe 2026-11-01; current wording; spirit_said joins her whole opening, empty history"
+  }
+]

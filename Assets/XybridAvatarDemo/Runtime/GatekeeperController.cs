@@ -29,6 +29,9 @@ public sealed class GatekeeperController : MonoBehaviour
     public event Action Restarted;
     // Where the wait before each line's first audio went; raised once the audio starts (or the subtitle, without a voice).
     public event Action<GatekeeperLineTiming> TimingRecorded;
+    // A player choice, typed text (direct or queued) or interruption, raised before the controller acts on it.
+    // Label: the choice label, the typed text, or "" for an interruption. Subscribers must not drive the controller.
+    public event Action<GatekeeperInputKind, string> PlayerActed;
     public GatekeeperLineTiming LastTiming { get; private set; }
     public sealed class DebugLine
     {
@@ -83,7 +86,7 @@ public sealed class GatekeeperController : MonoBehaviour
     public string CurrentLineId { get; private set; } = "";
     public GatekeeperScenario.Line CurrentLine { get; private set; }
     public bool IsWaitingForPlayer => IsWaiting;
-    public float IdleElapsed => IsWaiting ? Time.realtimeSinceStartup - idleSince : 0;
+    public float IdleElapsed => IsWaiting ? IdleNow - idleSince : 0;
     public float IdleTauntSeconds => Prompt.IdleSeconds;
     public bool IsSuspended => suspended;
     public GatekeeperMood Mood => Encounter?.Mood ?? GatekeeperMood.Bored;
@@ -106,6 +109,23 @@ public sealed class GatekeeperController : MonoBehaviour
     public float ReadableSeconds(string text) =>
         Mathf.Clamp(subtitleHoldBase + (text ?? "").Length / Mathf.Max(1, subtitleCharactersPerSecond), subtitleHoldMinimum, subtitleHoldMaximum);
     private float idleSince;
+    // Owner-keyed holds freeze (never reset) the idle-taunt clock: the restlessness pauses, and on the last
+    // release the clock resumes where it stopped. Holds never block Choose, Submit or Interrupt.
+    private readonly HashSet<object> idleHolds = new HashSet<object>();
+    private float idleHeldAt;
+    private const float MaxIdleHoldSeconds = 20;
+    private float IdleNow => idleHolds.Count > 0 ? idleHeldAt : Time.realtimeSinceStartup;
+    public bool IsIdleHeld => idleHolds.Count > 0;
+    public void HoldIdle(object owner) { if (owner != null && idleHolds.Add(owner) && idleHolds.Count == 1) idleHeldAt = Time.realtimeSinceStartup; }
+    public void ReleaseIdle(object owner) { if (owner != null && idleHolds.Remove(owner) && idleHolds.Count == 0) idleSince += Time.realtimeSinceStartup - idleHeldAt; }
+    private void ClearIdleHolds() { if (idleHolds.Count == 0) return; idleSince += Time.realtimeSinceStartup - idleHeldAt; idleHolds.Clear(); }
+    // Each subscriber runs in isolation: a failing one is logged and never stops the input or the others.
+    private void RaisePlayerActed(GatekeeperInputKind kind, string label)
+    {
+        var handlers = PlayerActed; if (handlers == null) return;
+        foreach (Action<GatekeeperInputKind, string> handler in handlers.GetInvocationList())
+            try { handler(kind, label ?? ""); } catch (Exception error) { Debug.LogException(error, this); }
+    }
     private Coroutine performance;
     private int revision;
     private bool gateReady, suspended, holdSkipped;
@@ -142,7 +162,7 @@ public sealed class GatekeeperController : MonoBehaviour
         source = GatekeeperLineSources.Create(scenario, conversation?.AssignedNameIndex ?? 0, out conversation);
         Encounter.PatienceChanged += ForwardPatience;
         PatienceChanged?.Invoke(Patience, Patience);
-        CurrentLine = null; Restarted?.Invoke();
+        CurrentLine = null; ClearIdleHolds(); Restarted?.Invoke();
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Start)); return true;
     }
     // Debug preview: stop the conversation without tearing down the scene; Resume restarts it.
@@ -161,13 +181,14 @@ public sealed class GatekeeperController : MonoBehaviour
         liveSpeech.ResetSession(); prefetch.Clear();
         source = lineSource; conversation = state; Encounter.PatienceChanged += ForwardPatience;
         PatienceChanged?.Invoke(Patience, Patience);
-        CurrentLine = null; Restarted?.Invoke();
+        CurrentLine = null; ClearIdleHolds(); Restarted?.Invoke();
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Start));
     }
     public bool Submit(string text)
     {
         if (!CanSubmitText) return false;
         if (Prompt.InputSlot == GatekeeperInputSlot.Reply && (string.IsNullOrWhiteSpace(text) || text.Length > Prompt.CharacterLimit)) return false;
+        RaisePlayerActed(GatekeeperInputKind.Text, text);
         if (!AcceptsText)
         {
             queuedReply = text;
@@ -180,6 +201,7 @@ public sealed class GatekeeperController : MonoBehaviour
     public bool Choose(int index)
     {
         if (State != Phase.AwaitingInput || index < 0 || index >= CurrentChoices.Count) return false;
+        RaisePlayerActed(GatekeeperInputKind.Choice, CurrentChoices[index].label);
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Choice, choice: index)); return true;
     }
     public void Skip()
@@ -191,15 +213,22 @@ public sealed class GatekeeperController : MonoBehaviour
     {
         if (source == null || State != Phase.Speaking || !Prompt.CanInterrupt || Prompt.ProtectedReaction) return;
         Interrupted?.Invoke();
+        RaisePlayerActed(GatekeeperInputKind.Interrupt, "");
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Interrupt));
     }
-    public void NotifyActivity() { idleSince = Time.realtimeSinceStartup; }
+    public void NotifyActivity() { idleSince = IdleNow; }
     public void NotifyGateOpened() { if (IsWaitingForGate) gateReady = true; }
     private bool IsWaiting => State == Phase.AwaitingInput || State == Phase.AwaitingName || State == Phase.AwaitingBusiness;
     private void ForwardPatience(int previous, int current) { PatienceChanged?.Invoke(previous, current); }
     private void Update()
     {
-        if (!suspended && source != null && IsWaiting && Prompt.IdleSeconds > 0 && Time.realtimeSinceStartup - idleSince >= Prompt.IdleSeconds)
+        // A hold its owner forgot to release must not freeze Trola for the rest of the session.
+        if (idleHolds.Count > 0 && Time.realtimeSinceStartup - idleHeldAt > MaxIdleHoldSeconds)
+        {
+            Debug.LogWarning("[Gatekeeper] Idle clock held for over " + MaxIdleHoldSeconds + " s; releasing " + idleHolds.Count + " hold(s).", this);
+            ClearIdleHolds();
+        }
+        if (!suspended && source != null && IsWaiting && Prompt.IdleSeconds > 0 && IdleNow - idleSince >= Prompt.IdleSeconds)
             Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Idle));
     }
     private void Begin(GatekeeperPlayerInput input)
@@ -534,11 +563,11 @@ public sealed class GatekeeperController : MonoBehaviour
         requestCancellation.Cancel();
         if (character != null) character.StopSpeech();
         if (liveSpeech != null) liveSpeech.ResetSession();
-        prefetch.Clear(); CurrentText = "Something went wrong at the gate. Try again.";
+        prefetch.Clear(); CurrentText = "Something went wrong at the gate. Try again."; ClearIdleHolds();
         SetState(Phase.VoiceFailed); Debug.LogError("[Gatekeeper] " + error, this);
     }
     private void OnDisable()
     {
-        Cancel(); if (Encounter != null) Encounter.PatienceChanged -= ForwardPatience; State = Phase.Inactive;
+        Cancel(); ClearIdleHolds(); if (Encounter != null) Encounter.PatienceChanged -= ForwardPatience; State = Phase.Inactive;
     }
 }

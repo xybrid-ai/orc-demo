@@ -14,7 +14,8 @@ def main():
     ).decode().split('\0')
     excluded = {f['path'] for f in json.loads((ROOT / 'local-assets.json').read_text())['files']}
     failures = []
-    binaries = {'.gguf', '.xyb', '.onnx', '.dylib', '.so', '.dll', '.unitypackage', '.zip', '.fbx', '.ttf', '.wav', '.png', '.jpg'}
+    binaries = {'.gguf', '.xyb', '.onnx', '.dylib', '.so', '.dll', '.unitypackage', '.zip', '.fbx', '.ttf', '.wav', '.png', '.jpg',
+                '.safetensors', '.ogg', '.mp3', '.flac', '.aif', '.aiff'}
     for relative in sorted(set(candidates) - {''}):
         path = ROOT / relative
         if not path.is_file():

@@ -3,6 +3,7 @@
 <ItemGroup><Compile Include="Stubs.cs"/><Compile Include="Program.cs"/><Compile Include="$(NpcSource)"/>
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperScenario.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperEncounter.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperNames.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperStory.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/IGatekeeperLineSource.cs"/>
 <Compile Include="DecisionChecks.cs"/>
+<Compile Include="../../Assets/XybridAvatarDemo/Runtime/SpiritCore/*.cs"/><Compile Include="Spirit*Checks.cs"/>
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperDecision.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperFactQuestions.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperDecisionClient.cs"/>
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/FreeFormGatekeeperLineSource.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperLineSources.cs"/>
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/AuthoredGatekeeperLineSource.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/IntentGatekeeperLineSource.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/PlaceholderGatekeeperLineSource.cs"/>

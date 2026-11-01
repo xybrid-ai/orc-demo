@@ -62,6 +62,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     [Tooltip("Testing only: force one kind of voice failure. A built player reads -xybridVoiceFault <name>.")]
     public Fault simulatedFault;
     public float simulatedHangSeconds = 60;
+    // persistentDataPath subfolder for the original WAVs, read when the worker starts. A second voice instance
+    // sets its own; NonSerialized so the scene never changes.
+    [NonSerialized] public string debugFolder = "TrolaSpeechDebug";
 
     public sealed class Generated
     {
@@ -140,10 +143,14 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         if (Array.IndexOf(args, "-xybridKittenBatch") >= 0) streamKitten = false;
         int at = Array.IndexOf(args, "-xybridVoiceFault");
         if (at >= 0 && at + 1 < args.Length && Enum.TryParse(args[at + 1], true, out Fault fault)) simulatedFault = fault;
-        if (simulatedFault != Fault.None) UnityEngine.Debug.LogWarning("[Gatekeeper voice] Simulating voice fault: " + simulatedFault, this);
     }
 
-    private void Start() { Warm(); }
+    // Logged here, not in Awake: a second voice instance (Vesper's) overrides the fault right after AddComponent.
+    private void Start()
+    {
+        if (simulatedFault != Fault.None) UnityEngine.Debug.LogWarning("[Gatekeeper voice] Simulating voice fault: " + simulatedFault, this);
+        Warm();
+    }
 
     // A real throwaway waveform and phonetic analysis, never materialized or played. Its lifetime
     // is the voice worker's, so restarting the encounter during the intro cannot cancel the warm-up.
@@ -249,7 +256,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         if (worker != null) return;
         string bundle = ModelPath;
         string temporaryRoot = Path.Combine(Application.temporaryCachePath, "TrolaSpeech");
-        string debugRoot = Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug");
+        string debugRoot = Path.Combine(Application.persistentDataPath, string.IsNullOrWhiteSpace(debugFolder) ? "TrolaSpeechDebug" : debugFolder);
         string voice = voiceId;
         Provider selected = provider;
         bool sentences = sentenceChunks, useAccelerate = accelerate;

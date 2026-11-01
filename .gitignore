@@ -27,6 +27,11 @@
 *.jpg*
 *.fbx*
 *.ttf*
+*.safetensors*
+*.ogg*
+*.mp3*
+*.flac*
+*.aif*
 
 # Licensed art, models, and installed native tools are local.
 /Assets/Synty/
@@ -467,6 +472,9 @@
 /Assets/XybridAvatarDemo/Resources/GatekeeperReactions/mmhm.wav.meta
 /Assets/XybridAvatarDemo/Resources/GatekeeperReactions/ugh.wav
 /Assets/XybridAvatarDemo/Resources/GatekeeperReactions/ugh.wav.meta
+# Optional user-supplied camp ambience and laugh clips stay local.
+/Assets/XybridAvatarDemo/Resources/CampAmbience/
+/Assets/XybridAvatarDemo/Resources/CampAmbience.meta
 
 /Assets/XybridAvatarDemo/Materials/Dusk/DialogueFade.asset
 /Assets/XybridAvatarDemo/Materials/Dusk/DialogueFade.asset.meta
