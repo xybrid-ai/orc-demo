@@ -73,7 +73,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         if (GUILayout.Button("Restart authored encounter")) controller.Restart();
         var speech = controller.liveSpeech;
         GUILayout.Label(speech.provider == GatekeeperLiveSpeech.Provider.Phonon
-            ? "Voice: live Phonon / cloned voice / " + (speech.phononEngine == PhononEngine.Zzz407 ? "zzz #407" : "xn-ptts") + "; " + speech.phononThreads + " CPU threads"
+            ? "Voice: live Phonon / cloned voice / " + (speech.phononEngine == PhononEngine.Zzz ? "zzz rc.9" : "xn-ptts 0.6.0") + "; " + speech.phononThreads + " CPU threads"
             : "Voice: live " + speech.provider + " / " + speech.kittenVoice + "; " + speech.kittenThreads + " threads; Accelerate " + speech.accelerate);
         GUILayout.Label("Complete clauses; original WAVs: " + System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug"));
         var npc = controller.GetComponent<GatekeeperNpcModel>();

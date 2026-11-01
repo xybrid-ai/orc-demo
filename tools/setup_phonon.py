@@ -100,7 +100,7 @@ PluginImporter:
   assetBundleName:
   assetBundleVariant:
 ''')
-    receipt = {'runtime': 'ptts 0.4.0-rc.1', 'backend': 'cpu', 'threads': 6,
+    receipt = {'runtime': 'ptts 0.6.0', 'backend': 'cpu', 'threads': 6,
                'pluginSha256': sha(PLUGIN), 'files': {p.name: sha(p) for p in MODEL.iterdir() if p.is_file()},
                'cargoLockSha256': sha(NATIVE / 'Cargo.lock')}
     (MODEL / 'local-provenance.json').write_text(json.dumps(receipt, indent=2) + '\n')

@@ -60,10 +60,11 @@ export fn orc_phonon_zzz_open(path: ?[*:0]const u8, voice: ?[*:0]const u8, threa
         fail(buffer, capacity, @errorName(err));
         return null;
     };
-    // This trial is specifically the newer speaker-latent checkpoint.
-    if (handle.phonon.model.profile != .speaker_latents) {
+    // The public phonon-31m-en bundle is the default; the 7e71a02d@200
+    // speaker-latent bundle stays loadable for rollback and comparison.
+    if (handle.phonon.model.profile != .public_31m and handle.phonon.model.profile != .speaker_latents) {
         orc_phonon_zzz_close(handle);
-        fail(buffer, capacity, "Expected speaker-latent Phonon bundle");
+        fail(buffer, capacity, "Expected public 31m or speaker-latent Phonon bundle");
         return null;
     }
     return handle;

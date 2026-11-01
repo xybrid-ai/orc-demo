@@ -1,13 +1,13 @@
 # Live Phonon voice
 
-This page describes the original xn-ptts integration. The branch above it
-selects [zzz PR #407](phonon-zzz407.md); choose `XnPtts` in the inspector to
-use the original provider. Phonon remains the default voice. It feeds the existing
+This page describes the xn-ptts integration. Startup selects
+[zzz rc.9](phonon-zzz.md); choose `XnPtts` in the inspector to use this
+provider on the same Phonon 31m checkpoint. Phonon remains the default voice. It feeds the existing
 complete-clause playback, saved debug audio, Rhubarb analysis and smoothed jaw
 through `IGatekeeperSpeechProvider`. Every request generates fresh audio; debug
 WAVs are evidence and are never replayed as a voice cache.
 
-The native bridge builds **ptts 0.4.0-rc.1 / xn 0.2.10**, CPU/Q8, six threads,
+The native bridge builds **ptts 0.6.0 / xn 0.2.13**, CPU/Q8, six threads,
 English, temperature 0.3 and seed 0. The external cloned voice is registered
 through the checkpoint's speaker-latent projection. Config, tokenizer, model
 and voice compatibility remain upstream validation responsibilities; this
@@ -16,8 +16,10 @@ does not bypass encoder checks or reinterpret older beta embeddings.
 ## Local setup
 
 Use an Apple Silicon Mac, macOS 13+, Rust 1.98.0 (`rustup toolchain install 1.98.0`) and the existing Unity 6000.6.4f1 /
-Xybrid 0.9.0 installation. Supply the matching checkpoint folder containing
-`config.json`, `tokenizer.json`, `model.q8.gguf`, plus your cloned safetensors:
+Xybrid 0.9.0 installation. Supply the Phonon 31m folder described in
+[zzz rc.9](phonon-zzz.md#build-and-stage), containing `config.json`,
+`tokenizer.json` and `model.q8.gguf`, plus your cloned safetensors. ptts 0.4.0-rc.1
+misreads 31m's config, so do not stage 31m with an older bridge build:
 
 ```sh
 python3 tools/setup_phonon.py \
@@ -72,8 +74,10 @@ than an Editor refresh or playback confirmation.
 
 One fresh call through the actual managed/native provider passed with the
 staged clone: "The gate is open, Mira." produced 2.16 seconds of non-silent
-24 kHz mono audio in 0.204 seconds; model opening took 0.080 seconds. This is
-a single smoke observation, not a latency benchmark or an in-game guarantee. Run the simple provider check with:
+24 kHz mono audio in 0.204 seconds; model opening took 0.080 seconds. After the
+move to ptts 0.6.0 and Phonon 31m, the same call on an M5 Max produced 2.16
+seconds in 0.049 seconds, opening in 0.016 seconds. These are single smoke
+observations, not latency benchmarks or in-game guarantees. Run the simple provider check with:
 
 ```sh
 python3 tools/phonon_smoke.py

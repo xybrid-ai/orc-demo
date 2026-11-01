@@ -5,12 +5,13 @@ Paid Synty/imported art and customized Sidekick meshes are local dependencies.
 Preserve .meta GUIDs. No LFS, model/native binaries or full-project ZIPs.
 Run python3 tools/check_repository.py before commits.
 Run python3 tools/local_assets.py after local dependency restoration.
-Use Unity 6000.6.4f1 and Xybrid 0.9.0. Phonon is the selected startup voice,
-using pinned zzz PR #407 (9524f098) on this branch and a separately supplied clone.
-The ptts 0.4.0-rc.1 CPU bridge remains selectable as XnPtts.
+Use Unity 6000.6.4f1 and Xybrid 0.9.0. Phonon is the selected startup voice:
+public Phonon 31m (gradium/phonon-31m-en, 5f0a2aab@200) on pinned zzz
+v0.1.0-rc.9 (5de2a037) with a separately supplied clone.
+The ptts 0.6.0 CPU bridge remains selectable as XnPtts on the same checkpoint.
 Preserve complete-clause playback and six Phonon threads. Keep the optional
 Kitten rc.4 provider, paired WarChief voice, sentenceChunks=true, Accelerate
 and six Kitten threads. Do not upgrade the SDK as part of voice integration.
-See docs/phonon-zzz407.md and docs/phonon-integration.md for local staging and the native build boundary.
+See docs/phonon-zzz.md and docs/phonon-integration.md for local staging and the native build boundary.
 Default validation: one Editor confirmation; no builds or measurement suites
 unless explicitly requested. See README.md for external dependency limits.

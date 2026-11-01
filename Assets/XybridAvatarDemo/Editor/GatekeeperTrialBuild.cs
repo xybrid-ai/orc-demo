@@ -9,7 +9,7 @@ public static class GatekeeperTrialBuild
 {
     [Serializable] private sealed class Receipt
     {
-        public string result, model = "gemma3npc-it-q4", voice = "Phonon zzz #407", path;
+        public string result, model = "gemma3npc-it-q4", voice = "Phonon zzz rc.9", path;
         public int errors, warnings;
         public double seconds;
         public ulong bytes;
