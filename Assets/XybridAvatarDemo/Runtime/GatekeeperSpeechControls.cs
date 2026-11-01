@@ -84,6 +84,20 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             + "; played WAVs: " + System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug"));
         // Always one label (IMGUI layout); "Spirit: not installed" when the spirit is absent or bailed out.
         GUILayout.Label(SpiritSignals.Describe());
+        // Vesper's staged voices (tools/setup_spirit_voice.py --voice all): picking one plays her hub line in it; F9 cycles.
+        var spirit = SpiritDirector.Instance;
+        if (spirit != null && spirit.Voice != null && spirit.Voice.Voices.Count > 1)
+        {
+            var voices = spirit.Voice.Voices;
+            for (int row = 0; row < voices.Count; row += 3)
+            {
+                GUILayout.BeginHorizontal();
+                for (int i = row; i < Mathf.Min(row + 3, voices.Count); i++)
+                    if (GUILayout.Toggle(voices[i].Key == spirit.Voice.VoiceKey, voices[i].Name, GUI.skin.button) && spirit.Voice.SelectVoice(voices[i].Key)) spirit.PreviewVoice();
+                GUILayout.EndHorizontal();
+            }
+            if (GUILayout.Button(spirit.CanPreviewVoice ? "Hear Vesper (F9: next voice)" : "Hear Vesper — when Trola is waiting")) spirit.PreviewVoice();
+        }
         var npc = controller.GetComponent<GatekeeperNpcModel>();
         if (npc != null && !string.IsNullOrEmpty(npc.LastError)) GUILayout.Label("NPC: " + npc.LastError);
         // Always one label: a button below can add the service mid-event.

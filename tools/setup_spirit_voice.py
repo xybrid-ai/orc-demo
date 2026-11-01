@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Stage Vesper's stock Phonon voice (gradium/phonon-voices, Apache-2.0) for the spirit's xn-ptts engine.
+"""Stage Vesper's stock Phonon voices (gradium/phonon-voices, Apache-2.0) for the spirit's xn-ptts engine.
 
-Downloads one pinned voice file (or takes --from PATH), checks its size and SHA-256, copies it to
-Assets/StreamingAssets/Phonon/spirit.safetensors and writes Phonon/spirit-provenance.json. Standard library only.
+Downloads each pinned voice file (or takes --from PATH for one), checks its size and SHA-256, and copies it to
+Assets/StreamingAssets/Phonon/spirit-voices/<key>.safetensors with a <key>.json provenance file. The first voice is
+also her default: Phonon/spirit.safetensors and Phonon/spirit-provenance.json. Standard library only.
 The Phonon checkpoint must already be staged by tools/setup_phonon.py; Trola's files are never touched.
 """
 import argparse
@@ -72,57 +73,9 @@ def download(url, destination, expected):
             partial.unlink()
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--voice', choices=sorted(VOICES), default='bryony', help='Stock voice to stage (default: bryony).')
-    parser.add_argument('--from', dest='source', type=Path, help='Use this local copy instead of downloading (still size- and SHA-checked).')
-    parser.add_argument('--dry-run', action='store_true', help='Verify size and SHA, print the plan, copy nothing.')
-    parser.add_argument('--project-root', type=Path, default=ROOT, help='Unity project to stage into (default: this checkout).')
-    args = parser.parse_args()
-
-    file_id, name, expected = VOICES[args.voice]
-    root = args.project_root.resolve()
-    phonon = root / 'Assets/StreamingAssets/Phonon'
-    target = phonon / 'spirit.safetensors'
-    receipt = phonon / 'spirit-provenance.json'
-    relative = f'voices/{file_id}.safetensors'
-    url = f'https://huggingface.co/{REPO}/resolve/{REVISION}/{relative}'
-    cache = root / '.context/phonon-voices' / relative
-    missing = [f for f in CHECKPOINT_FILES if not (phonon / f).is_file()]
-    blocked = ('Phonon checkpoint missing in ' + str(phonon) + ' (' + ', '.join(missing) + '). '
-               'Stage it first with tools/setup_phonon.py (see docs/phonon-integration.md).') if missing else None
-
-    source = args.source.resolve() if args.source else cache
-    if args.source is not None:
-        problem = verify(source, expected)
-        if problem:
-            parser.error(f'--from is not {name} ({args.voice}) at {REVISION[:8]}: {problem}')
-        origin = 'local copy ' + str(source)
-    elif source.is_file() and verify(source, expected) is None:
-        origin = 'cached download ' + str(source)
-    else:
-        origin = 'download ' + url
-
-    print(f'Voice: {name} ({args.voice}), {REPO}@{REVISION[:8]} {relative}, {LICENSE}')
-    print(f'Source: {origin}')
-    print(f'Target: {target}')
-    if args.dry_run:
-        if origin.startswith('download'):
-            print(f'Would download {BYTES:,} bytes to {cache} and check SHA-256 {expected}.')
-        else:
-            print(f'Verified: {BYTES:,} bytes, SHA-256 {expected}.')
-        print('Would copy it to ' + str(target) + ' and write ' + str(receipt) + '.')
-        if blocked:
-            print('A real run would stop here: ' + blocked)
-        print('Dry run: nothing copied.')
-        return
-
-    if blocked:
-        raise SystemExit(blocked)
-    if origin.startswith('download'):
-        print('Downloading...')
-        download(url, cache, expected)
-    # Copy to a temporary name, re-verify, then swap in, so Unity never sees a partial voice.
+def stage(source, target, expected):
+    """Copy to a temporary name, re-verify, then swap in, so Unity never sees a partial voice."""
+    target.parent.mkdir(parents=True, exist_ok=True)
     partial = target.with_name(target.name + '.partial')
     shutil.copyfile(source, partial)
     problem = verify(partial, expected)
@@ -130,15 +83,85 @@ def main():
         partial.unlink()
         raise SystemExit('Copy failed verification: ' + problem)
     os.replace(partial, target)
-    provenance = {
-        'repo': REPO, 'revision': REVISION, 'file': relative, 'sha256': expected, 'bytes': BYTES,
-        'name': name, 'key': args.voice, 'license': LICENSE, 'url': url,
-        'staged': 'Assets/StreamingAssets/Phonon/spirit.safetensors', 'engine': 'xn-ptts 0.6.0 (liborc_phonon)',
-        'source': 'local copy' if args.source is not None else 'huggingface',
-    }
-    receipt.write_text(json.dumps(provenance, indent=2) + '\n')
-    print(f'Staged {name} as the spirit voice. Assets stay gitignored.')
-    print('Next: python3 tools/local_assets.py, then press Play; F4 shows "Spirit: ... ' + name + ' / xn-ptts 0.6.0; ...".')
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('--voice', default='bryony',
+                        help='Stock voice to stage, a comma-separated list, or "all" (default: bryony). The first one is '
+                             'her default voice; every one listed can be picked in Play Mode (F4, or F9 to cycle). '
+                             'Keys: ' + ', '.join(sorted(VOICES)) + '.')
+    parser.add_argument('--from', dest='source', type=Path, help='Use this local copy instead of downloading (one voice only; still size- and SHA-checked).')
+    parser.add_argument('--dry-run', action='store_true', help='Verify size and SHA, print the plan, copy nothing.')
+    parser.add_argument('--project-root', type=Path, default=ROOT, help='Unity project to stage into (default: this checkout).')
+    args = parser.parse_args()
+
+    keys = list(VOICES) if args.voice.strip().lower() == 'all' else [k.strip() for k in args.voice.split(',') if k.strip()]
+    unknown = [k for k in keys if k not in VOICES]
+    if not keys or unknown:
+        parser.error('unknown voice ' + ', '.join(unknown or ['(none)']) + '; choose from ' + ', '.join(sorted(VOICES)) + ' or all')
+    keys = list(dict.fromkeys(keys))
+    if args.source is not None and len(keys) != 1:
+        parser.error('--from stages exactly one voice')
+
+    root = args.project_root.resolve()
+    phonon = root / 'Assets/StreamingAssets/Phonon'
+    target = phonon / 'spirit.safetensors'
+    receipt = phonon / 'spirit-provenance.json'
+    library = phonon / 'spirit-voices'
+    missing = [f for f in CHECKPOINT_FILES if not (phonon / f).is_file()]
+    blocked = ('Phonon checkpoint missing in ' + str(phonon) + ' (' + ', '.join(missing) + '). '
+               'Stage it first with tools/setup_phonon.py (see docs/phonon-integration.md).') if missing else None
+
+    plan = []
+    for key in keys:
+        file_id, name, expected = VOICES[key]
+        relative = f'voices/{file_id}.safetensors'
+        url = f'https://huggingface.co/{REPO}/resolve/{REVISION}/{relative}'
+        cache = root / '.context/phonon-voices' / relative
+        source = args.source.resolve() if args.source else cache
+        if args.source is not None:
+            problem = verify(source, expected)
+            if problem:
+                parser.error(f'--from is not {name} ({key}) at {REVISION[:8]}: {problem}')
+            origin = 'local copy ' + str(source)
+        elif source.is_file() and verify(source, expected) is None:
+            origin = 'cached download ' + str(source)
+        else:
+            origin = 'download ' + url
+        plan.append((key, name, expected, relative, url, cache, source, origin))
+        print(f'Voice: {name} ({key}), {REPO}@{REVISION[:8]} {relative}, {LICENSE}')
+        print(f'  Source: {origin}')
+    print(f'Default voice: {plan[0][1]} -> {target}')
+    print(f'Voice library ({len(plan)}): {library}')
+    if args.dry_run:
+        for key, name, expected, relative, url, cache, source, origin in plan:
+            print(f'  {key}: ' + (f'would download {BYTES:,} bytes to {cache} and check SHA-256 {expected}.' if origin.startswith('download')
+                                   else f'verified {BYTES:,} bytes, SHA-256 {expected}.'))
+        print('Would copy them to ' + str(library) + ', the default to ' + str(target) + ', and write provenance files.')
+        if blocked:
+            print('A real run would stop here: ' + blocked)
+        print('Dry run: nothing copied.')
+        return
+
+    if blocked:
+        raise SystemExit(blocked)
+    for index, (key, name, expected, relative, url, cache, source, origin) in enumerate(plan):
+        if origin.startswith('download'):
+            print(f'Downloading {name}...')
+            download(url, cache, expected)
+        provenance = {
+            'repo': REPO, 'revision': REVISION, 'file': relative, 'sha256': expected, 'bytes': BYTES,
+            'name': name, 'key': key, 'license': LICENSE, 'url': url,
+            'engine': 'xn-ptts 0.6.0 (liborc_phonon)', 'source': 'local copy' if args.source is not None else 'huggingface',
+        }
+        stage(source, library / (key + '.safetensors'), expected)
+        (library / (key + '.json')).write_text(json.dumps(dict(provenance, staged=f'Assets/StreamingAssets/Phonon/spirit-voices/{key}.safetensors'), indent=2) + '\n')
+        if index == 0:
+            stage(source, target, expected)
+            receipt.write_text(json.dumps(dict(provenance, staged='Assets/StreamingAssets/Phonon/spirit.safetensors'), indent=2) + '\n')
+    print(f'Staged {", ".join(p[1] for p in plan)}; {plan[0][1]} is the default. Assets stay gitignored.')
+    print('Next: press Play; F4 lists her voices (F9 cycles them), and the choice is remembered between sessions.')
 
 
 if __name__ == '__main__':

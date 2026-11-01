@@ -527,6 +527,13 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         OnDisable(); ResetSession();
         provider = next; sentenceChunks = sentences; streamKitten = streaming; LastProviderError = null;
     }
+    // XnPtts voices are files; a different one reopens the provider on a fresh worker once the current one retires.
+    public void SelectPhononVoice(string voiceFile)
+    {
+        if (string.IsNullOrWhiteSpace(voiceFile) || string.Equals(phononVoiceFile, voiceFile, StringComparison.Ordinal)) return;
+        OnDisable(); ResetSession();
+        phononVoiceFile = voiceFile; LastProviderError = null;
+    }
     public void InterruptPending()
     {
         session.Cancel(); session.Dispose(); session = new CancellationTokenSource();

@@ -35,8 +35,11 @@ revision zzz rc.9's voice catalogue pins. Every file is 256,136 bytes.
 | `hadley` | Hadley, en-us | `voices/bXwrkHhURL1VFJdG.safetensors` | `a879938a…` |
 
 Full digests live in `tools/setup_spirit_voice.py`. Bryony is close-mic and
-brisk, which suits an in-head voice and the short reply window; pick the final
-voice by ear.
+brisk, which suits an in-head voice and the short reply window. Pick the final
+voice by ear: stage several and swap them in Play Mode (below). The character
+voices (Fairy Godmother, Morwenna, The Snow Queen) were made with Gradium's
+voice design; every voice has samples on the
+[voice catalogue](https://huggingface.co/gradium/phonon-voices).
 
 She runs on the [xn-ptts bridge](phonon-integration.md) (ptts 0.6.0,
 `liborc_phonon`) with the same Phonon 31m checkpoint as Trola, as a **second
@@ -64,18 +67,25 @@ the Phonon checkpoint that `tools/setup_phonon.py` stages
 stages neither. Then:
 
 ```sh
-python3 tools/setup_spirit_voice.py --voice bryony
+python3 tools/setup_spirit_voice.py --voice all   # or e.g. --voice bryony,fairy_godmother
 python3 tools/local_assets.py
 ```
 
-The script uses only the standard library. It downloads the pinned file to
-ignored `.context/phonon-voices/voices/`, checks size and SHA-256, copies it to
-`Assets/StreamingAssets/Phonon/spirit.safetensors` and writes
-`Phonon/spirit-provenance.json` (repo, revision, file, SHA, name, license).
-`--from PATH` stages a local copy (still checked), `--dry-run` verifies and
-prints the plan without copying, and `--project-root` targets another
-checkout. Rerun with another `--voice` and press Play to swap; F4 shows the
-staged name. Nothing staged belongs in Git. `local_assets.py` checks the
+The script uses only the standard library. It downloads each pinned file to
+ignored `.context/phonon-voices/voices/`, checks size and SHA-256, and copies it
+to `Assets/StreamingAssets/Phonon/spirit-voices/<key>.safetensors` with a
+`<key>.json` provenance file (repo, revision, file, SHA, name, license). The
+first voice listed is also her default, `Phonon/spirit.safetensors` with
+`Phonon/spirit-provenance.json`. `--from PATH` stages one local copy (still
+checked), `--dry-run` verifies and prints the plan without copying, and
+`--project-root` targets another checkout.
+
+In Play Mode, F4 lists every staged voice: click one to switch and hear her hub
+line in it, or press F9 to cycle. The line in progress stops, audio prepared in
+the old voice is dropped, and her engine reopens on the new file at once. A
+preview only plays between her moments while Trola waits, so it never cuts
+either of them. The choice is remembered between sessions (PlayerPrefs
+`Vesper.voice`) for as long as that voice stays staged. Nothing staged belongs in Git. `local_assets.py` checks the
 required dependencies only: the spirit voice is optional and not in
 `local-assets.json`, so the script's own size and SHA-256 check covers it.
 
@@ -90,6 +100,7 @@ For d1 answers, restart `serve_decisions.py` so `/health` lists
 | F6 | Lens: labels, graph, timings and the run receipt (also `-xybridLens`) |
 | F7 | Spirit on/off (off: no halo, voice, holds or flinch; the camp ambience stays) |
 | F8 | Mute ambience and music; also lets an open moment go |
+| F9 | Next staged voice for her, and a preview of it (F4 lists them all) |
 | Tab | Summon a counsel at the hub or reckoning |
 | Enter | Think the typed reply to her |
 | Esc | Let her go (dismiss the moment); it never clears what you are typing to Trola |
