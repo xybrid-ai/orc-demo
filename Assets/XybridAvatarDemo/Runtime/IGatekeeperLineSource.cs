@@ -46,6 +46,16 @@ public sealed class GatekeeperConversationState
     public void RecordApproach(string approach) { if (!approaches.Contains(approach)) approaches.Add(approach); }
     internal string[] Approaches => approaches.ToArray();
     private readonly List<string> history = new List<string>();
+    private string offer = "";
+    // Only trusted game actions may record an offer; a bribe approach contains no amount.
+    public void RecordOffer(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description) || description.Length > 80
+            || GatekeeperNpcModel.SanitizeSpeech(description) != description)
+            throw new ArgumentException("Provide a short, speech-safe offer from game state.", nameof(description));
+        offer = description;
+    }
+    internal string Offer => offer;
     public GatekeeperConversationState(GatekeeperEncounter encounter, int assignedNameIndex = 0) { Encounter = encounter; AssignedNameIndex = assignedNameIndex; }
     public void Record(string speaker, string text)
     {
@@ -57,7 +67,7 @@ public sealed class GatekeeperConversationState
 // Immutable context for an asynchronous model call; safe to retain after restart.
 public sealed class GatekeeperConversationSnapshot
 {
-    public readonly string Name, MangledName, Business;
+    public readonly string Name, MangledName, Business, Offer;
     public readonly int Patience, Turns;
     public readonly GatekeeperOutcome Outcome;
     public readonly IReadOnlyList<string> History, Approaches;
@@ -65,6 +75,7 @@ public sealed class GatekeeperConversationSnapshot
     {
         var encounter = state.Encounter;
         Name = encounter.PlayerName; MangledName = encounter.MangledName; Business = encounter.Business;
+        Offer = state.Offer;
         Patience = encounter.Patience; Turns = encounter.Turns; Outcome = encounter.Outcome; History = Array.AsReadOnly(history); Approaches = Array.AsReadOnly(state.Approaches);
     }
 }

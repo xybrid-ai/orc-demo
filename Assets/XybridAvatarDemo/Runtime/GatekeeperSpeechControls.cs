@@ -23,12 +23,13 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             .AppendLine("Audio: playing=" + audio?.isPlaying + "; paused=" + a?.IsPlaybackPaused + "; listenerPaused=" + AudioListener.pause + "; loop=" + audio?.loop)
             .AppendLine("Samples: " + audio?.timeSamples + " / " + audio?.clip?.samples + "; pitch=" + audio?.pitch)
             .AppendLine("NPC: ready=" + npc?.IsReady + "; error=" + npc?.LastError)
+            .AppendLine(controller.TryGetComponent(out GatekeeperDecisionService decisions) ? decisions.Describe() : "Decisions: not prepared")
             .AppendLine("Player: " + controller.PlayerName + "; business=" + controller.Business)
             .AppendLine("History:");
         if (controller.Conversation != null) foreach (var entry in controller.Conversation.History) state.AppendLine(entry);
         state.AppendLine("Lines:");
         foreach (var entry in controller.DebugLines)
-            state.AppendLine(entry.line.debugSource + ": " + entry.line.text + "\nRaw: " + entry.line.debugRaw);
+            state.AppendLine(entry.line.debugSource + ": " + entry.line.text + "\nDecision: " + entry.line.debugDecision + "\nRaw: " + entry.line.debugRaw);
         try {
             string folder = System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug");
             System.IO.Directory.CreateDirectory(folder);
@@ -70,6 +71,9 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         if (GUILayout.Button("Jump / apply summary")) Jump();
         if (GUILayout.Button(controller.scenario.debugUsePlaceholderReplies ? "Replies: placeholder — use Gemma" : "Replies: Gemma — use placeholder"))
         { controller.scenario.debugUsePlaceholderReplies = !controller.scenario.debugUsePlaceholderReplies; Jump(); }
+        // Applies from the next message; the current encounter continues.
+        if (GUILayout.Button(GatekeeperDecisionService.UseD1 ? "Decisions: d1 — use built-in routes" : "Decisions: built-in routes — use d1"))
+            GatekeeperDecisionService.UseD1 = !GatekeeperDecisionService.UseD1;
         if (GUILayout.Button("Restart authored encounter")) controller.Restart();
         var speech = controller.liveSpeech;
         GUILayout.Label(speech.provider == GatekeeperLiveSpeech.Provider.Phonon
@@ -78,12 +82,15 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         GUILayout.Label("Complete clauses; original WAVs: " + System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug"));
         var npc = controller.GetComponent<GatekeeperNpcModel>();
         if (npc != null && !string.IsNullOrEmpty(npc.LastError)) GUILayout.Label("NPC: " + npc.LastError);
+        // Always one label: a button below can add the service mid-event.
+        GUILayout.Label(controller.TryGetComponent(out GatekeeperDecisionService decisions) ? decisions.Describe() : "Decisions: not prepared");
         GUILayout.Label("Conversation: " + controller.State + " (" + controller.PhaseElapsed.ToString("0") + " s); Send " + (controller.HasQueuedReply ? "queued until speech finishes" : controller.CanSubmitText ? "available" : "waiting"));
         GUILayout.Label("Current patience: " + controller.Patience);
         for (int i = controller.DebugLines.Count - 1; i >= 0; i--)
         {
             var entry = controller.DebugLines[i]; var line = entry.line;
             GUILayout.Label(line.id + " [" + line.debugSource + "] " + line.text);
+            if (!string.IsNullOrEmpty(line.debugDecision)) GUILayout.Label("Decision: " + line.debugDecision);
             GUILayout.Label("Parsed: " + line.emotion + " / " + line.intensity.ToString("0.00") + "; patience delta " + line.patience_delta + "; " + entry.patienceBefore + " → " + entry.patienceAfter);
             double voice = entry.voice?.totalSynthesisSeconds ?? 0;
             double audio = entry.voice?.totalAudioSeconds ?? 0;

@@ -8,7 +8,7 @@ public sealed class GatekeeperScenario : ScriptableObject
     [Serializable] public sealed class Line
     {
         public string id;
-        [NonSerialized] public string debugSource = "authored", debugRaw = "";
+        [NonSerialized] public string debugSource = "authored", debugRaw = "", debugDecision = "";
         [NonSerialized] public double debugModelSeconds;
         public GatekeeperMood recordedMood;
         [TextArea(2, 4)] public string text;

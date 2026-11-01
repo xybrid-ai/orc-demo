@@ -84,6 +84,17 @@ and completion timing, speech-ready JSON and state transitions. See the
 checkpoint. The demo's installed model and Phonon startup voice remain the
 local setup described above.
 
+Free-form name, business, offer-recall and admission questions have a narrow
+deterministic route backed by encounter state. Unknown personal facts receive
+an authored reply. Offer details must be recorded by a trusted game action;
+the `bribe` approach alone supplies no amount.
+
+The optional decision layer separates player intent from a game-owned response
+plan and a text-only Gemma writer. In Play Mode, a local d1 server on the Apple
+GPU classifies each free-form message when it is running; otherwise messages keep
+the existing dialogue path. See [decision-layer staging and checks](docs/decision-layer.md)
+for the server, the contract, recorded-decision replay and the focused Apple GPU probe.
+
 For a playable Apple Silicon Gemma3NPC trial, see the
 [trial build instructions](docs/gemma3-trial-build.md). Its build-only model
 selection leaves the Editor and ordinary E2B builds unchanged.

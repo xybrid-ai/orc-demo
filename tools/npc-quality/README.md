@@ -117,3 +117,17 @@ into an existing receipt. Adapter checks need no model or Unity:
 ```sh
 python3 tools/npc-quality/verify.py
 ```
+
+The decision-layer checks replay saved classifier labels through the real C#
+policy, validate controlled fact replies, and exercise complete expulsion and
+adapter cancellation/failure without inference. They also run the Play Mode d1
+client against `serve_decisions.py` with a stub engine:
+
+```sh
+python3 tools/npc-quality/verify_decisions.py
+```
+
+See [decision-layer staging](../../docs/decision-layer.md) for the local d1
+server used in Play Mode and the separate, explicitly requested four-case d1/MPS
+feasibility probe. Replays do not measure
+classifier accuracy, generated dialogue quality, or model latency.

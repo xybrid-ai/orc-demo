@@ -18,6 +18,7 @@ public static class GatekeeperLineSources
         bool bounded = scenario.authoredConversation || scenario.debugStartInFreeForm;
         state = new GatekeeperConversationState(new GatekeeperEncounter(bounded ? 3 : scenario.initialPatience, bounded ? 5 : scenario.maxTurns, bounded), assignedNameIndex);
         var model = scenario.debugUsePlaceholderReplies ? null : GatekeeperNpcModel.Prepare(scenario);
+        if (model != null) GatekeeperDecisionService.Prepare(); // Connects to local d1 during the authored intro.
         if (scenario.debugStartInFreeForm) { state.GateOpenRequested = true; return FreeForm(scenario, model); }
         IGatekeeperLineSource first = scenario.authoredConversation
             ? new AuthoredGatekeeperLineSource(scenario, state)
@@ -44,7 +45,7 @@ public static class GatekeeperLineSources
         }
     }
     private static IGatekeeperLineSource FreeForm(GatekeeperScenario scenario, GatekeeperNpcModel model) => scenario.debugUsePlaceholderReplies
-        ? (IGatekeeperLineSource)new PlaceholderGatekeeperLineSource() : new FreeFormGatekeeperLineSource(scenario, model);
+        ? (IGatekeeperLineSource)new PlaceholderGatekeeperLineSource() : new FreeFormGatekeeperLineSource(scenario, model, false, GatekeeperDecisionService.Prepare());
     public static GatekeeperScenario.Line Resolve(GatekeeperScenario.Line original, GatekeeperEncounter encounter, bool forceLive = false)
     {
         bool live = forceLive || GatekeeperNames.HasSlots(original.text);

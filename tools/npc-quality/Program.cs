@@ -29,6 +29,12 @@ class Program {
   string input;
   while((input=Console.ReadLine())!=null) {
    var req=JsonNode.Parse(input);var command=req["command"].GetValue<string>();
+   if(command=="decision_checks") {
+    Console.WriteLine(JsonSerializer.Serialize(DecisionChecks.Run(scenario)));continue;
+   }
+   if(command=="client_checks") {
+    Console.WriteLine(JsonSerializer.Serialize(DecisionChecks.Client(scenario,req["url"].GetValue<string>())));continue;
+   }
    if(command=="story_checks") {
     if(!scenario.Validate(out var validationError))throw new InvalidOperationException(validationError);
     var results=new List<object>();
@@ -50,6 +56,14 @@ class Program {
    var state=new GatekeeperConversationState(encounter);
    foreach(var approach in req["approaches"]?.AsArray()??new JsonArray("bribe"))state.RecordApproach(approach.GetValue<string>());
    foreach(var h in req["history"]?.AsArray()??new JsonArray())state.Record(h["speaker"].GetValue<string>(),h["text"].GetValue<string>());
+   if(req["offer"]!=null)state.RecordOffer(req["offer"].GetValue<string>());
+   if(command=="plan") {
+    var known=GatekeeperFactQuestions.Interpret(req["message"].GetValue<string>());
+    var decision=new GatekeeperDecision(Enum.Parse<GatekeeperScope>(req["scope"].GetValue<string>()),
+     Enum.Parse<GatekeeperDialogueIntent>(req["intent"].GetValue<string>()),known?.Facts??GatekeeperFact.None);
+    var plan=GatekeeperResponsePolicy.Create(state.Snapshot(),decision);
+    Console.WriteLine(JsonSerializer.Serialize(new{plan,line=plan.Expel?null:plan.Assemble("I built this wall. Mind your manners.")},options));continue;
+   }
    string prompt=(string)Invoke("TurnPrompt",state.Snapshot(),req["message"].GetValue<string>());
    if(command=="apply") {
     var reply=GatekeeperNpcModel.Parse(req["raw"].GetValue<string>(),tags);
