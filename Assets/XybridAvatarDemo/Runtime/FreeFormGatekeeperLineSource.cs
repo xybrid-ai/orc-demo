@@ -8,6 +8,7 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
 {
     private readonly GatekeeperScenario scenario;
     private readonly GatekeeperNpcModel model;
+    private readonly IGatekeeperDecisionSource decisions;
     private readonly string[] expulsion;
     private int fallbackIndex, idleIndex, expulsionIndex;
     private readonly bool debugImmediate;
@@ -16,9 +17,9 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
     public IEnumerable<GatekeeperScenario.Line> AnticipatedLines => Array.Empty<GatekeeperScenario.Line>();
     public FreeFormGatekeeperLineSource() : this(UnityEngine.Object.FindFirstObjectByType<GatekeeperController>().scenario) { }
     private FreeFormGatekeeperLineSource(GatekeeperScenario scenario) : this(scenario, GatekeeperNpcModel.Prepare(scenario)) { }
-    public FreeFormGatekeeperLineSource(GatekeeperScenario scenario, GatekeeperNpcModel model, bool skipGreeting = false)
+    public FreeFormGatekeeperLineSource(GatekeeperScenario scenario, GatekeeperNpcModel model, bool skipGreeting = false, IGatekeeperDecisionSource decisions = null)
     {
-        this.scenario = scenario; this.model = model;
+        this.scenario = scenario; this.model = model; this.decisions = decisions;
         debugImmediate = skipGreeting; greetingDelivered = skipGreeting;
         Presentation = Prompt(debugImmediate ? 0 : 8);
         expulsion = scenario.ReadStory().nodes.Find(n => n.id == "expelled").variants[0].line_ids;
@@ -36,16 +37,7 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
         // reply, before accepting another input. Play the complete authored ending.
         if (expelling || state.Encounter.Patience <= 0)
         {
-            expelling = true; Presentation.InputSlot = GatekeeperInputSlot.None; Presentation.PersistentText = false;
-            if (expulsionIndex < expulsion.Length)
-            {
-                var line = GatekeeperLineSources.Resolve(scenario.FindLine(expulsion[expulsionIndex++]), state.Encounter);
-                line.patience_delta = 0;
-                return line;
-            }
-            state.Encounter.FinishStory(GatekeeperOutcome.Refused);
-            state.GateOpenRequested = false;
-            ended = true;
+            return ExpulsionLine(state);
         }
         if (ended) { Presentation.Ended = true; Presentation.InputSlot = GatekeeperInputSlot.None; return null; }
         if (!greetingDelivered && input.Kind == GatekeeperInputKind.Start)
@@ -58,13 +50,35 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
             state.Encounter.CountStoryTurn();
             var snapshot = state.Snapshot(); // Existing exchanges, excluding this new message.
             state.Record("Player", input.Text);
-            var reply = await model.ReplyAsync(snapshot, input.Text, cancellation);
+            // An offline source keeps the earlier path: built-in fact routes, then complete model lines.
+            var source = decisions != null && decisions.IsAvailable ? decisions : null;
+            GatekeeperDecision decision = GatekeeperFactQuestions.Interpret(input.Text);
+            if (source != null)
+            {
+                try { decision = await source.DecideAsync(snapshot, input.Text, cancellation); }
+                catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { throw; }
+                catch (Exception) { decision = null; } // Adapter failure becomes a clarification, with no effects.
+            }
+            cancellation.ThrowIfCancellationRequested();
+            var plan = source != null || decision != null ? GatekeeperResponsePolicy.Create(snapshot, decision) : null;
+            string decided = source != null ? (decision == null ? "decision failed" : decision.Detail ?? "decision source")
+                : (decisions != null ? "d1 offline; " : "") + (decision != null ? "built-in fact route" : "model line");
+            if (plan != null) decided += " → " + plan.Reaction;
+            if (plan != null && plan.Expel)
+            {
+                var ending = ExpulsionLine(state, plan.PatienceDelta);
+                if (ending != null) ending.debugDecision = decided;
+                return ending;
+            }
+            bool authored = plan != null && !plan.NeedsWriter;
+            var reply = authored ? plan.Assemble() : await model.ReplyAsync(snapshot, input.Text, cancellation, plan);
             cancellation.ThrowIfCancellationRequested();
             bool fallback = reply == null;
-            reply = reply ?? Fallback();
-            reply.debugSource = fallback ? "LLM fallback" : "LLM";
-            reply.debugRaw = model.LastRawReply ?? "";
-            reply.debugModelSeconds = model.LastReplySeconds;
+            reply = reply ?? (plan == null ? Fallback() : plan.Assemble(Fallback().text));
+            reply.debugSource = authored ? "response plan" : fallback ? "LLM fallback" : "LLM";
+            reply.debugDecision = decided;
+            reply.debugRaw = authored ? "" : model.LastRawReply ?? "";
+            reply.debugModelSeconds = authored ? 0 : model.LastReplySeconds;
             reply.patience_delta = Math.Max(-1, Math.Min(1, reply.patience_delta));
             GatekeeperLineSources.ValidateOutput(reply);
             // Expulsion takes priority on the next Continue after patience is applied.
@@ -82,6 +96,20 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
             Presentation.IsReaction = Presentation.ProtectedReaction = true;
             return Line("free-interrupted", "Oi. One thought at a time.", "annoyance", .6f, -1);
         }
+        return null;
+    }
+    private GatekeeperScenario.Line ExpulsionLine(GatekeeperConversationState state, int delta = 0)
+    {
+        expelling = true; Presentation.InputSlot = GatekeeperInputSlot.None; Presentation.PersistentText = false;
+        if (expulsionIndex < expulsion.Length)
+        {
+            var line = GatekeeperLineSources.Resolve(scenario.FindLine(expulsion[expulsionIndex++]), state.Encounter);
+            line.patience_delta = delta;
+            return line;
+        }
+        state.Encounter.FinishStory(GatekeeperOutcome.Refused);
+        state.GateOpenRequested = false;
+        ended = Presentation.Ended = true;
         return null;
     }
     private GatekeeperScenario.Line Fallback()

@@ -1,0 +1,14 @@
+{
+  "player_name": {
+    "type": "noul",
+    "instructions": "Does player_message ask Trola to tell or recall the PLAYER's own name (not Trola's name)?"
+  },
+  "player_business": {
+    "type": "noul",
+    "instructions": "Does player_message ask Trola to tell or recall the PLAYER's business, trade or goods?"
+  },
+  "other_player_fact": {
+    "type": "noul",
+    "instructions": "Does player_message ask Trola about another personal fact of the PLAYER, such as family, age, home or past?"
+  }
+}

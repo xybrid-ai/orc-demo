@@ -8,10 +8,14 @@ namespace UnityEngine {
  public class AudioClip:Object {}
  public class TextAsset:Object { public string text; }
  public static class Application { public static string streamingAssetsPath=>throw new NotSupportedException(); }
- public static class JsonUtility { public static T FromJson<T>(string text)=>System.Text.Json.JsonSerializer.Deserialize<T>(text,new System.Text.Json.JsonSerializerOptions {IncludeFields=true}); }
+ public static class JsonUtility {
+  public static T FromJson<T>(string text)=>System.Text.Json.JsonSerializer.Deserialize<T>(text,new System.Text.Json.JsonSerializerOptions {IncludeFields=true});
+  public static string ToJson(object value)=>System.Text.Json.JsonSerializer.Serialize(value,value.GetType(),new System.Text.Json.JsonSerializerOptions {IncludeFields=true});
+ }
  public class CreateAssetMenuAttribute:Attribute { public string menuName; }
  public class TextAreaAttribute:Attribute { public TextAreaAttribute(int a,int b){} }
  public class RangeAttribute:Attribute { public RangeAttribute(float a,float b){} }
 }
 public class GatekeeperController:UnityEngine.MonoBehaviour {public GatekeeperScenario scenario;}
+public static class GatekeeperDecisionService {public static IGatekeeperDecisionSource Prepare()=>throw new NotSupportedException();}
 public static class XybridAvatarPlayer {public static bool ValidateCues(UnityEngine.TextAsset t,UnityEngine.AudioClip a,out string error){throw new NotSupportedException();}}
