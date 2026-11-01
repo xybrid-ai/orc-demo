@@ -19,5 +19,7 @@ try:
     assert full["prompt"]==short["prompt"]
     depleted=adapter.ask(dict(command="apply",message="Insult",patience=1,raw=good.replace('"patience_delta":0','"patience_delta":-1')))
     assert depleted["expulsion"] and depleted["patience"]==0
-    print("PASS: authored endings, parser rejection, six-exchange rollover, patience depletion")
+    trim=adapter.ask(dict(command="spirit",suite="SpeechTrimChecks"))
+    assert trim["passed"],trim
+    print("PASS: authored endings, parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+")")
 finally:adapter.close()

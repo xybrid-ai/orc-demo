@@ -108,7 +108,7 @@ public sealed class GatekeeperDecisionClient
             string entry = state.History[i];
             int colon = entry.IndexOf(": ", StringComparison.Ordinal);
             string speaker = colon < 0 ? null : entry.Substring(0, colon);
-            // The controller records the NPC as "Troll"; the decision state names her.
+            // The controller records the NPC as "Troll"; the decision state names him.
             if (speaker == "Troll") speaker = "Trola";
             if (speaker == "Player" || speaker == "Trola") turns.Add(new Turn { speaker = speaker, text = Clip(entry.Substring(colon + 2), 480) });
         }
