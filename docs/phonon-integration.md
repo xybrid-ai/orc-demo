@@ -3,7 +3,7 @@
 This page describes the xn-ptts integration. Startup selects
 [zzz rc.9](phonon-zzz.md); choose `XnPtts` in the inspector to use this
 provider on the same Phonon 31m checkpoint. Phonon remains the default voice. It feeds the existing
-complete-clause playback, saved debug audio, Rhubarb analysis and smoothed jaw
+complete-clip playback (one trimmed clip per line), saved debug audio, Rhubarb analysis and smoothed jaw
 through `IGatekeeperSpeechProvider`. Every request generates fresh audio; debug
 WAVs are evidence and are never replayed as a voice cache.
 
@@ -47,7 +47,7 @@ Refresh assets, open `Assets/XybridAvatarDemo/GoblinSpeakingDemo.unity`, and
 enter Play mode. Press **F4**: the voice line should read
 **Voice: live Phonon / cloned voice; 6 CPU threads**. Press **F5**, choose Gemma
 replies if placeholders are selected, and send a short line. Listen to final
-words, clause pauses and voice fidelity; watch mouth movement and queued Send.
+words, pauses between sentences and voice fidelity; watch mouth movement and queued Send.
 
 The inspector exposes the checkpoint/voice paths and thread count. Relative
 paths resolve against StreamingAssets. Startup chooses Phonon by default;

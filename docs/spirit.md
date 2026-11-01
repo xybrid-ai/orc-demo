@@ -42,7 +42,7 @@ She runs on the [xn-ptts bridge](phonon-integration.md) (ptts 0.6.0,
 `liborc_phonon`) with the same Phonon 31m checkpoint as Trola, as a **second
 `GatekeeperLiveSpeech`** on its own GameObject with its own handle and worker.
 Trola stays on [zzz rc.9](phonon-zzz.md) (`liborc_phonon_zzz`) with
-`trola_clone`, 6 threads and complete-clause playback, so by default
+`trola_clone`, 6 threads and one trimmed clip per line, so by default
 `liborc_phonon` is hers alone; no SDK, scene or bundle changes. xn sizes its
 worker pool once per process, at first use, and the Editor keeps it across
 Play sessions, so she opens at Trola's thread count (6): if he is switched to
@@ -52,7 +52,7 @@ synthesizes only while he waits and his worker is idle. She skips lip sync
 (her Rhubarb path does not exist on purpose, so no process starts) and saves
 her WAVs to `persistentDataPath/SpiritSpeechDebug`.
 
-Her clauses play in order on a 2D source: high-pass 180 Hz, low-pass 7.5 kHz,
+Each of her lines plays as one trimmed clip on a 2D source: high-pass 180 Hz, low-pass 7.5 kHz,
 a faint chorus and a small user reverb, drifting ±0.15 in the stereo field.
 Trola's AudioSource, `AudioListener.pause` and mixers are never touched.
 
@@ -145,7 +145,7 @@ as a request to her unless d1 also calls it reckless.
   subtitles with a short breath, held for 1.2 s + 1 s per 15 characters (2 to
   4.5 s). F4 names the missing file and the setup command.
 - **Voice not ready within 2 s, or Trola's worker busy:** that line is
-  subtitle-only; a later clause that fails keeps the text and drops the audio.
+  subtitle-only.
 - **d1 off, an old server (404) or no `spirit_questions`:** a keyword
   interpreter answers; the lens labels the source `keywords`.
 - **Any spirit error:** logged; after repeated errors she switches herself off

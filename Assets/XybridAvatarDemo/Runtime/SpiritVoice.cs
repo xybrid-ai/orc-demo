@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 // Vesper's voice: a second GatekeeperLiveSpeech (xn-ptts: its own handle and worker; liborc_phonon is shared with Trola
-// whenever he runs xn-ptts, so she opens it at his thread count) on an active child object, played clause by clause on
-// her own 2D source through an in-head filter chain. Trola's AudioSource, AudioListener.pause and mixers are never written.
+// whenever he runs xn-ptts, so she opens it at his thread count) on an active child object, each line played as one
+// trimmed clip (GatekeeperSpeechTrim) on her own 2D source through an in-head filter chain. Trola's AudioSource, AudioListener.pause and mixers are never written.
 // Her engine opens and synthesizes only while Trola waits (or has ended) and his worker is idle. Missing files or a
 // provider error make every line subtitle-only plus a breath; Trola is unaffected. See docs/spirit.md.
 public sealed class SpiritVoice : MonoBehaviour
@@ -34,7 +34,7 @@ public sealed class SpiritVoice : MonoBehaviour
     public string LastFailure { get; private set; } = "";
     // Window token of the line in progress (or last queued); results of an older token are stale.
     public int Token { get; private set; }
-    // Lens figures for the last voiced line: clause-0 synthesis, Say -> first clip start, and whether it was prefetched.
+    // Lens figures for the last voiced line: first-clip synthesis, Say -> first clip start, and whether it was prefetched.
     public double LastSynthesisSeconds { get; private set; }
     public double LastStartSeconds { get; private set; }
     public bool LastPrefetched { get; private set; }
@@ -185,7 +185,7 @@ public sealed class SpiritVoice : MonoBehaviour
         catch (Exception error) { LastFailure = "prefetch failed: " + error.Message; }
     }
 
-    // All clauses in order on her source. A different token cuts the line in progress; the same token queues behind it.
+    // Her line (or its clauses, with phononWholeLines off) in order on her source. A different token cuts the line in progress; the same token queues behind it.
     public void Say(SpiritCue cue, int token)
     {
         if (!built || cue == null || string.IsNullOrWhiteSpace(cue.Text)) return;

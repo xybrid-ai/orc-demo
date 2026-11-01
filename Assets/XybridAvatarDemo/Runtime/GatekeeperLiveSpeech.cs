@@ -30,6 +30,8 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     public string phononVoiceFile = "Phonon/voice.safetensors";
     public int phononThreads = 6;
     public bool sentenceChunks = true;
+    [Tooltip("Phonon speaks each line as one utterance, trimmed of edge silence and over-long pauses (GatekeeperSpeechTrim), instead of clause by clause.")]
+    public bool phononWholeLines = true;
     public bool streamKitten = true;
     public bool accelerate = true;
     public int kittenThreads = 6;
@@ -259,6 +261,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         string debugRoot = Path.Combine(Application.persistentDataPath, string.IsNullOrWhiteSpace(debugFolder) ? "TrolaSpeechDebug" : debugFolder);
         string voice = voiceId;
         Provider selected = provider;
+        // Phonon renders ~35x faster than playback, so a line needs no clause split to start early; one utterance keeps
+        // its intonation across commas and sentences. Kitten keeps complete clauses (slower than playback).
+        bool wholeLines = selected == Provider.Phonon && phononWholeLines;
         bool sentences = sentenceChunks, useAccelerate = accelerate;
         uint threads = (uint)Mathf.Clamp(kittenThreads, 1, 64);
         string kitten = Resolve(kittenDirectory);
@@ -308,7 +313,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                         if (request.fault == Fault.SynthesisHangs) await Task.Delay(TimeSpan.FromSeconds(request.hangSeconds), cancel.Token).ConfigureAwait(false);
                         if (request.fault == Fault.SynthesisFails) throw new InvalidOperationException("Simulated synthesis failure.");
                         NativeCallRunning = true;
-                        string[] texts = request.warmup ? new[] { request.text } : SplitClauses(request.text);
+                        string[] texts = request.warmup || wholeLines ? new[] { request.text } : SplitClauses(request.text);
                         var completions = texts.Select(_ => new TaskCompletionSource<Generated>(TaskCreationOptions.RunContinuationsAsynchronously)).ToArray();
                         foreach (var completion in completions) Observe(completion.Task);
                         Generated first = null;
@@ -324,12 +329,14 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                                 if (spoken.completion == SpeechCompletion.Cancelled) throw new OperationCanceledException(cancel.Token);
                                 byte[] pcm = spoken.pcm;
                                 if (pcm == null || pcm.Length < 2 || pcm.Length % 2 != 0) throw new InvalidOperationException("TTS returned no valid PCM.");
+                                int generatedBytes = pcm.Length; // RTF stays synthesis over generated (untrimmed) audio, as for Kitten.
+                                if (wholeLines && !request.warmup) pcm = GatekeeperSpeechTrim.Tighten(pcm, spoken.sampleRate == 0 ? 24000 : (int)spoken.sampleRate);
                                 var data = new Generated { text = texts[i], pcm = pcm, outcome = spoken,
                                     synthesisSeconds = spoken.synthesisSeconds, requestedAt = request.requestedAt,
                                     synthesisStartedAt = clauseStart, synthesisEndedAt = GatekeeperLineTiming.Now, debugAudioPath = debugPath };
                                 if (first == null) { first = data; first.clauses = completions.Select(c => c.Task).ToArray(); }
                                 first.totalSynthesisSeconds += spoken.synthesisSeconds;
-                                first.totalAudioSeconds += pcm.Length / 48000.0;
+                                first.totalAudioSeconds += generatedBytes / 48000.0;
                                 collected.Write(pcm, 0, pcm.Length);
                                 spoken.pcm = null;
                                 var clauseRequest = new Request { text = texts[i], rhubarb = request.rhubarb, fault = request.fault, lipSyncTimeout = request.lipSyncTimeout };

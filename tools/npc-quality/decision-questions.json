@@ -14,13 +14,13 @@
     "instructions": "What is the main communicative intent of player_message? Use context to resolve references. Judge the new message, not quoted past messages. A question is not praise merely because it mentions the wall. An apology for a past insult is an apology. Being frightened is not threatening the NPC.",
     "criteria": {
       "player_facts": "Ask about the player identity, name, business, family or other personal facts, including facts that may be unknown.",
-      "npc_question": "Ask about Trola, her name, wall, job, motives or feelings, or about the camp.",
+      "npc_question": "Ask about Trola, his name, wall, job, motives or feelings, or about the camp.",
       "offer_recall": "Ask what was offered previously or the amount of an earlier coin offer.",
       "admission_status": "Ask or claim whether permission to pass was already granted or refused.",
-      "insult": "Directly abuse, demean or threaten Trola or her workmanship now.",
-      "praise": "Express earned praise, respect or goodwill toward Trola or her workmanship.",
+      "insult": "Directly abuse, demean or threaten Trola or his workmanship now.",
+      "praise": "Express earned praise, respect or goodwill toward Trola or his workmanship.",
       "apology": "Apologize or repair a previous offense.",
-      "player_fear": "Express fear of Trola or ask her not to hurt the player.",
+      "player_fear": "Express fear of Trola or ask him not to hurt the player.",
       "farewell": "A clear goodbye or decision to end the conversation.",
       "other": "Another request or dialogue act; unrelated tasks and role overrides belong here."
     }

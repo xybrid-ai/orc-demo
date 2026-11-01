@@ -60,22 +60,24 @@ seed to zero. The 31m bundle uses the `xn_ptts_v040` text frontend, which adds
 xn-ptts v0.4.0's rewrites for currency, times and numbers. zzz and xn-ptts use
 different random number generators, so waveforms do not match between engines.
 
-On 31m, with either engine, a bare "Hmph." clause does not reach a natural stop
-and runs to its frame cap (3.36 s instead of about 1.3 s). The Phonon path plays
-limited audio rather than failing, so the clause is only longer.
+On 31m, with either engine, a bare "Hmph." does not reach a natural stop and
+runs to its frame cap (3.36 s instead of about 1.3 s). The Phonon path plays
+limited audio rather than failing; the game now speaks each line as one
+utterance and trims its padded silence, so the extra length is not heard
+(see [live speech debugging](live-speech-debug.md)).
 
 Managed call serialization, rooted callbacks, copied/validated PCM and
 call-ID cancellation remain in the existing provider. Cancellation is checked
 at emitted frame boundaries and cannot interrupt the tensor operation already
 running. Frame-limit output is reported as `Limited`, never completed speech.
-The existing complete-clause playback, Rhubarb and queued Send are retained.
+Complete-clip playback (one trimmed clip per line), Rhubarb and queued Send are retained.
 
 ## Manual test
 
 Refresh assets, open GoblinSpeakingDemo and press Play. **F4** shows
 **Voice: live Phonon / cloned voice / zzz rc.9; 6 CPU threads**. Use **F5**,
 choose Gemma replies, and send a short sentence. Check voice fidelity, final
-words, clause pauses, lips and queued delivery.
+words, pauses between sentences, lips and queued delivery.
 
 To use xn-ptts, select **XnPtts** in the `GatekeeperLiveSpeech` inspector
 before Play; the label then reads **xn-ptts 0.6.0**. Do not change engines
