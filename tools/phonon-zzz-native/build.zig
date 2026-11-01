@@ -8,6 +8,7 @@ pub fn build(b: *std.Build) void {
     options.addOption(bool, "phonon_profile", false);
     options.addOption(bool, "pool_profile", false);
     options.addOption(u32, "pool_chunk_factor", 4);
+    options.addOption(bool, "pool_chunk_factor_explicit", true);
     options.addOption(bool, "hot_region", true);
     options.addOption(bool, "perf_core_pin", true);
     options.addOption(u32, "prefill_nsplit_max_m", 0);

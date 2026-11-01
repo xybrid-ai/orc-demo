@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
-public enum PhononEngine { XnPtts, Zzz407 }
+public enum PhononEngine { XnPtts, Zzz }
 
 // Selectable CPU Phonon engines; each uses a distinct native library.
 // Worker-owned; the distinct library name cannot bind to the Kitten zzz plugin.
@@ -49,8 +49,8 @@ public sealed class PhononNativeSpeechProvider : IGatekeeperSpeechProvider
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.ProcessArchitecture != Architecture.Arm64)
             throw new PlatformNotSupportedException("The installed Phonon plugin targets Apple Silicon macOS.");
-        if (engine != PhononEngine.XnPtts && engine != PhononEngine.Zzz407) throw new ArgumentOutOfRangeException(nameof(engine));
-        zzz = engine == PhononEngine.Zzz407;
+        if (engine != PhononEngine.XnPtts && engine != PhononEngine.Zzz) throw new ArgumentOutOfRangeException(nameof(engine));
+        zzz = engine == PhononEngine.Zzz;
         if (zzz)
         {
             if (!File.Exists(checkpoint)) throw new FileNotFoundException("Phonon zzz bundle missing.", checkpoint);

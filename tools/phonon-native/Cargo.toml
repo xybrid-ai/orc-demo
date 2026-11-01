@@ -10,11 +10,11 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-ptts = { version = "=0.4.0-rc.1", features = ["hf"] }
-xn = "=0.2.10"
+ptts = { version = "=0.6.0", features = ["hf"] }
+xn = "=0.2.13"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-ptts = { version = "=0.4.0-rc.1", features = ["accelerate"] }
+ptts = { version = "=0.6.0", features = ["accelerate"] }
 
 [profile.release]
 lto = "thin"

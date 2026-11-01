@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 NativeLibrary.SetDllImportResolver(typeof(PhononNativeSpeechProvider).Assembly,
     (name,assembly,path)=>(name=="orc_phonon" || name=="orc_phonon_zzz")?NativeLibrary.Load(args[0]):IntPtr.Zero);
-using var provider = new PhononNativeSpeechProvider(args[1], args[2], 6, args.Length>3 ? PhononEngine.Zzz407 : PhononEngine.XnPtts);
+using var provider = new PhononNativeSpeechProvider(args[1], args[2], 6, args.Length>3 ? PhononEngine.Zzz : PhononEngine.XnPtts);
 using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 var result = provider.Synthesize("The gate is open, Mira.", deadline.Token);
 if (result.completion != SpeechCompletion.Completed || result.pcm == null || result.pcm.Length < 2
@@ -24,7 +24,7 @@ if (result.completion != SpeechCompletion.Completed || result.pcm == null || res
 bool nonzero=false;
 for(int i=0;i<result.pcm.Length;i+=2) if(BitConverter.ToInt16(result.pcm,i)!=0) {nonzero=true;break;}
 if(!nonzero)throw new Exception("Silent Phonon output");
-File.WriteAllBytes(args.Length>3 ? "zzz407.pcm16" : "xn-ptts.pcm16", result.pcm);
+File.WriteAllBytes(args.Length>3 ? "zzz.pcm16" : "xn-ptts.pcm16", result.pcm);
 Console.WriteLine($"PASS: fresh cloned voice, {result.pcm.Length/48000.0:F2}s audio, {result.synthesisSeconds:F3}s synthesis; first packet {result.firstPacketSeconds:F3}s; open {provider.OpenSeconds:F3}s.");
 namespace AOT { [AttributeUsage(AttributeTargets.Method)] public sealed class MonoPInvokeCallbackAttribute : Attribute { public MonoPInvokeCallbackAttribute(Type type) {} } }
 '''

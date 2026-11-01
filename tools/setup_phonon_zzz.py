@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build pinned PR #407 and convert the separately supplied Phonon clone."""
+"""Build pinned zzz v0.1.0-rc.9 and convert the supplied Phonon checkpoint and clone."""
 import argparse
 import hashlib
 import importlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -12,8 +13,8 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 NATIVE = ROOT / 'tools/phonon-zzz-native'
-REVISION = '9524f098f1d6fab3ce5a115d2ccb3e1861c4540c'
-WORK = ROOT / '.context/phonon-zzz407'
+REVISION = '5de2a037896a874f75efbdaf683888c5e3156020'  # v0.1.0-rc.9
+WORK = ROOT / '.context/phonon-zzz-rc9'
 PLUGIN = ROOT / 'Assets/XybridAvatarDemo/Plugins/macos-arm64/liborc_phonon_zzz.dylib'
 MODEL = ROOT / 'Assets/StreamingAssets/PhononZzz'
 
@@ -76,9 +77,17 @@ def main():
     shutil.copyfile(args.voice, stage / 'voices' / filename)
     sys.path.insert(0, str(engine / 'scripts'))
     converter = importlib.import_module('convert_phonon_to_gguf')
-    converter.LATENTS_VOICE_SOURCES = {'trola_clone': (filename, sha(args.voice))}
     MODEL.mkdir(parents=True, exist_ok=True)
-    converter.convert_speaker_latents(stage, MODEL / 'model.gguf', ['trola_clone'])
+    # The public phonon-31m-en is the default; the 7e71a02d@200 drop remains convertible for rollback.
+    if sha(args.checkpoint / 'config.json') == converter.PUBLIC_SOURCE_CONFIG_SHA256:
+        if importlib.util.find_spec('numpy') is None:
+            parser.error('The 31m conversion needs NumPy: uv run --no-project --python 3.12 --with numpy python tools/setup_phonon_zzz.py ...')
+        converter.PUBLIC_VOICE_SOURCES = {**converter.PUBLIC_VOICE_SOURCES,
+                                          'trola_clone': ('voices/' + filename, sha(args.voice))}
+        manifest = converter.convert_public(stage, MODEL / 'model.gguf', ['trola_clone'])
+    else:
+        converter.LATENTS_VOICE_SOURCES = {'trola_clone': (filename, sha(args.voice))}
+        manifest = converter.convert_speaker_latents(stage, MODEL / 'model.gguf', ['trola_clone'])
     PLUGIN.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(library, PLUGIN)
     meta = PLUGIN.with_suffix('.dylib.meta')
@@ -120,9 +129,10 @@ PluginImporter:
 ''')
     (MODEL / 'local-provenance.json').write_text(json.dumps({
         'engineRevision': REVISION, 'zig': '0.16.0', 'backend': 'cpu', 'threads': 6,
+        'bundleRelease': manifest['bundle_release'], 'textFrontend': manifest['text_frontend'],
         'pluginSha256': sha(PLUGIN), 'bundleSha256': sha(MODEL / 'model.gguf'),
     }, indent=2) + '\n')
-    print('Staged pinned zzz #407 Phonon and cloned voice. Private assets remain ignored.')
+    print('Staged pinned zzz rc.9 Phonon (' + manifest['bundle_release'] + ') and cloned voice. Private assets remain ignored.')
 
 
 if __name__ == '__main__':

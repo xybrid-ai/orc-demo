@@ -23,7 +23,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     public Provider provider = Provider.Kokoro;
     public bool startWithKitten = true;
     public bool startWithPhonon = true;
-    public PhononEngine phononEngine = PhononEngine.Zzz407;
+    public PhononEngine phononEngine = PhononEngine.Zzz;
     public string phononZzzBundle = "PhononZzz/model.gguf";
     public string phononZzzVoice = "trola_clone";
     public string phononCheckpoint = "Phonon";
@@ -256,8 +256,8 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         uint threads = (uint)Mathf.Clamp(kittenThreads, 1, 64);
         string kitten = Resolve(kittenDirectory);
         PhononEngine engine = phononEngine;
-        string phonon = Resolve(engine == PhononEngine.Zzz407 ? phononZzzBundle : phononCheckpoint);
-        string clonedVoice = engine == PhononEngine.Zzz407 ? phononZzzVoice : Resolve(phononVoiceFile);
+        string phonon = Resolve(engine == PhononEngine.Zzz ? phononZzzBundle : phononCheckpoint);
+        string clonedVoice = engine == PhononEngine.Zzz ? phononZzzVoice : Resolve(phononVoiceFile);
         uint phononThreadCount = (uint)Mathf.Clamp(phononThreads, 1, 64);
         string voicePair = kittenVoice;
         if (string.IsNullOrWhiteSpace(voicePair) || Path.GetFileName(voicePair) != voicePair)
