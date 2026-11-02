@@ -25,7 +25,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             .AppendLine("NPC: ready=" + npc?.IsReady + "; error=" + npc?.LastError)
             .AppendLine(controller.TryGetComponent(out GatekeeperDecisionService decisions) ? decisions.Describe() : "Decisions: not prepared")
             .AppendLine(SpiritSignals.Describe())
-            .AppendLine("Player: " + controller.PlayerName + "; business=" + controller.Business)
+            .AppendLine("Player: " + controller.PlayerName + " (" + controller.NameReading + "); business=" + controller.Business)
             .AppendLine("Speech text: " + GatekeeperLiveSpeech.StyleName(GatekeeperLiveSpeech.Style))
             .AppendLine("History:");
         if (controller.Conversation != null) foreach (var entry in controller.Conversation.History) state.AppendLine(entry);
@@ -65,8 +65,8 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         GUILayout.BeginArea(new Rect(12, 12, Mathf.Min(590, Screen.width - 24), Mathf.Max(200, Screen.height - 170)), GUI.skin.box);
         scroll = GUILayout.BeginScrollView(scroll);
         GUILayout.Label("Trola debug — F4 hides, F5 jumps to free-form");
-        GUILayout.Label("Name"); debugName = GUILayout.TextField(debugName, 40);
-        GUILayout.Label("Business"); debugBusiness = GUILayout.TextField(debugBusiness, 100);
+        GUILayout.Label("Name"); debugName = GUILayout.TextField(debugName, GatekeeperNames.AnswerMaxLength);
+        GUILayout.Label("Business"); debugBusiness = GUILayout.TextField(debugBusiness, GatekeeperNames.BusinessAnswerMaxLength);
         GUILayout.Label("Approaches (comma separated)"); debugApproaches = GUILayout.TextField(debugApproaches, 100);
         GUILayout.BeginHorizontal();
         GUILayout.Label("Patience " + debugPatience);

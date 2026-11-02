@@ -24,6 +24,7 @@ public sealed class GatekeeperEncounter
     public string PlayerName { get; private set; } = "";
     public string MangledName { get; private set; } = "";
     public bool NameWasAssigned { get; private set; }
+    public GatekeeperNameReading NameReading { get; private set; }
     public string Business { get; private set; } = "";
     public bool BusinessWasAssigned { get; private set; }
     public event Action<int, int> PatienceChanged;
@@ -52,6 +53,7 @@ public sealed class GatekeeperEncounter
         PlayerName = MangledName = Business = "";
         BusinessWasAssigned = false;
         NameWasAssigned = false;
+        NameReading = GatekeeperNameReading.Empty;
         Outcome = GatekeeperOutcome.Playing;
         Mood = Patience >= 65 ? GatekeeperMood.Bored : Patience >= 30 ? GatekeeperMood.Irritated : GatekeeperMood.Furious;
         if (authored) Mood = StoryMood;
@@ -59,9 +61,11 @@ public sealed class GatekeeperEncounter
         return Make("intro");
     }
 
+    // The name read out of the answer ("I am Malik" is Malik); a refusal, a non-name or rudeness earns the fallback.
     public void CaptureName(string input, string[] blocklist, string fallback)
     {
-        bool accepted = GatekeeperNames.TrySanitize(input, blocklist, out var name);
+        NameReading = GatekeeperNames.ReadName(input, blocklist, out var name);
+        bool accepted = NameReading == GatekeeperNameReading.Given;
         if (!accepted && !GatekeeperNames.TrySanitize(fallback, blocklist, out name))
             throw new ArgumentException("The authored fallback name must be safe.");
         PlayerName = name;
@@ -73,7 +77,7 @@ public sealed class GatekeeperEncounter
 
     public void CaptureBusiness(string input, string[] blocklist)
     {
-        BusinessWasAssigned = !GatekeeperNames.TrySanitize(input, blocklist, GatekeeperNames.BusinessMaxLength, out var business);
+        BusinessWasAssigned = !GatekeeperNames.TryReadBusiness(input, blocklist, out var business);
         Business = BusinessWasAssigned ? "begging" : business;
     }
 

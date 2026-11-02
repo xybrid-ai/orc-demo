@@ -56,7 +56,7 @@ internal sealed class IntentGatekeeperLineSource : IGatekeeperLineSource
         }
         Presentation.Ended = state.Encounter.Outcome != GatekeeperOutcome.Playing;
         state.GateOpenRequested = state.Encounter.Outcome == GatekeeperOutcome.Passed;
-        if (awaitingName) { Presentation.InputSlot = GatekeeperInputSlot.Name; Presentation.CharacterLimit = 16; Presentation.Placeholder = "Your name"; }
+        if (awaitingName) { Presentation.InputSlot = GatekeeperInputSlot.Name; Presentation.CharacterLimit = GatekeeperNames.AnswerMaxLength; Presentation.Placeholder = "Your name"; }
         else if (!Presentation.Ended && !scenario.captureName) { Presentation.InputSlot = GatekeeperInputSlot.Reply; Presentation.Placeholder = "What do you say?"; }
         else if (!Presentation.Ended && state.Encounter.HasPendingOffer) Presentation.Choices = new[] { new GatekeeperChoice("Pay the toll"), new GatekeeperChoice("Walk away") };
         else if (!Presentation.Ended) Presentation.Choices = scenario.choices.ConvertAll(choice => new GatekeeperChoice(choice.label)).AsReadOnly();

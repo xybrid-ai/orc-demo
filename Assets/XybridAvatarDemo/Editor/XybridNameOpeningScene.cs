@@ -43,7 +43,7 @@ public static class XybridNameOpeningScene
         controller.liveSpeech = live;
         PrefabUtility.RecordPrefabInstancePropertyModifications(controller);
         var view = UnityEngine.Object.FindFirstObjectByType<GatekeeperView>();
-        if (view != null) { Undo.RecordObject(view.input, "Limit the name input"); view.input.characterLimit = GatekeeperNames.MaxLength; view.Refresh(); }
+        if (view != null) { Undo.RecordObject(view.input, "Limit the name input"); view.input.characterLimit = GatekeeperNames.AnswerMaxLength; view.Refresh(); }
         EditorUtility.SetDirty(scenario);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);

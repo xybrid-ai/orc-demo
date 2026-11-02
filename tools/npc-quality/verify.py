@@ -64,9 +64,38 @@ try:
     assert full["prompt"]==short["prompt"]
     depleted=adapter.ask(dict(command="apply",message="Insult",patience=1,raw=good.replace('"patience_delta":0','"patience_delta":-1')))
     assert depleted["expulsion"] and depleted["patience"]==0
+    # A typed (or transcribed) answer: every consumer hears the name read out of it, never the whole sentence, while the
+    # player line shows what was said. Rows: [typed, name or null for the assigned Worm, note, player line if not the typed text].
+    names=json.loads((ROOT/"tools/npc-quality/name-cases.json").read_text(encoding="utf-8"))
+    businesses=json.loads((ROOT/"tools/npc-quality/business-cases.json").read_text(encoding="utf-8"))  # [typed, business or null for begging, player line]
+    typed_names={c[0] for c in names}
+    for must in ("I am Malik","I go by the name of Anna Maria","I'm Malik, and you?","malik","None of your business","Hello, I'm Malik","My name is Malik."):
+        assert must in typed_names,must
+    assert any(c[1] and 40<=len(c[0])<=48 for c in names),"no 40+ character answer that fills the name field"
+    seen=adapter.ask(dict(command="names",inputs=[c[0] for c in names],businesses=[c[0] for c in businesses]))
+    def letters(s):return re.sub(r"[\W\d_]","",s).casefold()
+    def mangle(n):f=n.split(" ")[0].replace("-","").replace("'","");return f+("a" if f.lower().endswith("o") else "o")
+    for c,r in zip(names,seen):
+        typed,expected=c[0],c[1];said=c[3] if len(c)>3 else typed.strip()
+        assert r["said"]==said and (said is None or len(said)<=60),(typed,r)
+        assert r["name"]==(expected or "Worm") and r["assigned"]==(expected is None) and (r["reading"]=="Given")==(expected is not None),(typed,r)
+        assert r["name"]==r["d1Name"]==r["d1Decide"]==r["d1Spirit"]==r["gemmaName"] and r["d1Fact"]=="Your name is "+r["name"]+"." and r["mangled"]==mangle(r["name"]),(typed,r)
+        if expected:
+            assert r["trola"].startswith(expected+". Hmph.") and ", "+expected+"." in r["vesper"],(typed,r)  # his "{name}." opener, her vocative
+            if len(typed)<=48:assert letters(expected) in letters(said),(typed,r)  # a typed answer's player line holds the name he says
+        else:assert r["trola"].startswith("No proper name? Then you're Worm.") and r["vesper"].startswith("He's calling you Worm."),(typed,r)
+    readings={r["typed"]:r["reading"] for r in seen[:len(names)]}
+    assert readings["None of your business"]=="Refused" and readings["My name is Nobody"]=="Refused" and readings["Дмитрий"]=="NotAName" \
+        and readings["I'm Malik, fuck off"]=="Unsafe" and readings[""]=="Empty",readings
+    for c,r in zip(businesses,seen[len(names):]):
+        typed,expected=c[0],c[1];said=c[2] if len(c)>2 else typed.strip()
+        assert r["said"]==said and (said is None or len(said)<=60),(typed,r)
+        assert r["business"]==(expected or "begging") and r["assigned"]==(expected is None),(typed,r)
+        assert r["business"]==r["d1Business"]==r["d1Decide"]==r["d1Spirit"] and r["d1Fact"]=="Your business: "+r["business"]+".",(typed,r)
+        assert r["trola"].startswith('"'+expected+'"?') if expected else r["trolaId"].startswith("business-none"),(typed,r)
     trim=adapter.ask(dict(command="spirit",suite="SpeechTrimChecks"))
     assert trim["passed"],trim
     flow=adapter.ask(dict(command="spirit",suite="SpeechTextChecks"))
     assert flow["passed"],flow
-    print("PASS: asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+"), speech text ("+flow["checks"]+")")
+    print("PASS: names ("+str(len(names))+" answers, "+str(len(businesses))+" businesses), asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+"), speech text ("+flow["checks"]+")")
 finally:adapter.close()

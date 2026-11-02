@@ -154,17 +154,14 @@ public sealed class GatekeeperView : MonoBehaviour
         if (string.IsNullOrWhiteSpace(said)) return;
         PlayerLine().text = "You: \"" + said.Trim() + "\"";
     }
-    // Only what the game itself would repeat: a blocked or empty name or business shows nothing (GatekeeperNames.cs:5).
-    // Free-form replies are not echoed; the reply field already shows them.
+    // The player's own words ("I go by the name Malik"); Trola's reply shows the name he read out of them.
+    // A blocked or empty answer shows nothing. Free-form replies are not echoed; the reply field already shows them.
     private string Echo(string typed)
     {
+        var slot = gatekeeper.Prompt.InputSlot;
+        if (slot != GatekeeperInputSlot.Name && slot != GatekeeperInputSlot.Business) return null;
         var blocklist = gatekeeper.scenario != null ? gatekeeper.scenario.nameBlocklist : null;
-        switch (gatekeeper.Prompt.InputSlot)
-        {
-            case GatekeeperInputSlot.Name: return GatekeeperNames.TrySanitize(typed, blocklist, out var name) ? name : null;
-            case GatekeeperInputSlot.Business: return GatekeeperNames.TrySanitize(typed, blocklist, GatekeeperNames.BusinessMaxLength, out var business) ? business : null;
-            default: return null;
-        }
+        return GatekeeperNames.TryReadSaid(typed, blocklist, out var said) ? said : null;
     }
     // A sibling of the subtitle, not part of it: the self-test requires sentence.text == line.text while he speaks.
     private Text PlayerLine()

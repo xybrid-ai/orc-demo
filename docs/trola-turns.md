@@ -47,8 +47,26 @@ deletes dashes and turns ellipses into full stops.
   the Interrupt button interrupts, and it ignores presses in the first 0.5 s of a
   line, so the second click of a double-click on a choice doesn't count.
   Interrupting costs one patience and returns to the same checkpoint.
-- A typed name or business may end with sentence punctuation ("Sam.",
-  "Buy weapons!"); `GatekeeperNames.TrySanitize` drops it before checking.
+- The name field takes 48 characters, so the player can answer in a sentence.
+  `GatekeeperNames.ReadName` reads the name out of it: "I am Malik", "Hello,
+  I'm Malik" and "I go by the name of Anna Maria" give Malik and Anna Maria,
+  in whole words within 16 characters, title-cased when typed all lowercase or
+  all caps. A refusal ("None of your business", "My name is Nobody"), an
+  answer with no name in it ("I'm a traveller", a non-Latin script) or a
+  blocked word anywhere in the answer gets the assigned name, Worm first: "No
+  proper name? Then you're Worm." Trola's lines, `{name_mangled}`, Vesper, d1
+  and Gemma all read that one `GatekeeperEncounter.PlayerName`; the F4 dump
+  shows the reading next to it.
+- The business field takes 90 characters. `TryReadBusiness` keeps the player's
+  own words, because Trola quotes them back: the first sentence, without
+  leading fillers or the ending punctuation ("Buy weapons!"), digits allowed
+  ("selling 10 turnips"), in whole words within 60 characters. A blocked word, or an answer it can't read, is
+  "begging".
+- The player line (`You: "..."`) shows what the player said, not what Trola
+  read from it. `TryReadSaid` keeps letters, digits, spaces and `. , ! ? ' -`,
+  up to 60 characters on a word boundary, and shows nothing for a blocked
+  answer. `verify.py` runs `tools/npc-quality/name-cases.json` and
+  `business-cases.json` through every consumer.
 
 ## Editing the script
 

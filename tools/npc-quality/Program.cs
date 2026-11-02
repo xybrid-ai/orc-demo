@@ -35,6 +35,52 @@ class Program {
    if(command=="client_checks") {
     Console.WriteLine(JsonSerializer.Serialize(DecisionChecks.Client(scenario,req["url"].GetValue<string>())));continue;
    }
+   if(command=="names") {
+    // Every consumer of a typed name or business answer, from the real code: the player line (GatekeeperView.Echo calls
+    // TryReadSaid), Trola's reply (AuthoredGatekeeperLineSource), the encounter, d1 /decide's request and fact answer,
+    // d1 /spirit's name and business fields, Gemma's prompt and Vesper's first line about the name (SpiritPolicy).
+    var spiritLines=SpiritLines.Parse(File.ReadAllText(Path.Combine(Path.GetDirectoryName(args[0]),"../Resources/Spirit/SpiritLines.json")));
+    var build=typeof(GatekeeperDecisionClient).GetMethod("Build",BindingFlags.Static|BindingFlags.NonPublic);
+    string Field(object o,string name)=>(string)o.GetType().GetField(name).GetValue(o);
+    var results=new List<object>();
+    (GatekeeperConversationState conv,Func<GatekeeperPlayerInput,GatekeeperScenario.Line> next) Open() {
+     var conv=new GatekeeperConversationState(new GatekeeperEncounter(3,5,true));
+     var source=new AuthoredGatekeeperLineSource(scenario,conv);
+     GatekeeperScenario.Line Next(GatekeeperPlayerInput i)=>source.NextLineAsync(conv,i,System.Threading.CancellationToken.None).GetAwaiter().GetResult();
+     for(var l=Next(new GatekeeperPlayerInput(GatekeeperInputKind.Start));l!=null;l=Next(new GatekeeperPlayerInput(GatekeeperInputKind.Continue))){}
+     return (conv,Next);
+    }
+    foreach(var item in req["inputs"].AsArray()) {
+     string typed=item.GetValue<string>();
+     string said=GatekeeperNames.TryReadSaid(typed,scenario.nameBlocklist,out var shown)?shown:null;
+     var (conv,next)=Open();
+     var trola=next(new GatekeeperPlayerInput(GatekeeperInputKind.Text,typed));
+     var e=conv.Encounter;var snap=conv.Snapshot();
+     var facts=GatekeeperResponsePolicy.Create(snap,new GatekeeperDecision(GatekeeperScope.InWorld,GatekeeperDialogueIntent.PlayerFacts,GatekeeperFact.PlayerName));
+     string gemma=(string)Invoke("TurnPrompt",snap,"What is my name?");
+     var spirit=SpiritDecisionClient.Clip(new SpiritRequest{message="What is my name?",name=e.PlayerName,business=e.Business}); // SpiritDirector.Request
+     // As SpiritDirector.BuildCheckpoint sees the controller: an assigned name is remarked on at the business prompt, a given one at the hub.
+     var cue=new SpiritPolicy(spiritLines,new SpiritAdvisor(doc,"passage"),11).AtCheckpoint(new SpiritCheckpoint{
+      Stage=e.NameWasAssigned?SpiritStage.Business:SpiritStage.Hub,NodeId=e.NameWasAssigned?"":"hub",Patience=e.Patience,Now=50,FirstSession=true,
+      PlayerName=e.PlayerName,NameAssigned=e.NameWasAssigned},true)?.Opening.FirstOrDefault();
+     results.Add(new{typed,said,reading=e.NameReading.ToString(),name=e.PlayerName,mangled=e.MangledName,assigned=e.NameWasAssigned,trola=trola?.text,trolaId=trola?.id,
+      d1Name=snap.Name,d1Decide=Field(build.Invoke(null,new object[]{snap,"What is my name?"}),"name"),d1Spirit=spirit.name,d1Fact=facts.Assemble()?.text,
+      gemmaName=Regex.Match(gemma,"Player name: (.*)").Groups[1].Value.TrimEnd(),vesper=cue?.Text,vesperId=cue?.LineId});
+    }
+    foreach(var item in req["businesses"]?.AsArray()??new JsonArray()) {
+     string typed=item.GetValue<string>();
+     string said=GatekeeperNames.TryReadSaid(typed,scenario.nameBlocklist,out var shown)?shown:null;
+     var (conv,next)=Open();
+     for(var l=next(new GatekeeperPlayerInput(GatekeeperInputKind.Text,"Mira"));l!=null;l=next(new GatekeeperPlayerInput(GatekeeperInputKind.Continue))){}
+     var trola=next(new GatekeeperPlayerInput(GatekeeperInputKind.Text,typed));
+     var e=conv.Encounter;var snap=conv.Snapshot();
+     var facts=GatekeeperResponsePolicy.Create(snap,new GatekeeperDecision(GatekeeperScope.InWorld,GatekeeperDialogueIntent.PlayerFacts,GatekeeperFact.Business));
+     var spirit=SpiritDecisionClient.Clip(new SpiritRequest{message="Why am I here?",name=e.PlayerName,business=e.Business});
+     results.Add(new{typed,said,business=e.Business,assigned=e.BusinessWasAssigned,trola=trola?.text,trolaId=trola?.id,d1Business=snap.Business,
+      d1Decide=Field(build.Invoke(null,new object[]{snap,"Why am I here?"}),"business"),d1Spirit=spirit.business,d1Fact=facts.Assemble()?.text});
+    }
+    Console.WriteLine(JsonSerializer.Serialize(results));continue;
+   }
    if(command=="story_checks") {
     if(!scenario.Validate(out var validationError))throw new InvalidOperationException(validationError);
     var results=new List<object>();
