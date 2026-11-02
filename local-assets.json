@@ -2,7 +2,7 @@
   "schema": 1,
   "project": "orc-demo",
   "unity": "6000.6.4f1",
-  "xybrid_sdk": "0.9.0",
+  "xybrid_sdk": "0.16.0",
   "files": [
     {
       "path": "Assets/Fonts.meta",
@@ -1433,8 +1433,8 @@
     },
     {
       "path": "Assets/Xybrid/Plugins/.xybrid-native-macos-version",
-      "bytes": 5,
-      "sha256": "30c99e8b103eacbe6f6d6e1b54b06ca6d5f3164b4f50094334a517ae95ca8fba"
+      "bytes": 6,
+      "sha256": "2bd0dcb3cc75b56e610252780c6fe169a322265ba1cca8e4147375c0bbbf3031"
     },
     {
       "path": "Assets/Xybrid/Plugins/macOS.meta",
@@ -1443,8 +1443,8 @@
     },
     {
       "path": "Assets/Xybrid/Plugins/macOS/libxybrid_bolt.dylib",
-      "bytes": 32377976,
-      "sha256": "61f8c9a5bcc49272f2f02e3d2a41bbc50774e4276980a409fe7d6ec94b23e824"
+      "bytes": 40117736,
+      "sha256": "9f1e23b5c7c4799852f7367cbd9b9444b177763b6eeea27d176a4131ca58cffa"
     },
     {
       "path": "Assets/Xybrid/Plugins/macOS/libxybrid_bolt.dylib.meta",

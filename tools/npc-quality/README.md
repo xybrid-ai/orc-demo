@@ -9,8 +9,8 @@ text-quality measurement.
 
 ## Build
 
-Requires .NET 8, Rust, an Xybrid SDK source checkout with tag `v0.9.0`, and its
-llama.cpp build prerequisites. The C# compile uses the demo's pinned **0.9.0**
+Requires .NET 8, Rust, an Xybrid SDK source checkout with tag `v0.16.0`, and its
+llama.cpp build prerequisites. The C# compile uses the demo's pinned **0.16.0**
 managed bindings. The Rust worker uses the supplied SDK checkout; record its
 commit when comparing runs. This verifies source compatibility and shared
 prompt/parser behavior; it is not a native Unity ABI or Editor compilation test.

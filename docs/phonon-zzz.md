@@ -14,7 +14,7 @@ the private `7e71a02d@200` drop, is still convertible for rollback. The
 
 Apple Silicon macOS 13+, Zig **0.16.0 stable**, Python 3.11+ with NumPy (via
 [uv](https://docs.astral.sh/uv/)), Git, and the existing Unity 6000.6.4f1 /
-Xybrid SDK 0.9.0 installation are required.
+Xybrid SDK 0.16.0 installation are required.
 
 The rc.9 converter pins 31m's original `config.json` (2,851 bytes, SHA-256
 `7062ea37…`), so download the checkpoint at the Hugging Face commit it was
