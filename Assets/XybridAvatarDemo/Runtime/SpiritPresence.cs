@@ -552,6 +552,20 @@ public sealed class SpiritPresence : MonoBehaviour
 
     // ---- Input ----
 
+    // Speech input (PlayerVoiceInput): while the player talks to her the field shows what is coming, which also counts
+    // as a draft so her window does not close mid-sentence; the transcript is then submitted as if typed and Entered.
+    public bool FieldOpen => built && fieldOpen;
+    public void ShowSpoken(string text) { if (FieldOpen) { field.SetTextWithoutNotify(text ?? ""); moveCaretToEnd = true; } }
+    public void SubmitSpoken(string text)
+    {
+        string draft = (text ?? "").Trim();
+        if (!FieldOpen || draft.Length == 0) return;
+        if (draft.Length > field.characterLimit) draft = draft.Substring(0, field.characterLimit).TrimEnd();
+        field.SetTextWithoutNotify(draft);
+        fieldOpen = false; refocus = false;
+        pendingSubmit = draft;
+    }
+
     private void EndEdit(string text)
     {
         if (!fieldOpen) return;

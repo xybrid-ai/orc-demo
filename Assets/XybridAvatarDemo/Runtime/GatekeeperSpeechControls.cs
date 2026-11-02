@@ -99,6 +99,8 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             if (vesper != null && vesper.Voice != null) vesper.Voice.Stop(.05f);
         }
         GUILayout.Label("Phonon only; applies from the next line. Restart authored encounter replays the same route.");
+        var voiceInput = controller.GetComponent<PlayerVoiceInput>();
+        if (voiceInput != null) GUILayout.Label(voiceInput.Describe());
         // Always one label (IMGUI layout); "Spirit: not installed" when the spirit is absent or bailed out.
         GUILayout.Label(SpiritSignals.Describe());
         // Vesper's staged voices (tools/setup_spirit_voice.py --voice all): picking one plays her hub line in it; F9 cycles.
