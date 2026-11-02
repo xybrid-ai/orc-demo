@@ -12,7 +12,7 @@ def asset_lines():
         if row.startswith("  - id: "):lines.append({"id":row[8:].strip()});key=None;continue
         field=re.match(r"^    (\w+):(.*)$",row)
         if field:key=field.group(1);lines[-1][key]=field.group(2).strip()
-        elif key and row.startswith("      "):lines[-1][key]+=" "+row.strip()  # Unity folds scalars past 80 columns
+        elif key and row.startswith("      "):lines[-1][key]+=" "+row.strip()  # a folded (multi-row) scalar, if a YAML tool ever writes one
     def scalar(raw):return raw[1:-1].replace("''","'") if raw[:1]=="'" else json.loads(raw) if raw[:1]=='"' else raw
     return [dict(id=l["id"],text=scalar(l["text"]),emotion=l["emotion"],intensity=float(l["intensity"]),patience_delta=int(l["patience_delta"]),
                  ends_scene=l["ends_scene"]=="1",delivery=scalar(l.get("delivery",""))) for l in lines]

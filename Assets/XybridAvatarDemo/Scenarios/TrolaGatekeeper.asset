@@ -99,8 +99,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: business-none
     recordedMood: 0
-    text: Can't make that out. Begging, then. Up since dawn on burnt stew, and now
-      this.
+    text: Can't make that out. Begging, then. Up since dawn on burnt stew, and now this.
     emotion: contempt
     intensity: 0.55
     patience_delta: 0
@@ -250,8 +249,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: threat-reply-low
     recordedMood: 0
-    text: Careful, {name_mangled}. See these dents? The last fool brought a sword,
-      and I kept it.
+    text: Careful, {name_mangled}. See these dents? The last fool brought a sword, and I kept it.
     emotion: menace
     intensity: 0.85
     patience_delta: 0
@@ -311,8 +309,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: camp-reply-high
     recordedMood: 0
-    text: Hah. Nobody ever asks the gatekeeper. Cook burns the stew, captain calls
-      it discipline.
+    text: Hah. Nobody ever asks the gatekeeper. Cook burns the stew, captain calls it discipline.
     emotion: amusement
     intensity: 0.55
     patience_delta: 0
@@ -372,8 +369,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: pass-through
     recordedMood: 0
-    text: Hmph, fair's fair. The toll covers the trouble you brought, so through you
-      go, {name}, and mind the stew.
+    text: Hmph, fair's fair. The toll covers the trouble you brought, so through you go, {name}, and mind the stew.
     emotion: reluctance
     intensity: 0.45
     patience_delta: 0
@@ -403,8 +399,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: like-invite
     recordedMood: 0
-    text: Fine, {name}. Gate's open, and you can sit by my fire tonight. Just this
-      once.
+    text: Fine, {name}. Gate's open, and you can sit by my fire tonight. Just this once.
     emotion: fondness
     intensity: 0.55
     patience_delta: 0
@@ -414,8 +409,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: refuse-out
     recordedMood: 0
-    text: Nobody talks to me like that at my own gate. Out, before I use you to bar
-      it!
+    text: Nobody talks to me like that at my own gate. Out, before I use you to bar it!
     emotion: anger
     intensity: 1
     patience_delta: 0

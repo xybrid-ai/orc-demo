@@ -47,6 +47,8 @@ Unity speaks the serialized `lines` in `Scenarios/TrolaGatekeeper.asset`, while
 the headless checks read the JSON. After editing the JSON, open
 `GoblinSpeakingDemo` and run **Xybrid › Avatar Demo › Configure Authored
 Gatekeeper** to rewrite the asset, then run `python3 tools/npc-quality/verify.py`.
+Configure also saves the scene, which Unity may reserialize; commit only the JSON
+and the asset unless you meant to change the scene.
 Give a line a new id when its text changes, so Configure doesn't reattach a baked
 clip of the old words. Baked clips are never played (every line is synthesized
 live), but `Validate` still checks them.
