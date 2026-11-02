@@ -45,7 +45,7 @@ exercise the complete planned path. Factual/boundary/farewell routes bypass the
 writer. Other plans ask the existing Gemma model for `{"text":"..."}` only.
 Extra output fields are rejected. Policy supplies the final line metadata,
 which feeds the existing facial performer and speech system. A calm insult
-selects amusement; an insult at one remaining patience starts all three authored
+selects amusement; an insult at one remaining patience starts both authored
 expulsion lines, applying the decrement once when presented.
 
 `GatekeeperConversationState.RecordOffer` accepts a short description from a

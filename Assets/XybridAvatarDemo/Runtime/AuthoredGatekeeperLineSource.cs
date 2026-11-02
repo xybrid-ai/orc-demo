@@ -23,7 +23,7 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
             if (string.IsNullOrEmpty(state.Encounter.PlayerName)) yield break;
             foreach (var line in scenario.lines)
             {
-                if (line.id == "named-1" && state.Encounter.NameWasAssigned || line.id == "assigned-1" && !state.Encounter.NameWasAssigned) continue;
+                if (line.id == "named-1" && state.Encounter.NameWasAssigned || line.id == "assigned-reply" && !state.Encounter.NameWasAssigned) continue;
                 if (GatekeeperNames.HasSlots(line.text) && (story.BusinessCaptured || !line.text.Contains("{business}")))
                     yield return GatekeeperLineSources.Resolve(line, state.Encounter);
             }
@@ -43,7 +43,7 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
             }
             else if (story.CurrentNode.input_slot == "business") story.CaptureBusiness(input.Text, scenario.nameBlocklist);
             else throw new InvalidOperationException("This checkpoint accepts choices.");
-            lineIndex = 0;
+            lineIndex = 0; EndReaction();
         }
         else if (input.Kind == GatekeeperInputKind.Choice)
         {
@@ -51,19 +51,22 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
             state.Record("Player", story.CurrentNode.choices[input.Choice].label);
             state.RecordApproach(story.CurrentNode.choices[input.Choice].target);
             if (!story.Choose(input.Choice)) throw new InvalidOperationException("Choice is no longer available.");
-            lineIndex = 0;
+            // A choice can answer an idle taunt (the buttons stay live during it): the taunt is over, this is a new turn.
+            lineIndex = 0; EndReaction();
         }
         else if (input.Kind == GatekeeperInputKind.Idle)
         {
             reaction = true; Presentation.IsReaction = true;
             Presentation.LineGapSeconds = 0;
+            // A taunt is not a turn: a click during it must never cost patience.
+            Presentation.CanInterrupt = Presentation.PointerInterrupts = Presentation.ShowInterruptButton = false;
             return Task.FromResult(GatekeeperLineSources.Resolve(scenario.FindLine(story.NextIdleLine()), state.Encounter));
         }
         else if (input.Kind == GatekeeperInputKind.Interrupt)
         {
             while (string.IsNullOrEmpty(story.CurrentNode.input_slot) && story.CurrentNode.choices.Count == 0 && string.IsNullOrEmpty(story.CurrentVariant.outcome))
                 if (!story.Advance()) break;
-            lineIndex = story.CurrentVariant.line_ids.Length;
+            lineIndex = story.CurrentLines.Length;
             reaction = true; Presentation.IsReaction = Presentation.ProtectedReaction = true;
             Presentation.LineGapSeconds = 0;
             return Task.FromResult(GatekeeperLineSources.Resolve(scenario.FindLine(story.Data.interruption_line), state.Encounter));
@@ -75,15 +78,27 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
         }
         while (true)
         {
-            if (lineIndex < story.CurrentVariant.line_ids.Length)
+            var ids = story.CurrentLines;
+            if (lineIndex < ids.Length)
             {
-                Presentation = new GatekeeperPresentation { IdleSeconds = story.Data.idle_seconds };
-                return Task.FromResult(GatekeeperLineSources.Resolve(scenario.FindLine(story.CurrentVariant.line_ids[lineIndex++]), state.Encounter));
+                // Only the Interrupt button interrupts a story line; a stray click does not.
+                Presentation = new GatekeeperPresentation { IdleSeconds = story.Data.idle_seconds, PointerInterrupts = false };
+                var line = GatekeeperLineSources.Resolve(scenario.FindLine(ids[lineIndex++]), state.Encounter);
+                // One turn, one utterance: a reply that leads into a checkpoint also asks that checkpoint's question.
+                if (lineIndex == ids.Length && string.IsNullOrEmpty(story.CurrentVariant.outcome) && story.Advance())
+                {
+                    lineIndex = 0;
+                    if (story.WaitsForPlayer)
+                        for (var prompt = story.CurrentLines; lineIndex < prompt.Length; lineIndex++)
+                            line = GatekeeperLineSources.Join(line, GatekeeperLineSources.Resolve(scenario.FindLine(prompt[lineIndex]), state.Encounter));
+                }
+                return Task.FromResult(line);
             }
             if (!string.IsNullOrEmpty(story.CurrentVariant.outcome) || !story.Advance()) return WaitAtCheckpoint();
             lineIndex = 0;
         }
     }
+    private void EndReaction() { reaction = false; Presentation.IsReaction = Presentation.ProtectedReaction = false; }
     private Task<GatekeeperScenario.Line> WaitAtCheckpoint()
     {
         Presentation = new GatekeeperPresentation { IdleSeconds = story.Data.idle_seconds };
@@ -103,7 +118,11 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
         {
             Presentation.InputSlot = GatekeeperInputSlot.Business; Presentation.Placeholder = "Your business at the gate"; Presentation.CharacterLimit = 60;
         }
-        else Presentation.Choices = story.CurrentNode.choices.ConvertAll(choice => new GatekeeperChoice(choice.label)).AsReadOnly();
+        else
+        {
+            Presentation.Choices = story.CurrentNode.choices.ConvertAll(choice => new GatekeeperChoice(choice.label, choice.say)).AsReadOnly();
+            Presentation.TauntKeepsChoices = true; // An idle taunt here keeps these buttons live; a click answers it.
+        }
         return Task.FromResult<GatekeeperScenario.Line>(null);
     }
 }

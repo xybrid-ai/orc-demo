@@ -45,6 +45,48 @@ class Program {
     }
     Console.WriteLine(JsonSerializer.Serialize(results));continue;
    }
+   if(command=="turn_checks") {
+    // Drives the real AuthoredGatekeeperLineSource as the controller does: one input, then Continue until a checkpoint,
+    // applying each line's patience_delta when it plays. Steps: T<text> typed, C<i> choice, X<i> choice interrupted
+    // after its first clip, I idle taunt left unanswered (Continue after it), K<i> idle taunt answered by choice i.
+    // Each route runs with sample slots (Mira / selling turnips) and again with the longest names the game allows.
+    // The long inputs end like typed sentences: the trailing punctuation must be dropped, not turn them into "no name"/"no business".
+    string longName="Bartholomew Rook.", longBusiness="delivering a cartload of pickled turnips to my old aunt Ysol!";
+    var routes=new[]{"C0 C1 C0","C0 C3 C1","C2 C2 C2","C3 C3 C1","C1 C1 C1","C3 C0 C2","C0 C2 C0","C2 C0 C1","X0 C1 C0","K3 C1 C0","I C3 C3 C1"};
+    var turns=new List<object>();
+    foreach(var longSlots in new[]{false,true})
+    foreach(var route in routes) {
+     var conv=new GatekeeperConversationState(new GatekeeperEncounter(3,5,true));
+     var source=new AuthoredGatekeeperLineSource(scenario,conv);
+     var steps=new List<string>{"S","T"+(longSlots?longName:"Mira"),"T"+(longSlots?longBusiness:"selling turnips")};
+     steps.AddRange(route.Split(' '));
+     foreach(var step in steps) {
+      var lines=new List<object>();
+      GatekeeperPlayerInput first=step[0]=='S'?new GatekeeperPlayerInput(GatekeeperInputKind.Start)
+       :step[0]=='T'?new GatekeeperPlayerInput(GatekeeperInputKind.Text,step.Substring(1))
+       :step[0]=='I'||step[0]=='K'?new GatekeeperPlayerInput(GatekeeperInputKind.Idle)
+       :new GatekeeperPlayerInput(GatekeeperInputKind.Choice,choice:int.Parse(step.Substring(1)));
+      GatekeeperScenario.Line Ask(GatekeeperPlayerInput input) {
+       var l=source.NextLineAsync(conv,input,System.Threading.CancellationToken.None).GetAwaiter().GetResult();
+       if(l!=null) {GatekeeperLineSources.ValidateOutput(l);conv.Encounter.ChangePatience(l.patience_delta);
+        lines.Add(new{l.id,l.text,l.emotion,l.delivery,chars=l.text.Length,words=l.text.Split(' ',StringSplitOptions.RemoveEmptyEntries).Length});}
+       return l;
+      }
+      var line=Ask(first);
+      if(step[0]=='K') { // the click lands during the taunt: no Continue, the choice is the next input
+       turns.Add(new{route,longSlots,step="taunt",patience=conv.Encounter.Patience,outcome=conv.Encounter.Outcome.ToString(),handback=true,choices=new string[0],lines});
+       lines=new List<object>();line=Ask(new GatekeeperPlayerInput(GatekeeperInputKind.Choice,choice:int.Parse(step.Substring(1))));
+      }
+      if(step[0]=='X'&&line!=null) line=Ask(new GatekeeperPlayerInput(GatekeeperInputKind.Interrupt));
+      while(line!=null) line=Ask(new GatekeeperPlayerInput(GatekeeperInputKind.Continue));
+      var p=source.Presentation;
+      bool handback=p.Choices.Count>0||p.InputSlot!=GatekeeperInputSlot.None||p.Ended||p.AwaitGate;
+      turns.Add(new{route,longSlots,step,patience=conv.Encounter.Patience,outcome=conv.Encounter.Outcome.ToString(),handback,
+       choices=p.Choices.Select(c=>c.label+" | "+c.say).ToArray(),lines});
+     }
+    }
+    Console.WriteLine(JsonSerializer.Serialize(turns));continue;
+   }
    if(command=="spirit") {
     var suite=Type.GetType(req["suite"].GetValue<string>())??throw new InvalidOperationException("Unknown spirit suite");
     var result=suite.GetMethod("Run",BindingFlags.Public|BindingFlags.Static).Invoke(null,new object[]{req,scenario,doc});

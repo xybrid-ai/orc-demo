@@ -27,11 +27,15 @@ public sealed class GatekeeperStory
     {
         public int min_patience, max_patience = 5;
         public string[] line_ids;
+        // Spoken instead of line_ids when the story comes back to this node: the hub after a round, an approach chosen twice.
+        public string[] revisit_line_ids;
         public string outcome;
     }
     [Serializable] public sealed class Choice
     {
         public string label, target;
+        // The player's words for this choice: shown on screen, never voiced. The label stays the button text and the key for Vesper and the tests.
+        public string say;
         public int patience_delta;
         public int repeat_delta;
     }
@@ -41,6 +45,11 @@ public sealed class GatekeeperStory
     public Variant CurrentVariant { get; private set; }
     public int HubRounds { get; private set; }
     public bool BusinessCaptured { get; private set; }
+    // True when the current node was already entered earlier in this encounter.
+    public bool Revisit { get; private set; }
+    public string[] CurrentLines => Revisit && CurrentVariant.revisit_line_ids != null && CurrentVariant.revisit_line_ids.Length > 0 ? CurrentVariant.revisit_line_ids : CurrentVariant.line_ids;
+    public bool WaitsForPlayer => !string.IsNullOrEmpty(CurrentNode.input_slot) || CurrentNode.choices != null && CurrentNode.choices.Count > 0;
+    private readonly HashSet<string> entered = new HashSet<string>();
     private readonly HashSet<string> approaches = new HashSet<string>();
     private int idleIndex = -1;
 
@@ -55,6 +64,7 @@ public sealed class GatekeeperStory
         CurrentNode = Data.nodes.Find(n => n.id == id) ?? throw new InvalidOperationException("Missing story node: " + id);
         CurrentVariant = CurrentNode.variants.Find(v => Encounter.Patience >= v.min_patience && Encounter.Patience <= v.max_patience)
             ?? throw new InvalidOperationException("No patience variant: " + id);
+        Revisit = !entered.Add(id);
     }
     public void CaptureName(string input, string[] blocklist, string fallback)
     {
@@ -140,12 +150,14 @@ public sealed class GatekeeperStory
                     { error = "Invalid line or terminal marker: " + node.id; return false; }
                     if (node.id == "name" && GatekeeperNames.HasSlots(line.text)) { error = "Name demand cannot use uncaptured slots."; return false; }
                 }
+                foreach (string id in variant.revisit_line_ids ?? Array.Empty<string>())
+                    if (scenario.FindLine(id) == null || scenario.FindLine(id).ends_scene || !string.IsNullOrEmpty(variant.outcome)) { error = "Invalid revisit line: " + node.id; return false; }
                 if (!string.IsNullOrEmpty(variant.outcome) && (!Enum.TryParse<GatekeeperOutcome>(variant.outcome, out var outcome) || outcome == GatekeeperOutcome.Playing || !string.IsNullOrEmpty(node.next) || node.choices != null && node.choices.Count > 0))
                 { error = "Invalid ending: " + node.id; return false; }
             }
             foreach (var choice in node.choices ?? new List<Choice>())
-                if (choice == null || string.IsNullOrWhiteSpace(choice.label) || !nodes.Contains(choice.target) || choice.patience_delta == 0 || Math.Abs(choice.patience_delta) > 5 || node.id == "hub" && choice.repeat_delta == 0)
-                { error = "Every choice needs a target and patience movement: " + node.id; return false; }
+                if (choice == null || string.IsNullOrWhiteSpace(choice.label) || string.IsNullOrWhiteSpace(choice.say) || choice.say.Contains("{") || choice.say.Contains("}") || !nodes.Contains(choice.target) || choice.patience_delta == 0 || Math.Abs(choice.patience_delta) > 5 || node.id == "hub" && choice.repeat_delta == 0)
+                { error = "Every choice needs words, a target and patience movement: " + node.id; return false; }
         }
         foreach (GatekeeperMood mood in Enum.GetValues(typeof(GatekeeperMood)))
             if (scenario.Voice(mood) == null) { error = "Missing existing mood voice: " + mood; return false; }

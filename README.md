@@ -5,6 +5,8 @@ Gemma4NPC-E2B, with live Phonon speech using a separately supplied cloned voice.
 KittenTTS 2 / paired WarChief remains an optional provider.
 The NPC Tavern remains a separate project:
 https://github.com/xybrid-ai/xybrid-unity-tavern.
+Trola answers each player act with one spoken line; see
+[docs/trola-turns.md](docs/trola-turns.md) before editing his script.
 
 ## Open locally
 

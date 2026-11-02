@@ -75,6 +75,12 @@ public sealed class GatekeeperController : MonoBehaviour
     public bool GateOpenRequested => conversation?.GateOpenRequested ?? false;
     public bool IsWaitingForGate => State == Phase.GateOpening;
     public IReadOnlyList<GatekeeperChoice> CurrentChoices => Prompt.Choices;
+    // Choices are live while he waits, and through an idle taunt at a choice checkpoint (the source sets
+    // TauntKeepsChoices): a click during the taunt is the choice, never an interruption and never lost.
+    public bool AcceptsChoice => source != null && CurrentChoices.Count > 0 && (State == Phase.AwaitingInput
+        || performing == GatekeeperInputKind.Idle && Prompt.TauntKeepsChoices
+           && (State == Phase.Inactive || State == Phase.PreparingLine || State == Phase.PreparingSpeech || State == Phase.Speaking));
+    private GatekeeperInputKind performing = GatekeeperInputKind.Start; // The input the current performance answers; set before its first Changed.
     public GatekeeperConversationSnapshot Conversation => conversation?.Snapshot();
     public string Business => Encounter?.Business ?? "";
     public bool BusinessWasAssigned => Encounter?.BusinessWasAssigned ?? false;
@@ -200,7 +206,7 @@ public sealed class GatekeeperController : MonoBehaviour
     }
     public bool Choose(int index)
     {
-        if (State != Phase.AwaitingInput || index < 0 || index >= CurrentChoices.Count) return false;
+        if (!AcceptsChoice || index < 0 || index >= CurrentChoices.Count) return false;
         RaisePlayerActed(GatekeeperInputKind.Choice, CurrentChoices[index].label);
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Choice, choice: index)); return true;
     }
@@ -236,6 +242,7 @@ public sealed class GatekeeperController : MonoBehaviour
         MarkTrigger(input.Kind == GatekeeperInputKind.Text ? "typed input" : input.Kind == GatekeeperInputKind.Choice ? "choice"
             : input.Kind == GatekeeperInputKind.Start ? "start" : input.Kind == GatekeeperInputKind.Idle ? "idle taunt"
             : input.Kind == GatekeeperInputKind.Interrupt ? "interruption" : input.Kind.ToString());
+        performing = input.Kind;
         Cancel(); SetState(Phase.Inactive);
         performance = StartCoroutine(Perform(input, revision));
     }
