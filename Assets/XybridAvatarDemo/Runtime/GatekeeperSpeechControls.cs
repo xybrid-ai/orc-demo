@@ -26,16 +26,23 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             .AppendLine(controller.TryGetComponent(out GatekeeperDecisionService decisions) ? decisions.Describe() : "Decisions: not prepared")
             .AppendLine(SpiritSignals.Describe())
             .AppendLine("Player: " + controller.PlayerName + "; business=" + controller.Business)
+            .AppendLine("Speech text: " + GatekeeperLiveSpeech.StyleName(GatekeeperLiveSpeech.Style))
             .AppendLine("History:");
         if (controller.Conversation != null) foreach (var entry in controller.Conversation.History) state.AppendLine(entry);
         state.AppendLine("Lines:");
         foreach (var entry in controller.DebugLines)
-            state.AppendLine(entry.line.debugSource + ": " + entry.line.text + "\nDecision: " + entry.line.debugDecision + "\nRaw: " + entry.line.debugRaw);
+            state.AppendLine(entry.line.debugSource + ": " + entry.line.text + SpokenAs(entry, "\n") + "\nDecision: " + entry.line.debugDecision + "\nRaw: " + entry.line.debugRaw);
         try {
             string folder = System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug");
             System.IO.Directory.CreateDirectory(folder);
             System.IO.File.WriteAllText(System.IO.Path.Combine(folder, "session-state.txt"), state.ToString());
         } catch (System.IO.IOException) { } catch (UnauthorizedAccessException) { }
+    }
+    // "Spoken as: ..." when the voice was given other words than the subtitle (a flowing Phonon line); else "".
+    private static string SpokenAs(GatekeeperController.DebugLine entry, string prefix)
+    {
+        var voice = entry.voice;
+        return voice != null && voice.speechText != null && voice.speechText != voice.text ? prefix + "Spoken as: " + voice.speechText : "";
     }
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -82,6 +89,16 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             : "Voice: live " + speech.provider + " / " + speech.kittenVoice + "; " + speech.kittenThreads + " threads; Accelerate " + speech.accelerate);
         GUILayout.Label((speech.provider == GatekeeperLiveSpeech.Provider.Phonon && speech.phononWholeLines ? "Whole lines, edge silence trimmed" : "Complete clauses")
             + "; played WAVs: " + System.IO.Path.Combine(Application.persistentDataPath, "TrolaSpeechDebug"));
+        // One style for Trola and Vesper, remembered like her voice. Lines already prepared keep theirs, so audio she
+        // prefetched is dropped; zzz reseeds every call, so Restart replays a route with the same audio per text.
+        bool flowing = GatekeeperLiveSpeech.Style == GatekeeperLiveSpeech.SpeechStyle.Flowing;
+        if (GUILayout.Button(flowing ? "Speech text: flowing — use as written" : "Speech text: as written — use flowing"))
+        {
+            GatekeeperLiveSpeech.SetStyle(flowing ? GatekeeperLiveSpeech.SpeechStyle.AsWritten : GatekeeperLiveSpeech.SpeechStyle.Flowing);
+            var vesper = SpiritDirector.Instance;
+            if (vesper != null && vesper.Voice != null) vesper.Voice.Stop(.05f);
+        }
+        GUILayout.Label("Phonon only; applies from the next line. Restart authored encounter replays the same route.");
         // Always one label (IMGUI layout); "Spirit: not installed" when the spirit is absent or bailed out.
         GUILayout.Label(SpiritSignals.Describe());
         // Vesper's staged voices (tools/setup_spirit_voice.py --voice all): picking one plays her hub line in it; F9 cycles.
@@ -108,6 +125,8 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         {
             var entry = controller.DebugLines[i]; var line = entry.line;
             GUILayout.Label(line.id + " [" + line.debugSource + "] " + line.text);
+            string spokenAs = SpokenAs(entry, "");
+            if (spokenAs.Length > 0) GUILayout.Label(spokenAs);
             if (!string.IsNullOrEmpty(line.debugDecision)) GUILayout.Label("Decision: " + line.debugDecision);
             GUILayout.Label("Parsed: " + line.emotion + " / " + line.intensity.ToString("0.00") + "; patience delta " + line.patience_delta + "; " + entry.patienceBefore + " → " + entry.patienceAfter);
             double voice = entry.voice?.totalSynthesisSeconds ?? 0;

@@ -47,6 +47,8 @@ try:
         assert all("{" not in l["text"] and l["chars"]<=(165 if t["longSlots"] else 130) for l in t["lines"]),t
         if t["step"][0]=="X": assert t["lines"][-1]["id"]=="interrupted" and t["choices"],t     # cut off: Oi, back to the same choices
         if t["step"] in ("taunt","I"): assert len(t["lines"])==1 and t["lines"][0]["id"].startswith("idle-"),t
+        # Phonon is given each turn as one flowing utterance: no full stop inside it (questions and exclamations stay).
+        assert all(not re.search(r"\w\.\s+\w",l["speech"]) and l["speech"][-1] in ".!?" for l in t["lines"]),t
     answered=[t for t in turns if t["route"]=="K3 C1 C0" and not t["longSlots"]]
     for t in turns:  # typed answers ending in "." or "!" are still the player's own name and business
         if t["step"][0]=="T": assert t["lines"][0]["id"].split("+")[0] in ("named-1","business-reply") and ".." not in t["lines"][0]["text"] and '!"' not in t["lines"][0]["text"],t
@@ -64,5 +66,7 @@ try:
     assert depleted["expulsion"] and depleted["patience"]==0
     trim=adapter.ask(dict(command="spirit",suite="SpeechTrimChecks"))
     assert trim["passed"],trim
-    print("PASS: asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+")")
+    flow=adapter.ask(dict(command="spirit",suite="SpeechTextChecks"))
+    assert flow["passed"],flow
+    print("PASS: asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+"), speech text ("+flow["checks"]+")")
 finally:adapter.close()
