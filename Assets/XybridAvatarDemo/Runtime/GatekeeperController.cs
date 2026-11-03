@@ -102,6 +102,7 @@ public sealed class GatekeeperController : MonoBehaviour
     public string PlayerName => Encounter?.PlayerName ?? "";
     public string MangledName => Encounter?.MangledName ?? "";
     public bool NameWasAssigned => Encounter?.NameWasAssigned ?? false;
+    public GatekeeperNameReading NameReading => Encounter?.NameReading ?? GatekeeperNameReading.Empty;
     public bool HasPendingOffer => Encounter?.HasPendingOffer ?? false;
     public bool CurrentWasLive { get; private set; }
     public GatekeeperLiveSpeech.Generated LastGenerated { get; private set; }

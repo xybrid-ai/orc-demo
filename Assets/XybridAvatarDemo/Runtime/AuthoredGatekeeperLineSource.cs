@@ -112,11 +112,11 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
         }
         else if (story.CurrentNode.input_slot == "name")
         {
-            Presentation.InputSlot = GatekeeperInputSlot.Name; Presentation.Placeholder = "Your name"; Presentation.CharacterLimit = 16;
+            Presentation.InputSlot = GatekeeperInputSlot.Name; Presentation.Placeholder = "Your name"; Presentation.CharacterLimit = GatekeeperNames.AnswerMaxLength;
         }
         else if (story.CurrentNode.input_slot == "business")
         {
-            Presentation.InputSlot = GatekeeperInputSlot.Business; Presentation.Placeholder = "Your business at the gate"; Presentation.CharacterLimit = 60;
+            Presentation.InputSlot = GatekeeperInputSlot.Business; Presentation.Placeholder = "Your business at the gate"; Presentation.CharacterLimit = GatekeeperNames.BusinessAnswerMaxLength;
         }
         else
         {
