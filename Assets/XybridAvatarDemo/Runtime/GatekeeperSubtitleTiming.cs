@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-// Sentence-by-sentence subtitles (docs/subtitles.md): each sentence of a line appears when the voice starts saying it.
-// Sentences splits a displayed line; Onsets finds where each sentence starts in the line's trimmed Phonon clip (on the
-// voice worker, after GatekeeperSpeechTrim); ClauseStarts, Reached and Markup decide what Trola's and Vesper's subtitle
-// shows while the clip plays. Pure (Color32 is the only Unity type); tools/npc-quality/SubtitleTimingChecks.cs covers it.
+// Phrase-by-phrase subtitles (docs/subtitles.md): each phrase of a line appears when the voice starts saying it.
+// Phrases splits a displayed line at every pause mark (Sentences at its sentence ends, which steer the aligner);
+// PhraseOnsets finds where each phrase starts in the line's trimmed Phonon clip (on the voice worker, after
+// GatekeeperSpeechTrim; Onsets reads the same alignment at sentence starts); ClauseStarts, Reached and Markup decide
+// what Trola's and Vesper's subtitle shows while the clip plays. Pure (Color32 is the only Unity type);
+// tools/npc-quality/SubtitleTimingChecks.cs covers it.
 public static class GatekeeperSubtitleTiming
 {
     // ---- Sentences ----
@@ -56,18 +58,61 @@ public static class GatekeeperSubtitleTiming
         return Abbreviations.Contains(word);
     }
 
+    // ---- Phrases ----
+
+    // The reveal unit: a phrase ends after any mark the voice may pause at, followed by whitespace and more text: a run
+    // of . ! ? … (not after an abbreviation or initial, as for sentences), , ; : or a dash (— –, or a hyphen with spaces
+    // on both sides: "well-known" is one word), with any closing quotes or brackets right after. "1,000", "3:30" and
+    // "a—b" don't split. Every sentence end is a phrase end. Spans exclude the whitespace between, like Sentences.
+    public static List<(int start, int length)> Phrases(string text)
+    {
+        var spans = new List<(int start, int length)>();
+        if (string.IsNullOrEmpty(text)) return spans;
+        int n = text.Length, start = 0;
+        while (start < n && char.IsWhiteSpace(text[start])) start++;
+        int i = start;
+        while (i < n)
+        {
+            if (!PhraseMark(text, i)) { i++; continue; }
+            int marks = 0, dot = i;
+            while (i < n && (PhraseMark(text, i) || Closer(text[i]))) { if (PhraseMark(text, i)) marks++; i++; }
+            int end = i, next = i;
+            while (next < n && char.IsWhiteSpace(text[next])) next++;
+            if (next == i || next >= n) continue;
+            if (marks == 1 && text[dot] == '.' && IsAbbreviation(text, dot)) continue;
+            spans.Add((start, end - start));
+            start = next; i = next;
+        }
+        int last = n;
+        while (last > start && char.IsWhiteSpace(text[last - 1])) last--;
+        if (last > start) spans.Add((start, last - start));
+        return spans;
+    }
+
+    private static bool PhraseMark(string text, int i)
+    {
+        char c = text[i];
+        if (Terminal(c) || c == ',' || c == ';' || c == ':' || c == '—' || c == '–') return true;
+        if (c != '-') return false;
+        int a = i, b = i;
+        while (a > 0 && text[a - 1] == '-') a--;
+        while (b + 1 < text.Length && text[b + 1] == '-') b++;
+        return a > 0 && char.IsWhiteSpace(text[a - 1]) && b + 1 < text.Length && char.IsWhiteSpace(text[b + 1]);
+    }
+
     // ---- Onsets ----
 
-    // When each sentence of a displayed line starts in its trimmed Phonon clip (sample index per sentence after the first).
-    // The spoken text predicts a timeline: each word lasts in proportion to its letters, plus phrase-final lengthening, and
+    // When each sentence (Onsets) or phrase (PhraseOnsets) of a displayed line starts in its trimmed Phonon clip (sample
+    // index per sentence or phrase after the first); both read one alignment of the line. The spoken text predicts a timeline: each word lasts in proportion to its letters, plus phrase-final lengthening, and
     // each punctuated gap expects a pause whose length depends on its punctuation. The clip gives the measured pauses: quiet
     // runs of 10 ms windows 40 dB under the loudest window (the threshold rises over a noisy floor). A dynamic program
     // matches pauses to punctuated gaps in order. It scores how likely each pause length is at that punctuation (a sentence
     // end almost always pauses, a full stop about 400 ms, a comma 200-500 ms, a word rarely over 100 ms) and how well the
-    // speech between two matched pauses fits the predicted duration of the words between them. A sentence starts where its
-    // matched pause ends; an unmatched one is placed by its letters between matched neighbours, then moved to the end of a
-    // clear dip within 80 ms. Never throws: on any failure, or on input too large to align quickly, it returns the
-    // character-share estimate.
+    // speech between two matched pauses fits the predicted duration of the words between them. A sentence or phrase starts
+    // where its matched pause ends; an unmatched one is placed by its letters between matched neighbours, then moved to the
+    // end of a clear dip within 80 ms. Gap classes come from sentence ends only, so a phrase reads the sentence alignment at
+    // its own start and never moves a sentence start. Never throws: on any failure, or on input too large to align quickly,
+    // it returns the character-share estimate.
 
     // Gap classes from the spoken punctuation between two words.
     private const int None = 0, Weak = 1, Comma = 2, Stop = 3, FlowComma = 4;
@@ -125,17 +170,39 @@ public static class GatekeeperSubtitleTiming
         int samples = pcm16Mono == null ? 0 : pcm16Mono.Length / 2;
         try
         {
-            var result = Align(displayed, string.IsNullOrEmpty(spoken) ? displayed : spoken, spans, pcm16Mono, sampleRate);
-            if (result != null && result.Length == count)
-            {
-                bool ok = true;
-                for (int k = 0; k < count; k++)
-                    if (result[k] < 0 || result[k] > samples || (k > 0 && result[k] < result[k - 1])) ok = false;
-                if (ok) return result;
-            }
+            var alignment = Align(displayed, string.IsNullOrEmpty(spoken) ? displayed : spoken, spans, pcm16Mono, sampleRate);
+            var result = alignment == null ? null : SentenceStarts(alignment, spans);
+            if (Valid(result, count, samples)) return result;
         }
         catch (Exception) { }
         return Proportional(displayed, spans, samples);
+    }
+
+    // The reveal's onsets: one per phrase after the first. A phrase that starts a sentence gets exactly that sentence's
+    // onset; one inside a sentence stays between its sentence's onset and the next one.
+    public static int[] PhraseOnsets(string displayed, string spoken, byte[] pcm16Mono, int sampleRate)
+    {
+        var phrases = Phrases(displayed ?? "");
+        int count = Math.Max(0, phrases.Count - 1);
+        if (count == 0) return new int[0];
+        int samples = pcm16Mono == null ? 0 : pcm16Mono.Length / 2;
+        try
+        {
+            var sentences = Sentences(displayed);
+            var alignment = Align(displayed, string.IsNullOrEmpty(spoken) ? displayed : spoken, sentences, pcm16Mono, sampleRate);
+            var result = alignment == null ? null : PhraseStarts(alignment, sentences, phrases);
+            if (Valid(result, count, samples)) return result;
+        }
+        catch (Exception) { }
+        return Proportional(displayed, phrases, samples);
+    }
+
+    private static bool Valid(int[] result, int count, int samples)
+    {
+        if (result == null || result.Length != count) return false;
+        for (int k = 0; k < count; k++)
+            if (result[k] < 0 || result[k] > samples || (k > 0 && result[k] < result[k - 1])) return false;
+        return true;
     }
 
     private static int[] Proportional(string displayed, List<(int start, int length)> spans, int samples)
@@ -198,9 +265,23 @@ public static class GatekeeperSubtitleTiming
         return weak ? Weak : None;
     }
 
-    private static int[] Align(string displayed, string spoken, List<(int start, int length)> spans, byte[] pcm, int rate)
+    // One solve of a line: the measured pauses, the anchors (punctuated gaps of the spoken text) and which pause each
+    // anchor matched. Onsets and PhraseOnsets read it at their own starts (OnsetAt).
+    private sealed class Alignment
     {
-        int count = spans.Count - 1, samples = pcm.Length / 2;
+        public double[] Db, TS, TE, AnchorPos, Cum;
+        public double Quiet;
+        public int Lead, Tail, Win, Samples, Words, J, G;
+        public List<int> POn, AnchorWord;
+        public List<Word> Displayed;
+        public int[] MatchOf;
+    }
+
+    // `sentences` are the displayed line's sentences: their ends set the gap classes (a displayed sentence end the voice
+    // read as a comma is a FlowComma, and a sentence end almost always pauses).
+    private static Alignment Align(string displayed, string spoken, List<(int start, int length)> sentences, byte[] pcm, int rate)
+    {
+        int count = sentences.Count - 1, samples = pcm.Length / 2;
         if (rate < 1000 || samples < rate / 10) return null;
         int win = rate / 100, nw = samples / win;
 
@@ -251,16 +332,8 @@ public static class GatekeeperSubtitleTiming
         var sWords = Words(spoken);
         int nWords = sWords.Count;
         if (nWords < 2 || dWords.Count < 1) return null;
-        var boundaryWord = new int[count];
         var isBoundary = new bool[nWords + 1];
-        for (int k = 0; k < count; k++)
-        {
-            int start = spans[k + 1].start, wi = 0;
-            while (wi < dWords.Count && dWords[wi].Start < start) wi++;
-            if (dWords.Count != nWords) wi = (int)Math.Round((double)wi * nWords / dWords.Count);
-            boundaryWord[k] = wi;
-            isBoundary[wi] = true;
-        }
+        for (int k = 0; k < count; k++) isBoundary[WordAt(dWords, nWords, sentences[k + 1].start)] = true;
 
         // Predicted speech position (letters) before each word; anchors are the punctuated gaps.
         var gapCls = new int[nWords]; // gap before word i (i >= 1)
@@ -322,41 +395,85 @@ public static class GatekeeperSubtitleTiming
         var matchOf = Solve(J, G, anchorCls, anchorPos, anchorSkip, lo, hi, tS, tE, bin, nullPre, breathPre, msPerLetter);
         if (matchOf == null) return null;
 
-        // A sentence starts where its matched pause ends; an unmatched one is interpolated between matched neighbours
-        // and snapped to the end of the deepest dip near that position.
-        var result = new int[count];
-        for (int k = 0; k < count; k++)
+        return new Alignment
         {
-            int bw = boundaryWord[k], g = anchorWord.IndexOf(bw);
-            double t;
-            if (bw <= 0) t = lead;
-            else if (bw >= nWords) t = tail;
-            else if (g > 0 && g <= G && matchOf[g] > 0) t = pOn[matchOf[g] - 1];
+            Db = db, TS = tS, TE = tE, AnchorPos = anchorPos, Cum = cum, Quiet = quiet, Lead = lead, Tail = tail, Win = win,
+            Samples = samples, Words = nWords, J = J, G = G, POn = pOn, AnchorWord = anchorWord, Displayed = dWords, MatchOf = matchOf,
+        };
+    }
+
+    // The spoken word a displayed character position starts at: the same word index (the word sequences match), or the
+    // same share of the words if the counts differ.
+    private static int WordAt(List<Word> displayed, int spokenWords, int start)
+    {
+        int wi = 0;
+        while (wi < displayed.Count && displayed[wi].Start < start) wi++;
+        if (displayed.Count != spokenWords) wi = (int)Math.Round((double)wi * spokenWords / displayed.Count);
+        return wi;
+    }
+
+    // Sentence onsets, made non-decreasing.
+    private static int[] SentenceStarts(Alignment a, List<(int start, int length)> sentences)
+    {
+        var result = new int[sentences.Count - 1];
+        for (int k = 0; k < result.Length; k++) result[k] = OnsetAt(a, WordAt(a.Displayed, a.Words, sentences[k + 1].start));
+        for (int k = 1; k < result.Length; k++) if (result[k] < result[k - 1]) result[k] = result[k - 1];
+        return result;
+    }
+
+    // Phrase onsets: a sentence's first phrase takes the sentence onset; any other phrase is read from the same alignment
+    // and kept between its sentence's onset and the next sentence's, after the phrase before it.
+    private static int[] PhraseStarts(Alignment a, List<(int start, int length)> sentences, List<(int start, int length)> phrases)
+    {
+        var sentence = SentenceStarts(a, sentences);
+        var result = new int[phrases.Count - 1];
+        for (int k = 0, s = 0, previous = 0; k < result.Length; k++)
+        {
+            int start = phrases[k + 1].start;
+            while (s < sentence.Length && sentences[s + 1].start < start) s++; // sentence s + 1 is the next to start
+            if (s < sentence.Length && sentences[s + 1].start == start) result[k] = sentence[s];
             else
             {
-                int ga = 0, gb = G + 1;
-                for (int h = 1; h <= G; h++)
-                {
-                    if (matchOf[h] == 0) continue;
-                    if (anchorWord[h] < bw) ga = h;
-                    else if (anchorWord[h] > bw && gb == G + 1) gb = h;
-                }
-                double ta = tE[matchOf[ga]], tb = tS[gb == G + 1 ? J + 1 : matchOf[gb]];
-                double pa = anchorPos[ga], pb = anchorPos[gb];
-                t = pb > pa ? ta + (tb - ta) * (cum[bw] - pa) / (pb - pa) : ta;
-                int guess = (int)Math.Round(t), dip = -1;
-                for (int w = Math.Max((int)ta, guess - SnapWindows), z = Math.Min((int)tb - 1, guess + SnapWindows); w <= z; w++)
-                    if (dip < 0 || db[w] < db[dip]) dip = w;
-                if (dip >= 0 && db[dip] < SnapDb)
-                {
-                    while (dip + 1 < tail && db[dip + 1] < quiet) dip++;
-                    t = dip + 1;
-                }
+                int from = s > 0 ? sentence[s - 1] : 0, to = s < sentence.Length ? sentence[s] : a.Samples;
+                result[k] = Math.Max(previous, Math.Max(from, Math.Min(to, OnsetAt(a, WordAt(a.Displayed, a.Words, start)))));
             }
-            result[k] = (int)Math.Max(0, Math.Min(samples, Math.Round(t * win)));
+            previous = result[k];
         }
-        for (int k = 1; k < count; k++) if (result[k] < result[k - 1]) result[k] = result[k - 1];
         return result;
+    }
+
+    // Where the speech before spoken word `bw` resumes (a sample index). A matched anchor: the end of its pause. Otherwise
+    // interpolated by letters between the matched neighbours and snapped to the end of the deepest dip near there.
+    private static int OnsetAt(Alignment a, int bw)
+    {
+        var db = a.Db; var matchOf = a.MatchOf; var anchorWord = a.AnchorWord; var anchorPos = a.AnchorPos;
+        int G = a.G, J = a.J, g = anchorWord.IndexOf(bw);
+        double t;
+        if (bw <= 0) t = a.Lead;
+        else if (bw >= a.Words) t = a.Tail;
+        else if (g > 0 && g <= G && matchOf[g] > 0) t = a.POn[matchOf[g] - 1];
+        else
+        {
+            int ga = 0, gb = G + 1;
+            for (int h = 1; h <= G; h++)
+            {
+                if (matchOf[h] == 0) continue;
+                if (anchorWord[h] < bw) ga = h;
+                else if (anchorWord[h] > bw && gb == G + 1) gb = h;
+            }
+            double ta = a.TE[matchOf[ga]], tb = a.TS[gb == G + 1 ? J + 1 : matchOf[gb]];
+            double pa = anchorPos[ga], pb = anchorPos[gb];
+            t = pb > pa ? ta + (tb - ta) * (a.Cum[bw] - pa) / (pb - pa) : ta;
+            int guess = (int)Math.Round(t), dip = -1;
+            for (int w = Math.Max((int)ta, guess - SnapWindows), z = Math.Min((int)tb - 1, guess + SnapWindows); w <= z; w++)
+                if (dip < 0 || db[w] < db[dip]) dip = w;
+            if (dip >= 0 && db[dip] < SnapDb)
+            {
+                while (dip + 1 < a.Tail && db[dip + 1] < a.Quiet) dip++;
+                t = dip + 1;
+            }
+        }
+        return (int)Math.Max(0, Math.Min(a.Samples, Math.Round(t * a.Win)));
     }
 
     // Monotone matching of pauses to anchors. State (j, g): pause j ends at anchor g. A step from (pj, pg) leaves the
