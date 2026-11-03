@@ -59,11 +59,20 @@ public static class GatekeeperLineSources
     }
     // One utterance from a reply and the question it leads into: one synthesis, one clip, one subtitle.
     // The reply owns the performance (emotion, intensity, delivery); slots are already resolved.
-    public static GatekeeperScenario.Line Join(GatekeeperScenario.Line reply, GatekeeperScenario.Line prompt) => new GatekeeperScenario.Line
+    public static GatekeeperScenario.Line Join(GatekeeperScenario.Line reply, GatekeeperScenario.Line prompt)
     {
-        id = reply.id + "+" + prompt.id, text = reply.text + " " + prompt.text, emotion = reply.emotion, intensity = reply.intensity,
-        patience_delta = reply.patience_delta + prompt.patience_delta, ends_scene = prompt.ends_scene, recordedMood = reply.recordedMood, delivery = reply.delivery
-    };
+        // An authored trailing comma carries the reply into its checkpoint's "So" or "Right".
+        // Keep all other prompt openings intact, including names and "I".
+        string promptText = prompt.text;
+        if (reply.text.EndsWith(",", StringComparison.Ordinal)
+            && (promptText.StartsWith("So,", StringComparison.Ordinal) || promptText.StartsWith("Right,", StringComparison.Ordinal)))
+            promptText = char.ToLowerInvariant(promptText[0]) + promptText.Substring(1);
+        return new GatekeeperScenario.Line
+        {
+            id = reply.id + "+" + prompt.id, text = reply.text + " " + promptText, emotion = reply.emotion, intensity = reply.intensity,
+            patience_delta = reply.patience_delta + prompt.patience_delta, ends_scene = prompt.ends_scene, recordedMood = reply.recordedMood, delivery = reply.delivery
+        };
+    }
     public static void ValidateOutput(GatekeeperScenario.Line line)
     {
         if (line == null || string.IsNullOrWhiteSpace(line.text) || string.IsNullOrWhiteSpace(line.emotion)

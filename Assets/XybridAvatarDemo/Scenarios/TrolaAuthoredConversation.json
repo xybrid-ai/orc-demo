@@ -14,7 +14,7 @@
     },
     {
       "id": "named-1",
-      "text": "{name}. Hmph. I've heard worse.",
+      "text": "{name}, hmph, I've heard worse,",
       "emotion": "contempt",
       "intensity": 0.5,
       "patience_delta": 0,
@@ -167,7 +167,7 @@
     },
     {
       "id": "bribe-reply-high",
-      "text": "Now that's a noise I understand. Still, gold buys hinges, not my good opinion.",
+      "text": "Now that's a noise I understand, still, gold buys hinges, not my good opinion,",
       "emotion": "interest",
       "intensity": 0.55,
       "patience_delta": 0,

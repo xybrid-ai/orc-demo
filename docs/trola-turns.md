@@ -39,6 +39,10 @@ word ("Walk away, while...", "...teeth, so before..."); a deliberate beat ("Righ
 of a line it falls in this voice), end each line with one mark, and avoid dashes and ellipses: the text frontend
 deletes dashes and turns ellipses into full stops.
 
+The two comma-preferred turns (the given-name reply and the friendly bribe reply) are authored with commas too.
+Their reply fragments end with a comma so `Join` continues into the checkpoint's lowercased "so," or "right,";
+the completed turn still ends in a full stop. Shared checkpoint prompts keep their normal punctuation elsewhere.
+
 ## Waiting, taunts and interruptions
 
 - An idle taunt at a choice checkpoint keeps the buttons live. Clicking a choice
