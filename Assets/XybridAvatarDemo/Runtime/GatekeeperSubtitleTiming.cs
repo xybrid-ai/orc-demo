@@ -60,6 +60,15 @@ public static class GatekeeperSubtitleTiming
 
     // ---- Phrases ----
 
+    // The letters before a '.' are the whole word: "21st." is not the abbreviation "st." (the voice and the aligner treat
+    // it as a full stop). Phrases only; Sentences keeps the tournament's rule, so it splits no more often.
+    private static bool WholeWord(string text, int dot)
+    {
+        int b = dot;
+        while (b > 0 && char.IsLetter(text[b - 1])) b--;
+        return b == 0 || !char.IsLetterOrDigit(text[b - 1]);
+    }
+
     // The reveal unit: a phrase ends after any mark the voice may pause at, followed by whitespace and more text: a run
     // of . ! ? … (not after an abbreviation or initial, as for sentences), , ; : or a dash (— –, or a hyphen with spaces
     // on both sides: "well-known" is one word), with any closing quotes or brackets right after. "1,000", "3:30" and
@@ -79,7 +88,7 @@ public static class GatekeeperSubtitleTiming
             int end = i, next = i;
             while (next < n && char.IsWhiteSpace(text[next])) next++;
             if (next == i || next >= n) continue;
-            if (marks == 1 && text[dot] == '.' && IsAbbreviation(text, dot)) continue;
+            if (marks == 1 && text[dot] == '.' && IsAbbreviation(text, dot) && WholeWord(text, dot)) continue;
             spans.Add((start, end - start));
             start = next; i = next;
         }
@@ -155,6 +164,10 @@ public static class GatekeeperSubtitleTiming
     // An unmatched start moves to the end of the deepest dip within 80 ms of its letter position, if that dip
     // is 20 dB under the loudest window (a closure between words); otherwise the letter position stands.
     private const int SnapWindows = 8;
+    // A phrase start inside a sentence (a comma the voice ran through or barely paused at) with no such dip within 80 ms
+    // looks out to 200 ms ("Careful, Mira." stopped lagging; fewer early starts on dev, test unchanged). Sentence starts
+    // keep 80 ms, so sentence onsets stay exactly as measured.
+    private const int PhraseSnapWindows = 20;
     private const double SnapDb = -20;
     // Work caps: a 40 s line uses about 2 500 table cells and 35 000 search steps. Anything far larger (a text much
     // longer than its clip) takes the character-share estimate instead of stalling the voice worker.
@@ -417,7 +430,7 @@ public static class GatekeeperSubtitleTiming
     private static int[] SentenceStarts(Alignment a, List<(int start, int length)> sentences)
     {
         var result = new int[sentences.Count - 1];
-        for (int k = 0; k < result.Length; k++) result[k] = OnsetAt(a, WordAt(a.Displayed, a.Words, sentences[k + 1].start));
+        for (int k = 0; k < result.Length; k++) result[k] = OnsetAt(a, WordAt(a.Displayed, a.Words, sentences[k + 1].start), SnapWindows);
         for (int k = 1; k < result.Length; k++) if (result[k] < result[k - 1]) result[k] = result[k - 1];
         return result;
     }
@@ -436,7 +449,7 @@ public static class GatekeeperSubtitleTiming
             else
             {
                 int from = s > 0 ? sentence[s - 1] : 0, to = s < sentence.Length ? sentence[s] : a.Samples;
-                result[k] = Math.Max(previous, Math.Max(from, Math.Min(to, OnsetAt(a, WordAt(a.Displayed, a.Words, start)))));
+                result[k] = Math.Max(previous, Math.Max(from, Math.Min(to, OnsetAt(a, WordAt(a.Displayed, a.Words, start), PhraseSnapWindows))));
             }
             previous = result[k];
         }
@@ -444,8 +457,9 @@ public static class GatekeeperSubtitleTiming
     }
 
     // Where the speech before spoken word `bw` resumes (a sample index). A matched anchor: the end of its pause. Otherwise
-    // interpolated by letters between the matched neighbours and snapped to the end of the deepest dip near there.
-    private static int OnsetAt(Alignment a, int bw)
+    // interpolated by letters between the matched neighbours and snapped to the end of the deepest dip within 80 ms (or,
+    // when there is none, within snapWindows).
+    private static int OnsetAt(Alignment a, int bw, int snapWindows)
     {
         var db = a.Db; var matchOf = a.MatchOf; var anchorWord = a.AnchorWord; var anchorPos = a.AnchorPos;
         int G = a.G, J = a.J, g = anchorWord.IndexOf(bw);
@@ -465,9 +479,10 @@ public static class GatekeeperSubtitleTiming
             double ta = a.TE[matchOf[ga]], tb = a.TS[gb == G + 1 ? J + 1 : matchOf[gb]];
             double pa = anchorPos[ga], pb = anchorPos[gb];
             t = pb > pa ? ta + (tb - ta) * (a.Cum[bw] - pa) / (pb - pa) : ta;
-            int guess = (int)Math.Round(t), dip = -1;
-            for (int w = Math.Max((int)ta, guess - SnapWindows), z = Math.Min((int)tb - 1, guess + SnapWindows); w <= z; w++)
-                if (dip < 0 || db[w] < db[dip]) dip = w;
+            int guess = (int)Math.Round(t);
+            // The nearest window first; a phrase start only looks further when nothing near is deep enough.
+            int dip = Dip(db, guess, SnapWindows, ta, tb);
+            if ((dip < 0 || db[dip] >= SnapDb) && snapWindows > SnapWindows) dip = Dip(db, guess, snapWindows, ta, tb);
             if (dip >= 0 && db[dip] < SnapDb)
             {
                 while (dip + 1 < a.Tail && db[dip + 1] < a.Quiet) dip++;
@@ -475,6 +490,15 @@ public static class GatekeeperSubtitleTiming
             }
         }
         return (int)Math.Max(0, Math.Min(a.Samples, Math.Round(t * a.Win)));
+    }
+
+    // The deepest window within `reach` windows of `guess`, inside the speech between the matched neighbours; -1 if none.
+    private static int Dip(double[] db, int guess, int reach, double ta, double tb)
+    {
+        int dip = -1;
+        for (int w = Math.Max((int)ta, guess - reach), z = Math.Min((int)tb - 1, guess + reach); w <= z; w++)
+            if (dip < 0 || db[w] < db[dip]) dip = w;
+        return dip;
     }
 
     // Monotone matching of pauses to anchors. State (j, g): pause j ends at anchor g. A step from (pj, pg) leaves the

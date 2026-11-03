@@ -65,6 +65,10 @@ public static class SubtitleTimingChecks
         Phrase("Go -now, or go- later.", "Go -now,", "or go- later.");
         Phrase("That's 1,000 coins, by 3:30 sharp.", "That's 1,000 coins,", "by 3:30 sharp.");
         Phrase("Mr. Rook, Dr. Venn: J. R. Tolk wrote it.", "Mr. Rook,", "Dr. Venn:", "J. R. Tolk wrote it.");
+        // An abbreviation is a whole word: "21st." ends a phrase (the voice and the aligner take it as a full stop).
+        Phrase("We meet on the 21st. Then we go, Mr. Rook.", "We meet on the 21st.", "Then we go,", "Mr. Rook.");
+        // A run of marks after an initial or abbreviation always ends a phrase, as it ends a sentence.
+        Phrase("I... I can't. Plan B?! Go.", "I...", "I can't.", "Plan B?!", "Go.");
         Phrase("\"Go,\" he said. “Fine.”, she said, (or so).", "\"Go,\"", "he said.", "“Fine.”,", "she said,", "(or so).");
         Phrase("\"WIFI\"? Up since dawn, and now this.", "\"WIFI\"?", "Up since dawn,", "and now this.");
         Phrase("Wait… then go. Well... fine.", "Wait…", "then go.", "Well...", "fine.");
@@ -167,6 +171,10 @@ public static class SubtitleTimingChecks
         string commas = "Stop there, this gate has teeth, so before you lose yours, give me your name.";
         Aligned("commas", commas, commas, Speak(commas, Rate, 20), Rate);
         Aligned("commas, longer pauses", commas, commas, Speak(commas, Rate, 21, commaMs: 330), Rate);
+        // Gap classes come from sentences, not phrases: a short comma pause inside a short sentence must not take the
+        // near-certain pause of a sentence end (that would pull the next sentence's start onto it).
+        string begging = "Can't make that out. Begging, then. Up since dawn on burnt stew, and now this.";
+        Aligned("a short comma pause in a short sentence", begging, begging, Speak(begging, Rate, 270, stopMs: 220, commaMs: 50), Rate);
         Aligned("; : and a dash", "Listen: the gate opens at dawn; not before — so wait.", "Listen: the gate opens at dawn; not before — so wait.",
             Speak("Listen: the gate opens at dawn; not before — so wait.", Rate, 22, commaMs: 260), Rate);
         // A comma spoken through (no pause): placed by its letters between the pauses around it, then snapped to the end of
@@ -244,8 +252,13 @@ public static class SubtitleTimingChecks
         Check(GatekeeperSubtitleTiming.ClauseStarts("Hmph.", new[] { "Hmph." }, GatekeeperSubtitleTiming.Sentences("Hmph.")).SequenceEqual(new[] { 1 }) && GatekeeperSubtitleTiming.ClauseStarts("", null, null).Length == 0,
             "one clause, or none");
         // Over phrases, as the game maps them: SplitClauses pieces end at the same marks, so each phrase shows with its clause.
-        // (GatekeeperLiveSpeech needs the SDK; its SplitClauses regex is repeated here.)
-        string[] SplitClauses(string text) => Regex.Matches(text, @"[^,;:.!?—–]+[,;:.!?—–]*").Select(m => m.Value.Trim()).Where(t => t.Length > 0).ToArray();
+        // (GatekeeperLiveSpeech needs the SDK; its SplitClauses regex is repeated here, and checked against the game's source.)
+        const string ClausePattern = @"[^,;:.!?—–]+[,;:.!?—–]*";
+        string liveSpeech = File.ReadAllText(Find("Assets/XybridAvatarDemo/Runtime/GatekeeperLiveSpeech.cs"));
+        int splitAt = liveSpeech.IndexOf("SplitClauses(string text)", StringComparison.Ordinal);
+        Check(splitAt >= 0 && liveSpeech.IndexOf("Regex.Matches(text, @\"" + ClausePattern + "\")", splitAt, StringComparison.Ordinal) > splitAt,
+            "the clause regex here is GatekeeperLiveSpeech.SplitClauses's");
+        string[] SplitClauses(string text) => Regex.Matches(text, ClausePattern).Select(m => m.Value.Trim()).Where(t => t.Length > 0).ToArray();
         int[] ClausePhrases(string text) => GatekeeperSubtitleTiming.ClauseStarts(text, SplitClauses(text), GatekeeperSubtitleTiming.Phrases(text));
         Check(ClausePhrases(clauses).SequenceEqual(new[] { 1, 2, 3, 4, 5 }), "clauses over phrases: one phrase per clause");
         Check(ClausePhrases("Stop there, this gate has teeth, so give me your name.").SequenceEqual(new[] { 1, 2, 3 }), "one sentence of commas: a phrase per clause");

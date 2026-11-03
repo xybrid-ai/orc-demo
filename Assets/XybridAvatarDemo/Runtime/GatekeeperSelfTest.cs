@@ -465,7 +465,7 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
                 line.cues = c.character.CueCount; line.fallback = c.CurrentFallback.ToString();
                 line.failure = c.CurrentFallback == GatekeeperController.VoiceFallback.None ? "" : c.LastVoiceFailure;
                 if (c.LastGenerated != null) line.analysisSeconds = (float)c.LastGenerated.analysisSeconds;
-                // The plain line the view presents: its sentence reveal hides the unspoken rest in place, never other text.
+                // The plain line the view presents: its phrase reveal hides the unspoken rest in place, never other text.
                 if (view.ShownLine != line.text || !view.sentence.isActiveAndEnabled) line.subtitleShown = false;
                 float w = face.GetBlendShapeWeight(jaw);
                 line.jawMin = Mathf.Min(line.jawMin, w); line.jawMax = Mathf.Max(line.jawMax, w);

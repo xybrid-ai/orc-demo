@@ -99,8 +99,8 @@ public sealed class GatekeeperController : MonoBehaviour
         newestAlpha = whole ? 1 : revealAlpha;
         return whole ? int.MaxValue : revealed;
     }
-    // A phrase shows 100 ms before its onset (the onset is where speech resumes after the pause, and real pauses are
-    // 190-440 ms), then fades in over 150 ms, both in clip time.
+    // A phrase shows 100 ms before its onset (the onset is where speech resumes; a pause before a sentence lasts 190-440
+    // ms, a comma's can be shorter, so its phrase may show just before that pause), then fades in over 150 ms, in clip time.
     public const float RevealLeadSeconds = .1f, RevealFadeSeconds = .15f;
     private int revealed = int.MaxValue;
     private float revealAlpha = 1;
