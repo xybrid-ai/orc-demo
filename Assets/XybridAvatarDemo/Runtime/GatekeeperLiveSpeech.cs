@@ -102,9 +102,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         // GatekeeperLineTiming.Now stamps of each stage, for the timing overlay.
         public long requestedAt, synthesisStartedAt, synthesisEndedAt, analysisStartedAt, analysisEndedAt;
         public AudioClip clip;
-        // Where each sentence of text after the first starts, as sample indices into this clip (GatekeeperSubtitleTiming.Onsets,
-        // Phonon whole lines only); null when none. The subtitle reveal follows them.
-        public int[] sentenceOnsets;
+        // Where each phrase of text after the first starts, as sample indices into this clip
+        // (GatekeeperSubtitleTiming.PhraseOnsets, Phonon whole lines only); null when none. The subtitle reveal follows them.
+        public int[] phraseOnsets;
         public GatekeeperPcmBuffer stream;
         public volatile SpeechOutcome outcome;
         public TextAsset track;
@@ -373,10 +373,10 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                                 {
                                     pcm = GatekeeperSpeechTrim.Tighten(pcm, sampleRate);
                                     // Under a millisecond; it never throws, and a failure here would only show the line whole.
-                                    try { onsets = GatekeeperSubtitleTiming.Onsets(request.text, speechText, pcm, sampleRate); }
+                                    try { onsets = GatekeeperSubtitleTiming.PhraseOnsets(request.text, speechText, pcm, sampleRate); }
                                     catch (Exception) { onsets = null; }
                                 }
-                                var data = new Generated { text = texts[i], speechText = speechText, pcm = pcm, outcome = spoken, sentenceOnsets = onsets,
+                                var data = new Generated { text = texts[i], speechText = speechText, pcm = pcm, outcome = spoken, phraseOnsets = onsets,
                                     synthesisSeconds = spoken.synthesisSeconds, requestedAt = request.requestedAt,
                                     synthesisStartedAt = clauseStart, synthesisEndedAt = GatekeeperLineTiming.Now, debugAudioPath = debugPath };
                                 if (first == null) { first = data; first.clauses = completions.Select(c => c.Task).ToArray(); }

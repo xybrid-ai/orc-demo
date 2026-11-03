@@ -26,7 +26,7 @@ public sealed class SpiritPresence : MonoBehaviour
     public float warmWeight = .5f;
     public string spiritName = "Vesper";
 
-    // Her voice, for the sentence reveal of her line (the director sets it); without it her lines show whole.
+    // Her voice, for the phrase reveal of her line (the director sets it); without it her lines show whole.
     public SpiritVoice voice;
     public float Weight { get; private set; }
     public string Draft => fieldOpen && field != null ? field.text ?? "" : "";
@@ -59,7 +59,7 @@ public sealed class SpiritPresence : MonoBehaviour
     private InputField field;
     private float lineAlpha, lineTarget, lineShownAt = -10, labelShownAt = -10, ghostAt = -10;
     private string lineText = "";
-    private List<(int start, int length)> lineSentences = new List<(int start, int length)>();
+    private List<(int start, int length)> linePhrases = new List<(int start, int length)>();
     private int revealVisible = -1; // what the line's markup was last built for; -1 rebuilds it
     private float revealNewest;
     private byte revealAlpha;
@@ -292,7 +292,7 @@ public sealed class SpiritPresence : MonoBehaviour
     public void ShowLine(string text, bool firstOfSession)
     {
         if (!built) return;
-        lineText = text ?? ""; lineSentences = GatekeeperSubtitleTiming.Sentences(lineText); revealVisible = -1; // AnimateText writes it.
+        lineText = text ?? ""; linePhrases = GatekeeperSubtitleTiming.Phrases(lineText); revealVisible = -1; // AnimateText writes it.
         nameTag.text = Spaced(spiritName); nameTag.enabled = firstOfSession;
         lineAlpha = 0; lineTarget = 1; lineShownAt = Time.unscaledTime;
     }
@@ -473,17 +473,17 @@ public sealed class SpiritPresence : MonoBehaviour
         lineAlpha = Mathf.MoveTowards(lineAlpha, lineTarget, dt / .25f);
         line.color = new Color(LineColor.r, LineColor.g, LineColor.b, lineAlpha);
         line.rectTransform.anchoredPosition = new Vector2(0, -6 * (1 - lineAlpha)); // Drifts up 6 px as it fades in.
-        // Sentence by sentence as she says them (GatekeeperView.RevealBySentence): the unspoken rest stays laid out but
-        // transparent through the line's fade, and the newest sentence's fade multiplies with it. Rich text only then.
+        // Phrase by phrase as she says them (GatekeeperView.RevealBySentence): the unspoken rest stays laid out but
+        // transparent through the line's fade, and the newest phrase's fade multiplies with it. Rich text only then.
         // Rebuilt only when its inputs change, as GatekeeperView does: a cut line holds its reveal until her next line.
         float newest = 1;
-        int visible = voice != null && GatekeeperView.RevealBySentence ? voice.RevealedSentences(lineText, out newest) : int.MaxValue;
+        int visible = voice != null && GatekeeperView.RevealBySentence ? voice.RevealedPhrases(lineText, out newest) : int.MaxValue;
         byte alpha = ((Color32)line.color).a;
         if (visible != revealVisible || newest != revealNewest || alpha != revealAlpha)
         {
             revealVisible = visible; revealNewest = newest; revealAlpha = alpha;
-            string shown = visible >= lineSentences.Count && newest >= 1 ? lineText
-                : GatekeeperSubtitleTiming.Markup(lineText, lineSentences, visible, newest, line.color, out _);
+            string shown = visible >= linePhrases.Count && newest >= 1 ? lineText
+                : GatekeeperSubtitleTiming.Markup(lineText, linePhrases, visible, newest, line.color, out _);
             bool markup = shown != lineText;
             if (line.supportRichText != markup) line.supportRichText = markup;
             if (line.text != shown) line.text = shown;

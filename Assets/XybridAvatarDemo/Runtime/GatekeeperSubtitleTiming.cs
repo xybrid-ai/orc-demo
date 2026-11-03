@@ -103,16 +103,17 @@ public static class GatekeeperSubtitleTiming
     // ---- Onsets ----
 
     // When each sentence (Onsets) or phrase (PhraseOnsets) of a displayed line starts in its trimmed Phonon clip (sample
-    // index per sentence or phrase after the first); both read one alignment of the line. The spoken text predicts a timeline: each word lasts in proportion to its letters, plus phrase-final lengthening, and
-    // each punctuated gap expects a pause whose length depends on its punctuation. The clip gives the measured pauses: quiet
-    // runs of 10 ms windows 40 dB under the loudest window (the threshold rises over a noisy floor). A dynamic program
-    // matches pauses to punctuated gaps in order. It scores how likely each pause length is at that punctuation (a sentence
-    // end almost always pauses, a full stop about 400 ms, a comma 200-500 ms, a word rarely over 100 ms) and how well the
-    // speech between two matched pauses fits the predicted duration of the words between them. A sentence or phrase starts
-    // where its matched pause ends; an unmatched one is placed by its letters between matched neighbours, then moved to the
-    // end of a clear dip within 80 ms. Gap classes come from sentence ends only, so a phrase reads the sentence alignment at
-    // its own start and never moves a sentence start. Never throws: on any failure, or on input too large to align quickly,
-    // it returns the character-share estimate.
+    // index per sentence or phrase after the first); both read one alignment of the line. The spoken text predicts a
+    // timeline: each word lasts in proportion to its letters, plus phrase-final lengthening, and each punctuated gap
+    // expects a pause whose length depends on its punctuation. The clip gives the measured pauses: quiet runs of 10 ms
+    // windows 40 dB under the loudest window (the threshold rises over a noisy floor). A dynamic program matches pauses to
+    // punctuated gaps in order. It scores how likely each pause length is at that punctuation (a sentence end almost always
+    // pauses, a full stop about 400 ms, a comma 200-500 ms, a word rarely over 100 ms) and how well the speech between two
+    // matched pauses fits the predicted duration of the words between them. A sentence or phrase starts where its matched
+    // pause ends; an unmatched one is placed by its letters between matched neighbours, then moved to the end of a clear
+    // dip within 80 ms. Gap classes come from sentence ends only, so phrases read the sentence alignment at their own
+    // starts and never move a sentence start. Never throws: on any failure, or on input too large to align quickly, it
+    // returns the character-share estimate.
 
     // Gap classes from the spoken punctuation between two words.
     private const int None = 0, Weak = 1, Comma = 2, Stop = 3, FlowComma = 4;
@@ -151,7 +152,7 @@ public static class GatekeeperSubtitleTiming
     // Search band: a pause is only matched to a gap within 2 s + 10% of the speech time of its predicted position
     // (never binds on typical lines; keeps long ones fast).
     private const double BandMs = 2000, BandShare = 0.10;
-    // An unmatched sentence start moves to the end of the deepest dip within 80 ms of its letter position, if that dip
+    // An unmatched start moves to the end of the deepest dip within 80 ms of its letter position, if that dip
     // is 20 dB under the loudest window (a closure between words); otherwise the letter position stands.
     private const int SnapWindows = 8;
     private const double SnapDb = -20;
@@ -536,13 +537,12 @@ public static class GatekeeperSubtitleTiming
 
     // ---- What the subtitle shows ----
 
-    // Clause playback (Kitten, Kokoro: GatekeeperLiveSpeech.SplitClauses pieces, one clip after another): how many
-    // sentences of `displayed` show while clause i plays, those starting before the next clause does (a sentence that
-    // starts inside a clause shows with it). Clauses are found in order; one not found starts where the last one ended.
-    public static int[] ClauseStarts(string displayed, string[] clauses)
+    // Clause playback (Kitten, Kokoro: GatekeeperLiveSpeech.SplitClauses pieces, one clip after another): how many of
+    // `spans` (the phrases of `displayed`) show while clause i plays, those starting before the next clause does (one
+    // that starts inside a clause shows with it). Clauses are found in order; one not found starts where the last one ended.
+    public static int[] ClauseStarts(string displayed, string[] clauses, IReadOnlyList<(int start, int length)> spans)
     {
         displayed ??= "";
-        var spans = Sentences(displayed);
         int n = clauses?.Length ?? 0;
         var starts = new int[n + 1];
         for (int i = 0, cursor = 0; i < n; i++)
@@ -556,13 +556,13 @@ public static class GatekeeperSubtitleTiming
         for (int i = 0; i < n; i++)
         {
             int count = 0;
-            foreach (var span in spans) if (span.start < starts[i + 1]) count++;
+            if (spans != null) foreach (var span in spans) if (span.start < starts[i + 1]) count++;
             visible[i] = Math.Max(1, count);
         }
         return visible;
     }
 
-    // Sentences a whole-line clip has reached at clip sample `played`: the first, plus each one whose onset is at most
+    // Phrases a whole-line clip has reached at clip sample `played`: the first, plus each one whose onset is at most
     // `lead` samples ahead. The newest one fades in (0-1) over `fade` samples from that point.
     public static int Reached(int[] onsets, long played, int lead, int fade, out float newestAlpha)
     {
@@ -572,8 +572,8 @@ public static class GatekeeperSubtitleTiming
         return count;
     }
 
-    // The line with sentences >= visible hidden in a fully transparent colour, so the whole line keeps its layout and
-    // nothing reflows as sentences appear; the newest visible one at newestAlpha times the colour's alpha. Line text is
+    // The line with spans (phrases) >= visible hidden in a fully transparent colour, so the whole line keeps its layout
+    // and nothing reflows as phrases appear; the newest visible one at newestAlpha times the colour's alpha. Line text is
     // never read as tags: a line with '<' or '>' (a model-written one could have them) comes back as is, with plain set.
     // Show the result with supportRichText on only when it differs from the text.
     public static string Markup(string text, IReadOnlyList<(int start, int length)> spans, int visible, float newestAlpha, Color32 color, out bool plain)

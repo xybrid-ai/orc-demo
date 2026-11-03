@@ -47,10 +47,10 @@ public sealed class SpiritVoice : MonoBehaviour
     public event Action<SpiritCue> LineStarted;
     public event Action<SpiritCue> LineFinished;
 
-    // Her line's subtitle reveal (SpiritPresence, docs/subtitles.md), as GatekeeperController.RevealedSentences: the
-    // sentences of `text` her clip has reached and the newest one's fade; int.MaxValue (whole) for any other text, a
+    // Her line's subtitle reveal (SpiritPresence, docs/subtitles.md), as GatekeeperController.RevealedPhrases: the
+    // phrases of `text` her clip has reached and the newest one's fade; int.MaxValue (whole) for any other text, a
     // silent line, or a line no longer playing. A cut line keeps only what was heard.
-    public int RevealedSentences(string text, out float newestAlpha)
+    public int RevealedPhrases(string text, out float newestAlpha)
     {
         bool whole = revealed == int.MaxValue || revealText == null || text != revealText;
         newestAlpha = whole ? 1 : revealAlpha;
@@ -340,17 +340,21 @@ public sealed class SpiritVoice : MonoBehaviour
         if (session == generation) { player = null; current = null; }
     }
 
-    // From her first sentence, following one clip's sentence onsets or each clause's ClauseStarts (the worker split
+    // From her first phrase, following one clip's phrase onsets or each clause's ClauseStarts (the worker split
     // `spoken`, the text it was given, with SplitClauses); a clip with neither shows the line whole.
     private void StartReveal(string shown, string spoken, GatekeeperLiveSpeech.Generated first, int clips)
     {
         revealText = shown; revealVoice = first; revealClause = 0; revealed = 1; revealAlpha = 1; revealClauses = null;
         if (clips > 1)
         {
-            try { var starts = GatekeeperSubtitleTiming.ClauseStarts(spoken, GatekeeperLiveSpeech.SplitClauses(spoken)); if (starts.Length == clips) revealClauses = starts; }
+            try
+            {
+                var starts = GatekeeperSubtitleTiming.ClauseStarts(spoken, GatekeeperLiveSpeech.SplitClauses(spoken), GatekeeperSubtitleTiming.Phrases(spoken));
+                if (starts.Length == clips) revealClauses = starts;
+            }
             catch (ArgumentException) { }
         }
-        if (clips > 1 ? revealClauses == null : first.sentenceOnsets == null || first.stream != null) RevealWhole();
+        if (clips > 1 ? revealClauses == null : first.phraseOnsets == null || first.stream != null) RevealWhole();
     }
 
     // Per frame: raised to what her playing clip has reached, in clip samples (a paused listener holds it).
@@ -361,7 +365,7 @@ public sealed class SpiritVoice : MonoBehaviour
         int rate = output.clip.frequency, played = output.timeSamples, fade = Mathf.RoundToInt(GatekeeperController.RevealFadeSeconds * rate);
         int count; float alpha;
         if (revealClauses != null) { count = revealClauses[Mathf.Min(revealClause, revealClauses.Length - 1)]; alpha = Mathf.Clamp01(played / (float)fade); }
-        else count = GatekeeperSubtitleTiming.Reached(voice.sentenceOnsets, played, Mathf.RoundToInt(GatekeeperController.RevealLeadSeconds * rate), fade, out alpha);
+        else count = GatekeeperSubtitleTiming.Reached(voice.phraseOnsets, played, Mathf.RoundToInt(GatekeeperController.RevealLeadSeconds * rate), fade, out alpha);
         if (count > revealed) { revealed = count; revealAlpha = alpha; }
         else if (count == revealed && alpha > revealAlpha) revealAlpha = alpha;
     }

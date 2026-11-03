@@ -44,13 +44,13 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         var voice = entry.voice;
         return voice != null && voice.speechText != null && voice.speechText != voice.text ? prefix + "Spoken as: " + voice.speechText : "";
     }
-    // "Sentences at 0.00, 1.42, 2.97 s": where each sentence starts in the line's clip (live clips are 24 kHz,
+    // "Phrases at 0.00, 0.62, 1.40 s": where each phrase starts in the line's clip (live clips are 24 kHz,
     // TTSAudioPlayer.PCMToAudioClip), as detected for the subtitle reveal; "" when the line has no onsets.
-    private static string Sentences(GatekeeperController.DebugLine entry)
+    private static string Phrases(GatekeeperController.DebugLine entry)
     {
-        var onsets = entry.voice?.sentenceOnsets;
+        var onsets = entry.voice?.phraseOnsets;
         if (onsets == null || onsets.Length == 0) return "";
-        var text = new System.Text.StringBuilder("Sentences at 0.00");
+        var text = new System.Text.StringBuilder("Phrases at 0.00");
         foreach (int onset in onsets) text.Append(", ").Append((onset / 24000.0).ToString("0.00"));
         return text.Append(" s").ToString();
     }
@@ -110,10 +110,10 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             if (vesper != null && vesper.Voice != null) vesper.Voice.Stop(.05f, false);
         }
         GUILayout.Label("Phonon only; applies from the next line. Restart authored encounter replays the same route.");
-        // Display only, Trola's and Vesper's subtitles, at once; remembered, and -xybridSubtitles sentences|whole sets it per run.
-        bool bySentence = GatekeeperView.RevealBySentence;
-        if (GUILayout.Button(bySentence ? "Subtitles: by sentence — show whole lines" : "Subtitles: whole lines — reveal by sentence"))
-            GatekeeperView.RevealBySentence = !bySentence;
+        // Display only, Trola's and Vesper's subtitles, at once; remembered, and -xybridSubtitles phrases|whole sets it per run.
+        bool byPhrase = GatekeeperView.RevealBySentence;
+        if (GUILayout.Button(byPhrase ? "Subtitles: by phrase — show whole lines" : "Subtitles: whole lines — reveal by phrase"))
+            GatekeeperView.RevealBySentence = !byPhrase;
         var voiceInput = controller.GetComponent<PlayerVoiceInput>();
         if (voiceInput != null) GUILayout.Label(voiceInput.Describe());
         // Always one label (IMGUI layout); "Spirit: not installed" when the spirit is absent or bailed out.
@@ -145,8 +145,8 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             GUILayout.Label(line.id + " [" + line.debugSource + "] " + line.text);
             string spokenAs = SpokenAs(entry, "");
             if (spokenAs.Length > 0) GUILayout.Label(spokenAs);
-            string sentences = Sentences(entry);
-            if (sentences.Length > 0) GUILayout.Label(sentences);
+            string phrases = Phrases(entry);
+            if (phrases.Length > 0) GUILayout.Label(phrases);
             if (!string.IsNullOrEmpty(line.debugDecision)) GUILayout.Label("Decision: " + line.debugDecision);
             GUILayout.Label("Parsed: " + line.emotion + " / " + line.intensity.ToString("0.00") + "; patience delta " + line.patience_delta + "; " + entry.patienceBefore + " → " + entry.patienceAfter);
             double voice = entry.voice?.totalSynthesisSeconds ?? 0;

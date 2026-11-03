@@ -111,15 +111,15 @@ public static class SubtitleTimingChecks
 
         // ---- ClauseStarts: clause playback ----
         string clauses = "Stop there, traveller. This gate has teeth; mind them. Go!";
-        Check(GatekeeperSubtitleTiming.ClauseStarts(clauses, new[] { "Stop there,", "traveller.", "This gate has teeth;", "mind them.", "Go!" })
+        Check(GatekeeperSubtitleTiming.ClauseStarts(clauses, new[] { "Stop there,", "traveller.", "This gate has teeth;", "mind them.", "Go!" }, GatekeeperSubtitleTiming.Sentences(clauses))
             .SequenceEqual(new[] { 1, 1, 2, 2, 3 }), "clauses: each sentence shows with the clause that starts it");
-        Check(GatekeeperSubtitleTiming.ClauseStarts("Wait… then go.", new[] { "Wait… then go." }).SequenceEqual(new[] { 2 }),
+        Check(GatekeeperSubtitleTiming.ClauseStarts("Wait… then go.", new[] { "Wait… then go." }, GatekeeperSubtitleTiming.Sentences("Wait… then go.")).SequenceEqual(new[] { 2 }),
             "a sentence starting inside a clause shows with that clause");
-        Check(GatekeeperSubtitleTiming.ClauseStarts("Wait!\" he said. Go.", new[] { "Wait!", "\" he said.", "Go." }).SequenceEqual(new[] { 1, 2, 3 }),
+        Check(GatekeeperSubtitleTiming.ClauseStarts("Wait!\" he said. Go.", new[] { "Wait!", "\" he said.", "Go." }, GatekeeperSubtitleTiming.Sentences("Wait!\" he said. Go.")).SequenceEqual(new[] { 1, 2, 3 }),
             "a closing quote after a clause belongs to the sentence before");
-        Check(GatekeeperSubtitleTiming.ClauseStarts("One. Two. Three.", new[] { "One.", "missing", "Three." }).SequenceEqual(new[] { 1, 2, 3 }),
+        Check(GatekeeperSubtitleTiming.ClauseStarts("One. Two. Three.", new[] { "One.", "missing", "Three." }, GatekeeperSubtitleTiming.Sentences("One. Two. Three.")).SequenceEqual(new[] { 1, 2, 3 }),
             "a clause that is not found shows no less than its predecessor");
-        Check(GatekeeperSubtitleTiming.ClauseStarts("Hmph.", new[] { "Hmph." }).SequenceEqual(new[] { 1 }) && GatekeeperSubtitleTiming.ClauseStarts("", null).Length == 0,
+        Check(GatekeeperSubtitleTiming.ClauseStarts("Hmph.", new[] { "Hmph." }, GatekeeperSubtitleTiming.Sentences("Hmph.")).SequenceEqual(new[] { 1 }) && GatekeeperSubtitleTiming.ClauseStarts("", null, null).Length == 0,
             "one clause, or none");
 
         // ---- Reached: the reveal clock (clip samples; 100 ms lead, 150 ms fade at 24 kHz) ----

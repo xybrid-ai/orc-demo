@@ -89,17 +89,17 @@ public sealed class GatekeeperController : MonoBehaviour
     public float PhaseElapsed => Mathf.Max(0, Time.realtimeSinceStartup - phaseStartedAt);
     public int SpeechStartedFrame { get; private set; } = -1;
     public string CurrentText { get; private set; } = "";
-    // Subtitle reveal (GatekeeperView, docs/subtitles.md): how many sentences of CurrentText the voice has reached and the
-    // newest one's fade-in (0-1); int.MaxValue shows the whole line. A line shows its first sentence until its voice starts,
+    // Subtitle reveal (GatekeeperView, docs/subtitles.md): how many phrases of CurrentText the voice has reached and the
+    // newest one's fade-in (0-1); int.MaxValue shows the whole line. A line shows its first phrase until its voice starts,
     // then follows its clip; once the line is no longer playing (finished, skipped, no voice) it shows whole. It never
     // shrinks within a line, so an interrupted line keeps only what was heard until the next line replaces it.
-    public int RevealedSentences(out float newestAlpha)
+    public int RevealedPhrases(out float newestAlpha)
     {
         bool whole = revealed == int.MaxValue || IsPreparedReaction;
         newestAlpha = whole ? 1 : revealAlpha;
         return whole ? int.MaxValue : revealed;
     }
-    // A sentence shows 100 ms before its onset (the onset is where speech resumes after the pause, and real pauses are
+    // A phrase shows 100 ms before its onset (the onset is where speech resumes after the pause, and real pauses are
     // 190-440 ms), then fades in over 150 ms, both in clip time.
     public const float RevealLeadSeconds = .1f, RevealFadeSeconds = .15f;
     private int revealed = int.MaxValue;
@@ -343,7 +343,7 @@ public sealed class GatekeeperController : MonoBehaviour
         SetState(Phase.Inactive);
         CurrentText = line.text; CurrentLineId = line.id; CurrentLine = line;
         CurrentWasLive = true;
-        revealed = 1; revealAlpha = 1; revealClauses = null; // Its first sentence until the voice starts.
+        revealed = 1; revealAlpha = 1; revealClauses = null; // Its first phrase until the voice starts.
         debugLine = new DebugLine { line = line, patienceBefore = Patience, patienceAfter = Patience };
         DebugLines.Add(debugLine);
         LastGenerated = null;
@@ -475,7 +475,7 @@ public sealed class GatekeeperController : MonoBehaviour
         }
         if (version == revision) RevealWhole();
     }
-    // Raises the reveal to what the clip playing now has reached: its sentence onsets (one clip per line) or its clause's
+    // Raises the reveal to what the clip playing now has reached: its phrase onsets (one clip per line) or its clause's
     // ClauseStarts. In clip samples, so a paused clip holds it and pitch does not matter. A clip without either (a streamed
     // line, or no onsets) shows the line whole.
     private void Reveal(int clause)
@@ -485,8 +485,8 @@ public sealed class GatekeeperController : MonoBehaviour
         int rate = output.clip.frequency, played = output.timeSamples, fade = Mathf.RoundToInt(RevealFadeSeconds * rate);
         int count; float alpha;
         if (revealClauses != null) { count = revealClauses[Mathf.Min(clause, revealClauses.Length - 1)]; alpha = Mathf.Clamp01(played / (float)fade); }
-        else if (voice.sentenceOnsets != null && voice.stream == null)
-            count = GatekeeperSubtitleTiming.Reached(voice.sentenceOnsets, played, Mathf.RoundToInt(RevealLeadSeconds * rate), fade, out alpha);
+        else if (voice.phraseOnsets != null && voice.stream == null)
+            count = GatekeeperSubtitleTiming.Reached(voice.phraseOnsets, played, Mathf.RoundToInt(RevealLeadSeconds * rate), fade, out alpha);
         else { RevealWhole(); return; }
         if (count > revealed) { revealed = count; revealAlpha = alpha; }
         else if (count == revealed && alpha > revealAlpha) revealAlpha = alpha;
@@ -494,7 +494,11 @@ public sealed class GatekeeperController : MonoBehaviour
     // The worker split this line with SplitClauses; null (the whole line) if that no longer gives one entry per clip.
     private static int[] ClauseReveal(string text, int clips)
     {
-        try { var starts = GatekeeperSubtitleTiming.ClauseStarts(text, GatekeeperLiveSpeech.SplitClauses(text)); return starts.Length == clips ? starts : null; }
+        try
+        {
+            var starts = GatekeeperSubtitleTiming.ClauseStarts(text, GatekeeperLiveSpeech.SplitClauses(text), GatekeeperSubtitleTiming.Phrases(text));
+            return starts.Length == clips ? starts : null;
+        }
         catch (ArgumentException) { return null; }
     }
     private void RevealWhole() { revealed = int.MaxValue; revealAlpha = 1; revealClauses = null; }
