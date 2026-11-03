@@ -77,7 +77,8 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             if (GUILayout.Toggle(debugEnding == ending, ending == GatekeeperOutcome.Passed ? "Passage" : ending.ToString(), GUI.skin.button)) debugEnding = ending;
         GUILayout.EndHorizontal();
         if (GUILayout.Button("Jump / apply summary")) Jump();
-        if (GUILayout.Button(controller.scenario.debugUsePlaceholderReplies ? "Replies: placeholder — use Gemma" : "Replies: Gemma — use placeholder"))
+        string writer = GatekeeperLineSources.UsesGemma ? "Gemma" : "authored";
+        if (GUILayout.Button(controller.scenario.debugUsePlaceholderReplies ? "Replies: placeholder — use " + writer : "Replies: " + writer + " — use placeholder"))
         { controller.scenario.debugUsePlaceholderReplies = !controller.scenario.debugUsePlaceholderReplies; Jump(); }
         // Applies from the next message; the current encounter continues.
         if (GUILayout.Button(GatekeeperDecisionService.UseD1 ? "Decisions: d1 — use built-in routes" : "Decisions: built-in routes — use d1"))
@@ -118,6 +119,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             if (GUILayout.Button(spirit.CanPreviewVoice ? "Hear Vesper (F9: next voice)" : "Hear Vesper — when Trola is waiting")) spirit.PreviewVoice();
         }
         var npc = controller.GetComponent<GatekeeperNpcModel>();
+        GUILayout.Label(GatekeeperLineSources.UsesGemma ? "Writer: Gemma" : "Writer: authored replies (no Gemma preload)");
         if (npc != null && !string.IsNullOrEmpty(npc.LastError)) GUILayout.Label("NPC: " + npc.LastError);
         // Always one label: a button below can add the service mid-event.
         GUILayout.Label(controller.TryGetComponent(out GatekeeperDecisionService decisions) ? decisions.Describe() : "Decisions: not prepared");

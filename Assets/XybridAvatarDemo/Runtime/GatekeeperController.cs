@@ -51,7 +51,7 @@ public sealed class GatekeeperController : MonoBehaviour
         var state = new GatekeeperConversationState(encounter) { GateOpenRequested = ending == GatekeeperOutcome.Passed || ending == GatekeeperOutcome.Liked };
         foreach (var approach in (approaches ?? "").Split(',')) if (!string.IsNullOrWhiteSpace(approach)) state.RecordApproach(approach.Trim());
         IGatekeeperLineSource next = scenario.debugUsePlaceholderReplies ? (IGatekeeperLineSource)new PlaceholderGatekeeperLineSource(true)
-            : new FreeFormGatekeeperLineSource(scenario, GatekeeperNpcModel.Prepare(scenario), true, GatekeeperDecisionService.Prepare());
+            : new FreeFormGatekeeperLineSource(scenario, GatekeeperLineSources.PrepareWriter(scenario), true, GatekeeperDecisionService.Prepare());
         UseLineSource(next, state);
     }
     private IGatekeeperLineSource source;
