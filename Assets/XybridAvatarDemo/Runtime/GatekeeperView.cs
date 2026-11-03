@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -15,6 +16,31 @@ public sealed class GatekeeperView : MonoBehaviour
     [Tooltip("What the player just said (a choice's words, or a typed name or business), above Trola's subtitle. Built at runtime when unset.")]
     public Text playerLine;
     private string shownChoices; // The label set the current buttons were built for; null while the row is hidden.
+    // Subtitles reveal sentence by sentence as he says them (default) or show whole lines: F4 toggles and remembers it,
+    // -xybridSubtitles sentences|whole overrides it for a run. Display only, applied at once; Vesper's line follows it too.
+    private const string RevealPreference = "Trola.subtitleReveal";
+    private static bool? bySentence;
+    public static bool RevealBySentence
+    {
+        get
+        {
+            if (bySentence == null)
+            {
+                bySentence = PlayerPrefs.GetString(RevealPreference, "sentences") != "whole";
+                var args = System.Environment.GetCommandLineArgs(); int at = System.Array.IndexOf(args, "-xybridSubtitles");
+                string forced = at >= 0 && at + 1 < args.Length ? args[at + 1].ToLowerInvariant() : "";
+                if (forced == "sentences" || forced == "whole") bySentence = forced == "sentences";
+            }
+            return bySentence.Value;
+        }
+        set { bySentence = value; PlayerPrefs.SetString(RevealPreference, value ? "sentences" : "whole"); PlayerPrefs.Save(); }
+    }
+    // The line the subtitle presents, as plain text, while the subtitle holds what this view wrote; else whatever it holds.
+    public string ShownLine => sentence == null ? "" : shownText != null && sentence.text == shownText ? lineText : sentence.text;
+    private string lineText, shownText;
+    private List<(int start, int length)> lineSentences;
+    private int shownVisible = -1;
+    private float shownAlpha = -1;
 
     private void OnEnable()
     {
@@ -38,7 +64,7 @@ public sealed class GatekeeperView : MonoBehaviour
     public void Refresh()
     {
         if (gatekeeper == null || sentence == null || inputRow == null) return;
-        sentence.text = gatekeeper.CurrentText;
+        ShowSubtitle();
         var prompt = gatekeeper.Prompt;
         bool accepting = gatekeeper.AcceptsText;
         inputRow.SetActive(prompt.PersistentText || accepting);
@@ -92,6 +118,7 @@ public sealed class GatekeeperView : MonoBehaviour
     private void InputActivity(string unused) { gatekeeper.NotifyActivity(); }
     private void Update()
     {
+        ShowSubtitle();
         RefreshSubmissionStatus();
         if (caretToEnd && input != null && input.isFocused)
         {
@@ -155,6 +182,25 @@ public sealed class GatekeeperView : MonoBehaviour
             button.onClick.AddListener(() => gatekeeper.Choose(index));
         }
     }
+    // The current line whole, or its sentences the voice has reached with the rest laid out but transparent
+    // (GatekeeperSubtitleTiming.Markup), so nothing reflows as they appear. Rich text is on only while markup shows:
+    // player names and businesses are inserted into lines, and a line with '<' or '>' always shows whole and literal.
+    private void ShowSubtitle()
+    {
+        if (gatekeeper == null || sentence == null) return;
+        string text = gatekeeper.CurrentText ?? "";
+        int visible = gatekeeper.RevealedSentences(out float alpha);
+        if (!RevealBySentence) { visible = int.MaxValue; alpha = 1; }
+        if (text != lineText) { lineText = text; lineSentences = GatekeeperSubtitleTiming.Sentences(text); shownVisible = -1; }
+        if (visible == shownVisible && alpha == shownAlpha && sentence.text == shownText) return;
+        shownVisible = visible; shownAlpha = alpha;
+        string shown = visible >= lineSentences.Count && alpha >= 1 ? text
+            : GatekeeperSubtitleTiming.Markup(text, lineSentences, visible, alpha, sentence.color, out _);
+        bool markup = shown != text;
+        if (sentence.supportRichText != markup) sentence.supportRichText = markup;
+        if (sentence.text != shown) sentence.text = shown;
+        shownText = shown;
+    }
     // A restart or debug jump starts a new conversation: nothing the player said belongs to it.
     private void ClearPlayerLine() { if (playerLine != null) playerLine.text = ""; }
     // Raised before the controller acts, so CurrentChoices and Prompt still describe the checkpoint the player answered.
@@ -179,7 +225,7 @@ public sealed class GatekeeperView : MonoBehaviour
         var blocklist = gatekeeper.scenario != null ? gatekeeper.scenario.nameBlocklist : null;
         return GatekeeperNames.TryReadSaid(typed, blocklist, out var said) ? said : null;
     }
-    // A sibling of the subtitle, not part of it: the self-test requires sentence.text == line.text while he speaks.
+    // A sibling of the subtitle, not part of it: the self-test requires ShownLine == line.text while he speaks.
     private Text PlayerLine()
     {
         if (playerLine != null) return playerLine;
