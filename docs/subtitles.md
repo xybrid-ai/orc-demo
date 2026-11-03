@@ -36,7 +36,8 @@ He chose to reveal at every pause, commas included:
 
 - **Phrases.** A phrase ends at a run of `.` `!` `?` `…`, or at `,` `;` `:` `—` `–` or a hyphen with spaces on both
   sides (` - `), plus any closing quote or bracket, when whitespace and more text follow. `1,000`, `3:30`, `a—b` and
-  `well-known` don't split. Abbreviations (`Mr.`, `Dr.`, `St.`) and initials (`J. R.`) don't end a phrase.
+  `well-known` don't split. Abbreviations (`Mr.`, `Dr.`, `St.`) and initials (`J. R.`) don't end a phrase; an
+  abbreviation must be the whole word, so `21st.` does (the voice pauses there).
 - **Sentences.** A sentence ends at `.` `!` `?` or `…` by the same rules. Every sentence end is also a phrase end.
   Sentences no longer split the display; they steer the aligner (below).
 - **Onsets.** On the voice worker, right after `GatekeeperSpeechTrim`, each Phonon whole line gets the sample in its
@@ -69,13 +70,15 @@ He chose to reveal at every pause, commas included:
   is actually playing (`Reached`). `Markup` writes the line with the hidden phrases in `<color=#00000000>`, and the
   view turns `supportRichText` on only while it shows markup. The scene keeps it off ("Use literal slot subtitles").
 
-The 100 ms lead is there because the onset is where speech resumes, and the pauses before sentences and commas last
-about 190-500 ms. The new phrase therefore appears just inside the silence, never after the first word has begun.
-After a comma spoken through there is no silence; the phrase appears about 100 ms before its first word.
+The 100 ms lead is there because the onset is where speech resumes. Pauses before sentences last about 190-440
+ms on the in-game voice, so a new sentence appears just inside the silence. A comma's pause can be shorter (some are
+under 100 ms), so its phrase may show just before that pause starts. After a comma spoken through there is no
+silence; the phrase appears about 100 ms before its first word.
 
 ## Accuracy
 
-The aligner (`SubtitleTiming_Final.cs`, copied verbatim; local tournament files are under `.context/subtitles/`) won a
+The aligner (it returns exactly what the tournament's `SubtitleTiming_Final.cs` returns, refactored so one solve serves
+sentences and phrases; the local tournament files are under `.context/subtitles/`) won a
 tournament of three designs. The winner, a duration model, took robustness changes from the runners-up: a
 noise-floor-aware threshold, a dip snap for unmatched starts, and caps on its work. Phrases reuse it unchanged.
 
@@ -89,7 +92,7 @@ of it. For a start with no pause, the reference is Whisper's start of the next w
   were within 150 ms of the stricter reference. A character-share baseline gets 25%. Real in-game clips from the
   owner's Mac (zzz Phonon for Trola, XnPtts for Vesper; 120 clips, 146 sentence starts): the right pause for 145 of
   146, never early; the miss is a clip where Whisper dropped "Hmph".
-- **Phrase starts.** The same renders, 686 clips with phrase ground truth (`tools/ground_truth.py` given the phrase
+- **Phrase starts.** The same renders, 686 clips with phrase ground truth (the local `.context/subtitles/tools/ground_truth.py` given the phrase
   spans). Dev was used for every decision; test was held out.
 
 | Phrase start | Dev | Held-out test |
@@ -97,7 +100,7 @@ of it. For a start with no pause, the reference is Whisper's start of the next w
 | Sentence start, with a pause | 840 of 842 right, never early | 187 of 187 right, never early |
 | Comma, with a pause | 536 of 543 right, 1 early | 97 of 106 right, 3 early |
 | `;` or `:`, with a pause | 8 of 12 right | 13 of 18 right, 2 early |
-| Any mark, no pause | 25: 7 early, 2 late | 5: none early, 3 late |
+| Comma or other mark, no pause | 25: 7 early, 2 late | 5: none early, 3 late |
 
   "Early" is more than 150 ms before the reference; "late" (no pause) is more than 300 ms after it. The median error
   of every row with a pause is 0 ms. The corpus also holds eight code fragments its collector picked up by mistake;
@@ -110,11 +113,20 @@ of it. For a start with no pause, the reference is Whisper's start of the next w
 - **Cost.** `PhraseOnsets` takes about 0.13 ms per line (median; 90th percentile 0.28 ms, worst 0.51 ms on a real
   line, 1.7 ms on a 30 s code fragment). A 40 s line of 800 phrases hits the work caps and takes the character-share
   estimate at once.
+- **Real in-game clips (phrases).** The same 120 clips from the owner's Mac (zzz for Trola, XnPtts for Vesper), with
+  `whisper-cli` small.en as the reference. Sentence starts are as above. 83 phrase starts inside sentences were
+  scored; 71 match the reference. Six more are right but scored wrong: in "Careful, Mira." and "Well, Worm?" lines
+  Whisper stretches the first word over the comma's pause, so the reference lands on the next pause, while the
+  phrase shows at the end of the comma's pause. Of the last six, three show late by 0.3-0.6 s (two names after
+  "Choose something," whose pause is under 100 ms, and a "then" the voice paused after instead of at its comma), two
+  about 170 ms late, and one ("Mira." after a comma spoken through) possibly 190 ms early.
 
 The runtime's `Onsets` returns exactly what the tournament's file returns on every corpus clip: 658 clips and 1061
 onsets, with no difference. On every one of those clips, `PhraseOnsets` at sentence starts equals `Onsets`. A wider
-dip snap for unmatched phrase starts was tried and left out: 200 ms gained 3 of 562 dev starts and nothing on test,
-and 250 ms added an early one.
+dip snap for unmatched phrase starts was tried and left out. On the renders, 200 ms gained 3 of 562 dev starts and
+nothing on test, and 250 ms added an early one. On the in-game voice it was worse, even used only when nothing lay
+within 80 ms: two late phrases got later ("Rize." after "Choose something," from 370 to 550 ms, "then." from 170 to
+380 ms), because the deeper dip it reaches is inside the word.
 
 ## The switch
 
