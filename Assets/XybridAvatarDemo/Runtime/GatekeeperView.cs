@@ -71,6 +71,17 @@ public sealed class GatekeeperView : MonoBehaviour
             : gatekeeper.State == GatekeeperController.Phase.PreparingLine ? "Thinking" : "Send";
     }
 
+    // Speech input (PlayerVoiceInput) writes the words where typing would, so the player can still edit them.
+    public string Draft => input != null ? input.text ?? "" : "";
+    public void SetDraft(string text)
+    {
+        if (input == null) return;
+        input.text = text ?? "";
+        if (!input.isFocused) input.ActivateInputField();
+        caretToEnd = true; // Activation selects all; typing would replace the words instead of correcting them.
+    }
+    private bool caretToEnd;
+
     public void Submit()
     {
         string text = input.text;
@@ -82,6 +93,11 @@ public sealed class GatekeeperView : MonoBehaviour
     private void Update()
     {
         RefreshSubmissionStatus();
+        if (caretToEnd && input != null && input.isFocused)
+        {
+            caretToEnd = false;
+            input.selectionAnchorPosition = input.selectionFocusPosition = input.caretPosition = input.text.Length;
+        }
         // A draft is activity even while the player pauses to read or think.
         if (gatekeeper != null && input != null && inputRow.activeInHierarchy && !string.IsNullOrWhiteSpace(input.text))
             gatekeeper.NotifyActivity();
