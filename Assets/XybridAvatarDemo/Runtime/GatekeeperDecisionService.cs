@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 // Optional local d1 decisions for free-form replies; see docs/decision-layer.md. The scene never
-// depends on the server: while it is off or unreachable, replies keep the earlier path (built-in
-// fact routes, then complete Gemma lines). A request that fails mid-turn costs one clarification.
+// depends on the server: while it is off or unreachable, replies use built-in
+// fact routes and neutral authored replies. A request that fails mid-turn costs one clarification.
 public sealed class GatekeeperDecisionService : MonoBehaviour, IGatekeeperDecisionSource
 {
     // F4 toggle, shared across encounter restarts; "-xybridDecisions off" starts with it off and
@@ -33,10 +33,10 @@ public sealed class GatekeeperDecisionService : MonoBehaviour, IGatekeeperDecisi
     public string Describe()
     {
         if (client == null) return "Decisions: built-in fact routes (" + status + ")";
-        if (!UseD1) return "Decisions: built-in fact routes, then Gemma lines (d1 off)";
+        if (!UseD1) return "Decisions: built-in facts and authored replies (d1 off)";
         return connected ? "Decisions: d1 " + status + " at " + client.Endpoint
             : "Decisions: d1 " + status + " at " + client.Endpoint + (string.IsNullOrEmpty(lastError) ? "" : " (" + lastError + ")")
-              + "; built-in fact routes, then Gemma lines";
+              + "; built-in facts and authored replies";
     }
 
     private void Awake()
@@ -70,7 +70,7 @@ public sealed class GatekeeperDecisionService : MonoBehaviour, IGatekeeperDecisi
                 var health = client.HealthAsync(lifetime.Token);
                 while (!health.IsCompleted) yield return null;
                 var result = health.Status == TaskStatus.RanToCompletion ? health.Result : null;
-                bool ready = result != null && result.ready;
+                bool ready = result != null && result.ready && result.SupportsTopics;
                 if (ready && !connected && DateTime.UtcNow.Ticks < Interlocked.Read(ref retryAt)) status = "waiting after a failed decision";
                 else if (ready && !connected)
                 {
@@ -81,11 +81,12 @@ public sealed class GatekeeperDecisionService : MonoBehaviour, IGatekeeperDecisi
                 }
                 else if (!ready)
                 {
-                    if (connected) Debug.LogWarning("[Trola] d1 decisions lost; free-form replies use built-in fact routes and Gemma lines until it answers again.", this);
+                    if (connected) Debug.LogWarning("[Trola] d1 decisions lost; free-form replies use built-in facts and authored replies until it answers again.", this);
                     else if (!reported)
-                        Debug.Log("[Trola] d1 decisions offline at " + client.Endpoint + "; free-form replies use built-in fact routes and Gemma lines. Start tools/npc-quality/serve_decisions.py to connect.", this);
+                        Debug.Log("[Trola] d1 decisions offline at " + client.Endpoint + "; free-form replies use built-in facts and authored replies. Start tools/npc-quality/serve_decisions.py to connect.", this);
                     connected = false; reported = true; status = "offline";
                     if (health.IsFaulted) lastError = health.Exception.GetBaseException().Message;
+                    else if (result != null && result.ready && !result.SupportsTopics) lastError = "restart serve_decisions.py for topic questions";
                     else if (result != null && !string.IsNullOrEmpty(result.error)) lastError = "d1 " + result.error;
                 }
             }

@@ -142,6 +142,7 @@ public sealed class SpiritDirector : MonoBehaviour
         Presence.spiritName = lines.spirit_name;
         Voice = SpiritVoice.Create(transform, controller, lines.voice);
         Voice.voiceWait = lines.timing.voice_wait;
+        Presence.voice = Voice; // Her line's phrase reveal follows her clip.
         Lens = gameObject.AddComponent<SpiritLens>();
         Lens.director = this; Lens.Visible = HasArgument("-xybridLens");
         controller.Changed += OnChanged;

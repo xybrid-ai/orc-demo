@@ -7,7 +7,8 @@ wording. The voice pipeline is unchanged.
 
 With the local d1 server running (see [Play Mode with local d1](#play-mode-with-local-d1)),
 every free-form message is classified by d1 and answered through the response
-plan below. Without it, the scene keeps the earlier path described here.
+plan below. Without it, the scene uses the factual routes and neutral authored
+fallback described here.
 
 `FreeFormGatekeeperLineSource` recognizes a limited set of factual questions
 through `GatekeeperFactQuestions`. It answers player name/business and admission
@@ -19,9 +20,9 @@ This fallback recognizes explicit English forms such as "What is my name?",
 "What am I selling?", "What did I offer?" and "You already let me through?".
 It answers requests only: a question or a "tell me"/"remind me" form. Statements
 and opinions such as "My name is Bob, what's yours?" or "What do you think of my
-business?" are not intercepted. It is not a general intent classifier. Without d1, unrecognized messages
-continue through the existing Gemma path, including its existing metadata
-behavior, and off-topic filtering is not enabled.
+business?" are not intercepted. It is not a general intent classifier. Without
+d1, unrecognized messages use a narrow neutral topic fallback or ask for
+clarification. This fallback never infers praise, insults or other patience effects.
 
 ## Model-independent contract
 
@@ -31,19 +32,28 @@ message separately, with cancellation. Its result contains:
 - Scope: in-world, out-of-world, role override or unclear.
 - Communicative intent: factual question, insult, praise, apology, fear, farewell,
   NPC question or other.
+- Topic: one of 18 closed labels in `decision-topics.json`, including wall,
+  wall motive, food, captain, job, day off, fire, repeat and other.
 - Requested player-fact slots: name, business or unknown. Classifier output
   cannot supply names, offer amounts, game effects or replacement state.
 
 `GatekeeperResponsePolicy` creates an immutable response plan. It owns reaction,
-emotion/intensity, patience delta, farewell and the authored/generative route.
+emotion/intensity, patience delta, farewell and the response family.
 It asks for clarification on missing/unclear decisions. Invalid label values
 are rejected; adapter exceptions become neutral clarifications. Confidence
 probabilities are not treated as calibrated guarantees.
 
 Pass a decision source to the `FreeFormGatekeeperLineSource` constructor to
 exercise the complete planned path. Factual/boundary/farewell routes bypass the
-writer. Other plans ask the existing Gemma model for `{"text":"..."}` only.
-Extra output fields are rejected. Policy supplies the final line metadata,
+bank. Other plans use `GatekeeperAuthoredReplies`, with the topic choosing
+wording inside the policy reaction. Repeat reads the last trusted NPC turn,
+food follow-ups use that turn as context, and invitations depend on admission.
+Missing or unknown topics use the Other clarification while preserving policy
+metadata. No Gemma component is created by default.
+
+The historical writer remains opt-in with `-xybridWriter gemma` (and the
+build-only Gemma3 trial symbol). It receives `{"text":"..."}` only on planned
+writer routes, and extra output fields are rejected. Policy supplies the final line metadata,
 which feeds the existing facial performer and speech system. A calm insult
 selects amusement; an insult at one remaining patience starts both authored
 expulsion lines, applying the decrement once when presented.
@@ -54,7 +64,7 @@ history or by a classifier's proposed amount. Existing authored "Bribe" choices
 specify no amount, so that detail remains unknown. A future offer mechanic must
 validate and record the actual item/quantity before recall can use it.
 
-The writer can still produce poor dialogue or contradict a fact incidentally
+The opt-in writer can still produce poor dialogue or contradict a fact incidentally
 on a generative route. Valid JSON and correct plan metadata do not establish
 semantic correctness. Direct factual routes avoid that risk for the questions
 they recognize.
@@ -64,7 +74,7 @@ they recognize.
 d1 runs outside Unity in `tools/npc-quality/serve_decisions.py`: one resident
 process holding the pinned checkpoint on MPS (BF16, no CPU fallback), bound to
 127.0.0.1. It verifies every pinned file hash before loading, primes once, and
-leaves Xybrid, Gemma and Phonon untouched. Start it with the Python environment
+leaves the Xybrid and Phonon versions unchanged. Start it with the Python environment
 described under the focused probe below, before or during Play Mode:
 
 ```sh
@@ -81,7 +91,9 @@ checks `GET /health` every 3 s. While the server is ready, free-form messages
 approaches, last 12 turns) and the new message. The server builds the same state
 layout as the probe, asks the two spike questions unchanged, and adds one yes/no
 question per player-fact slot (`decision-fact-slots.json`: player name, business,
-other personal fact). A slot is requested at P(yes) >= 0.5, d1's own reading.
+other personal fact). It also asks the topic choice in `decision-topics.json`.
+All six questions share one packed `system_one` pass. A slot is requested at
+P(yes) >= 0.5, d1's own reading.
 A single multiple-choice slot question was tried first and marked name and
 business for nearly every message, including "What's your name?".
 
@@ -100,12 +112,14 @@ health check succeeds again, no sooner than 5 s after one failure and up to 30 s
 after consecutive failures. The server answers busy (503) when a request would
 wait over 3 s behind another. Its health reports not ready while a decision has
 run longer than 4 s, and after a failed decision until a prime decision succeeds.
-The server is optional: while it is off, every message keeps the earlier path,
-and the service logs that once.
+The server is optional: while it is off, every message uses built-in factual
+routes and neutral authored replies, and the service logs that once. Restart
+`serve_decisions.py` after updating: health must advertise `topic` in `questions`.
+An older server uses that fallback and F4 says to restart it.
 
 The F4 panel shows the connection, a **Decisions: d1 / built-in routes** toggle
 (effective from the next message), and each line's decision: labels,
-confidences, slots, round-trip time and the selected reaction. The once-per-second
+confidences, topic, slots, round-trip time and the selected reaction. The once-per-second
 `TrolaSpeechDebug/session-state.txt` records the same. `-xybridDecisions off`
 starts with d1 off; `-xybridDecisions http://127.0.0.1:<port>/` selects another
 local server.
@@ -255,7 +269,7 @@ has timed out or cancelled (the server does not notice a closed connection),
 and the lock is shared: a `/decide` that arrives meanwhile waits for that one
 thought. Trola's queue stays 3 s.
 
-**Unchanged for Trola**: `/decide` validation, state, reply, receipts and
+**Original /spirit integration** (historical, before the authored-topic change): `/decide` validation, state, reply, receipts and
 stdout lines are byte-identical (compared on two stub runs before and after
 the change), and `verify_decisions.py` passes unmodified. Spirit receipts
 carry `kind: "spirit"`; Trola's receipt lines keep exactly `{at, state,
@@ -291,8 +305,8 @@ names them in the decision detail. A 404 raises
 `SpiritEndpointMissingException`; `Problem(health)` reports a server that is
 not ready or has no `/spirit`; a timeout is a `TimeoutException`; a caller's
 cancellation only ever surfaces as `OperationCanceledException`. Her
-conversation never enters `GatekeeperConversationState`, so Gemma and Trola's
-d1 never see thoughts.
+conversation never enters `GatekeeperConversationState`, so Trola's
+d1 and the optional Gemma writer never see thoughts.
 
 **Verification** (no model): `verify_spirit_d1.py` runs the real server code
 with a stub engine and an old-server stand-in, the C# client checks
@@ -303,8 +317,8 @@ the server checks (question set, prime, validation, state layout without
 patience, reply shape, receipts, a failed thought leaving health ready, a
 failed `/decide` recovering only through its prime, one prime for two
 concurrent probes, the 1 s queue), a replay of `decision-spirit-cases.json`
-through `SpiritPolicy.Answer`, and finally the unmodified
-`verify_decisions.py`:
+through `SpiritPolicy.Answer`, and finally the Trola
+`verify_decisions.py` checks:
 
 ```sh
 python3 tools/npc-quality/verify_spirit_d1.py --dotnet <dotnet>

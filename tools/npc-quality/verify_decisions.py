@@ -47,7 +47,8 @@ class StubEngine:
             time.sleep(1.5)
         scope, intent, facts = STUB.get(message, ('in_world', 'other', []))
         answers = {slot: dict(type='noul', noul=0.9 if slot in facts else 0.1) for slot in serve_decisions.SLOTS}
-        answers.update(scope=dict(choice=scope, confidence=0.91), intent=dict(choice=intent, confidence=0.97))
+        answers.update(scope=dict(choice=scope, confidence=0.91), intent=dict(choice=intent, confidence=0.97),
+                       topic=dict(choice='wall_motive' if message == 'Why do you care so much about a wall?' else 'other', confidence=0.94))
         return dict(answers=answers, usage=dict(input_tokens=8))
 
 

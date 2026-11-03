@@ -16,7 +16,7 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
     public GatekeeperPresentation Presentation { get; private set; } = Prompt();
     public IEnumerable<GatekeeperScenario.Line> AnticipatedLines => Array.Empty<GatekeeperScenario.Line>();
     public FreeFormGatekeeperLineSource() : this(UnityEngine.Object.FindFirstObjectByType<GatekeeperController>().scenario) { }
-    private FreeFormGatekeeperLineSource(GatekeeperScenario scenario) : this(scenario, GatekeeperNpcModel.Prepare(scenario)) { }
+    private FreeFormGatekeeperLineSource(GatekeeperScenario scenario) : this(scenario, GatekeeperLineSources.PrepareWriter(scenario)) { }
     public FreeFormGatekeeperLineSource(GatekeeperScenario scenario, GatekeeperNpcModel model, bool skipGreeting = false, IGatekeeperDecisionSource decisions = null)
     {
         this.scenario = scenario; this.model = model; this.decisions = decisions;
@@ -50,7 +50,7 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
             state.Encounter.CountStoryTurn();
             var snapshot = state.Snapshot(); // Existing exchanges, excluding this new message.
             state.Record("Player", input.Text);
-            // An offline source keeps the earlier path: built-in fact routes, then complete model lines.
+            // Facts remain authoritative. Without d1, the default path uses neutral authored topic fallbacks.
             var source = decisions != null && decisions.IsAvailable ? decisions : null;
             GatekeeperDecision decision = GatekeeperFactQuestions.Interpret(input.Text);
             if (source != null)
@@ -60,9 +60,10 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
                 catch (Exception) { decision = null; } // Adapter failure becomes a clarification, with no effects.
             }
             cancellation.ThrowIfCancellationRequested();
+            if (source == null && decision == null && model == null) decision = GatekeeperAuthoredReplies.Offline(input.Text);
             var plan = source != null || decision != null ? GatekeeperResponsePolicy.Create(snapshot, decision) : null;
             string decided = source != null ? (decision == null ? "decision failed" : decision.Detail ?? "decision source")
-                : (decisions != null ? "d1 offline; " : "") + (decision != null ? "built-in fact route" : "model line");
+                : (decisions != null ? "d1 offline; " : "") + (decision != null ? "built-in route" : "model line");
             if (plan != null) decided += " → " + plan.Reaction;
             if (plan != null && plan.Expel)
             {
@@ -70,12 +71,13 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
                 if (ending != null) ending.debugDecision = decided;
                 return ending;
             }
-            bool authored = plan != null && !plan.NeedsWriter;
-            var reply = authored ? plan.Assemble() : await model.ReplyAsync(snapshot, input.Text, cancellation, plan);
+            bool authored = model == null || plan != null && !plan.NeedsWriter;
+            var reply = authored ? GatekeeperAuthoredReplies.Reply(snapshot, decision, plan, input.Text)
+                : await model.ReplyAsync(snapshot, input.Text, cancellation, plan);
             cancellation.ThrowIfCancellationRequested();
             bool fallback = reply == null;
             reply = reply ?? (plan == null ? Fallback() : plan.Assemble(Fallback().text));
-            reply.debugSource = authored ? "response plan" : fallback ? "LLM fallback" : "LLM";
+            reply.debugSource = authored ? (plan.NeedsWriter ? "authored reply" : "response plan") : fallback ? "LLM fallback" : "LLM";
             reply.debugDecision = decided;
             reply.debugRaw = authored ? "" : model.LastRawReply ?? "";
             reply.debugModelSeconds = authored ? 0 : model.LastReplySeconds;

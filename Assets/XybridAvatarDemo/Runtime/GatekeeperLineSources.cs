@@ -6,6 +6,22 @@ using System.Threading.Tasks;
 // The composition root is the only place selecting or switching concrete sources.
 public static class GatekeeperLineSources
 {
+    // Default free talk is authored. Keep the historical writer available only when explicitly selected.
+    public static bool UsesGemma
+    {
+        get
+        {
+#if XYBRID_GEMMA3_TRIAL
+            return true;
+#else
+            var args = Environment.GetCommandLineArgs();
+            int at = Array.IndexOf(args, "-xybridWriter");
+            return at >= 0 && at + 1 < args.Length && string.Equals(args[at + 1], "gemma", StringComparison.OrdinalIgnoreCase);
+#endif
+        }
+    }
+    public static GatekeeperNpcModel PrepareWriter(GatekeeperScenario scenario) =>
+        !scenario.debugUsePlaceholderReplies && UsesGemma ? GatekeeperNpcModel.Prepare(scenario) : null;
     public static bool ValidateScenario(GatekeeperScenario scenario, out string error)
     {
         if (!scenario.debugStartInFreeForm) return scenario.Validate(out error);
@@ -17,8 +33,8 @@ public static class GatekeeperLineSources
     {
         bool bounded = scenario.authoredConversation || scenario.debugStartInFreeForm;
         state = new GatekeeperConversationState(new GatekeeperEncounter(bounded ? 3 : scenario.initialPatience, bounded ? 5 : scenario.maxTurns, bounded), assignedNameIndex);
-        var model = scenario.debugUsePlaceholderReplies ? null : GatekeeperNpcModel.Prepare(scenario);
-        if (model != null) GatekeeperDecisionService.Prepare(); // Connects to local d1 during the authored intro.
+        var model = PrepareWriter(scenario);
+        if (!scenario.debugUsePlaceholderReplies) GatekeeperDecisionService.Prepare(); // Connects during the authored intro, without loading a writer.
         if (scenario.debugStartInFreeForm) { state.GateOpenRequested = true; return FreeForm(scenario, model); }
         IGatekeeperLineSource first = scenario.authoredConversation
             ? new AuthoredGatekeeperLineSource(scenario, state)
@@ -59,11 +75,20 @@ public static class GatekeeperLineSources
     }
     // One utterance from a reply and the question it leads into: one synthesis, one clip, one subtitle.
     // The reply owns the performance (emotion, intensity, delivery); slots are already resolved.
-    public static GatekeeperScenario.Line Join(GatekeeperScenario.Line reply, GatekeeperScenario.Line prompt) => new GatekeeperScenario.Line
+    public static GatekeeperScenario.Line Join(GatekeeperScenario.Line reply, GatekeeperScenario.Line prompt)
     {
-        id = reply.id + "+" + prompt.id, text = reply.text + " " + prompt.text, emotion = reply.emotion, intensity = reply.intensity,
-        patience_delta = reply.patience_delta + prompt.patience_delta, ends_scene = prompt.ends_scene, recordedMood = reply.recordedMood, delivery = reply.delivery
-    };
+        // An authored trailing comma carries the reply into its checkpoint's "So" or "Right".
+        // Keep all other prompt openings intact, including names and "I".
+        string promptText = prompt.text;
+        if (reply.text.EndsWith(",", StringComparison.Ordinal)
+            && (promptText.StartsWith("So,", StringComparison.Ordinal) || promptText.StartsWith("Right,", StringComparison.Ordinal)))
+            promptText = char.ToLowerInvariant(promptText[0]) + promptText.Substring(1);
+        return new GatekeeperScenario.Line
+        {
+            id = reply.id + "+" + prompt.id, text = reply.text + " " + promptText, emotion = reply.emotion, intensity = reply.intensity,
+            patience_delta = reply.patience_delta + prompt.patience_delta, ends_scene = prompt.ends_scene, recordedMood = reply.recordedMood, delivery = reply.delivery
+        };
+    }
     public static void ValidateOutput(GatekeeperScenario.Line line)
     {
         if (line == null || string.IsNullOrWhiteSpace(line.text) || string.IsNullOrWhiteSpace(line.emotion)

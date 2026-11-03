@@ -81,7 +81,7 @@ try:
         assert r["name"]==(expected or "Worm") and r["assigned"]==(expected is None) and (r["reading"]=="Given")==(expected is not None),(typed,r)
         assert r["name"]==r["d1Name"]==r["d1Decide"]==r["d1Spirit"]==r["gemmaName"] and r["d1Fact"]=="Your name is "+r["name"]+"." and r["mangled"]==mangle(r["name"]),(typed,r)
         if expected:
-            assert r["trola"].startswith(expected+". Hmph.") and ", "+expected+"." in r["vesper"],(typed,r)  # his "{name}." opener, her vocative
+            assert r["trola"].startswith(expected+", hmph, I've heard worse, so,") and ", "+expected+"." in r["vesper"],(typed,r)  # his joined name reply, her vocative
             if len(typed)<=48:assert letters(expected) in letters(said),(typed,r)  # a typed answer's player line holds the name he says
         else:assert r["trola"].startswith("No proper name? Then you're Worm.") and r["vesper"].startswith("He's calling you Worm."),(typed,r)
     readings={r["typed"]:r["reading"] for r in seen[:len(names)]}
@@ -99,5 +99,7 @@ try:
     assert flow["passed"],flow
     voice=adapter.ask(dict(command="spirit",suite="PlayerSpeechChecks"))
     assert voice["passed"],voice
-    print("PASS: names ("+str(len(names))+" answers, "+str(len(businesses))+" businesses), asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+"), speech text ("+flow["checks"]+"), player speech audio ("+voice["checks"]+")")
+    subs=adapter.ask(dict(command="spirit",suite="SubtitleTimingChecks"))
+    assert subs["passed"],subs
+    print("PASS: names ("+str(len(names))+" answers, "+str(len(businesses))+" businesses), asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+"), speech text ("+flow["checks"]+"), player speech audio ("+voice["checks"]+"), subtitle timing ("+subs["checks"]+")")
 finally:adapter.close()

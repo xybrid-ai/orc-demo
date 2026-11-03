@@ -1,7 +1,8 @@
 # Orc Demo
 
-A standalone Unity gatekeeper encounter: authored dialogue hands off to local
-Gemma4NPC-E2B, with live Phonon speech using a separately supplied cloned voice.
+A standalone Unity gatekeeper encounter: local d1 selects authored replies
+after the scripted encounter, with live Phonon speech using a separately
+supplied cloned voice.
 KittenTTS 2 / paired WarChief remains an optional provider.
 The NPC Tavern remains a separate project:
 https://github.com/xybrid-ai/xybrid-unity-tavern.
@@ -9,6 +10,8 @@ Trola answers each player act with one spoken line; see
 [docs/trola-turns.md](docs/trola-turns.md) before editing his script.
 Hold Left Option to talk instead of typing (Whisper, on device; stage it with
 `python3 tools/setup_asr.py`, see [docs/voice-input.md](docs/voice-input.md)).
+Subtitles appear phrase by phrase as Trola and Vesper speak; see
+[docs/subtitles.md](docs/subtitles.md).
 
 ## Open locally
 
@@ -66,7 +69,8 @@ hashes. Imported/derived assets stay local even outside `Assets/Synty`.
   `kitten-s3-meanflow-f32.gguf`, **both** `warchief.lm.json` and `warchief.s3.json`,
   metadata/provenance. Never mix voice pairs. The optional Kitten/WarChief path
   uses sentence chunks, Accelerate and six threads. Startup uses Phonon.
-- `Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/`: metadata and
+- Historical writer, optional for play but retained in the restoration manifest:
+  `Assets/StreamingAssets/XybridModels/gemma4npc-e2b-q4/`: metadata and
   `Gemma4NPC-E2B-Q4_K_M.gguf`, from
   https://huggingface.co/chimbiwide/Gemma4NPC-E2B-GGUF.
   For M1 Metal, only auxiliary `per_layer_model_proj.weight` was converted
@@ -82,11 +86,13 @@ hashes. Imported/derived assets stay local even outside `Assets/Synty`.
   provenance, staged by `tools/setup_spirit_voice.py`, and your own camp laugh
   clips under `Assets/XybridAvatarDemo/Resources/CampAmbience/`.
 
-Gemma preloads during the intro and reuses the persona prompt prefix. Each turn
-includes the camp/persona, authored style examples, handoff summary, six exchanges
-and new input. Grammar constrains line JSON; sanitization and authored fallbacks
-protect speech. Patience changes by at most one and zero plays the authored
-expulsion. F4 retains placeholder dialogue and voice debugging.
+Free talk uses a bank of authored replies selected by d1's topic and intent.
+Gemma no longer preloads. The game owns facts, patience, admission and endings;
+without d1 it uses narrow factual routes and neutral authored fallbacks.
+F4 shows the writer, topic and decision status. To compare the historical
+Gemma writer explicitly, launch Unity with `-xybridWriter gemma`; it then
+preloads during the intro and retains the existing prompt/parser behavior.
+See the [blind reading and implementation](docs/authored-replies-2026-11-03.md).
 
 ## Headless dialogue quality
 
@@ -104,9 +110,10 @@ an authored reply. Offer details must be recorded by a trusted game action;
 the `bribe` approach alone supplies no amount.
 
 The optional decision layer separates player intent from a game-owned response
-plan and a text-only Gemma writer. In Play Mode, a local d1 server on the Apple
-GPU classifies each free-form message when it is running; otherwise messages keep
-the existing dialogue path. See [decision-layer staging and checks](docs/decision-layer.md)
+plan and the authored reply bank. In Play Mode, a local d1 server on the Apple
+GPU classifies each free-form message when it is running; otherwise messages
+use built-in factual routes and neutral authored replies. See
+[decision-layer staging and checks](docs/decision-layer.md)
 for the server, the contract, recorded-decision replay and the focused Apple GPU probe.
 
 Vesper, an optional spirit in the player's head, advises at Trola's
@@ -118,7 +125,8 @@ for setup, the F6 lens, F7 spirit, F8 ambience, Tab and Esc keys, and the
 
 For a playable Apple Silicon Gemma3NPC trial, see the
 [trial build instructions](docs/gemma3-trial-build.md). Its build-only model
-selection leaves the Editor and ordinary E2B builds unchanged.
+selection explicitly keeps the generative writer for that trial; the ordinary
+Editor defaults to authored replies.
 
 ## Repository and release policy
 

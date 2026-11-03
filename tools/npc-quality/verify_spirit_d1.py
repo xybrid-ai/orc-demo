@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Vesper's d1 route without a model: the real /spirit server code with a stub engine, the real C# client
-(SpiritClientChecks), server checks, a replay of recorded labels through SpiritPolicy, and then the unmodified
-verify_decisions.py, because Trola's /decide route must not change."""
+(SpiritClientChecks), server checks, a replay of recorded labels through SpiritPolicy, and then
+verify_decisions.py, to cover Trola's /decide route too."""
 import argparse
 import contextlib
 import io
@@ -61,7 +61,8 @@ class SpiritStubEngine:
             time.sleep(1.6)
         if questions is None:
             answers = {slot: dict(type='noul', noul=0.1) for slot in sd.SLOTS}
-            answers.update(scope=dict(choice='in_world', confidence=0.91), intent=dict(choice='other', confidence=0.97))
+            answers.update(scope=dict(choice='in_world', confidence=0.91), intent=dict(choice='other', confidence=0.97),
+                           topic=dict(choice='other', confidence=0.94))
             return dict(answers=answers, usage=dict(input_tokens=8))
         assert questions is sd.SPIRIT_QUESTIONS, 'The server did not pass its loaded spirit set'
         scope, intent, plan, flags = SPIRIT_STUB.get(message, ('in_world', 'other', 'none', []))
@@ -304,5 +305,5 @@ print(replayed)
 sys.stdout.flush()
 decisions = subprocess.run([sys.executable, str(HERE / 'verify_decisions.py'), '--dotnet', args.dotnet], cwd=ROOT)
 if decisions.returncode:
-    sys.exit('FAIL: the unmodified verify_decisions.py')
-print('PASS: unmodified verify_decisions.py')
+    sys.exit('FAIL: verify_decisions.py')
+print('PASS: verify_decisions.py')

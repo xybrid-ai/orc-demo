@@ -44,9 +44,8 @@ voice design; every voice has samples on the
 She runs on the [xn-ptts bridge](phonon-integration.md) (ptts 0.6.0,
 `liborc_phonon`) with the same Phonon 31m checkpoint as Trola, as a **second
 `GatekeeperLiveSpeech`** on its own GameObject with its own handle and worker.
-Like Trola's, her lines reach the voice as flowing speech text (internal full
-stops as commas; see [live speech debugging](live-speech-debug.md)), while her
-subtitles keep the authored punctuation.
+Her lines follow Trola's speech-text style (as written by default; F4 can switch
+both to flowing, see [live speech debugging](live-speech-debug.md)).
 Trola stays on [zzz rc.9](phonon-zzz.md) (`liborc_phonon_zzz`) with
 `trola_clone`, 6 threads and one trimmed clip per line, so by default
 `liborc_phonon` is hers alone; no SDK, scene or bundle changes. xn sizes its

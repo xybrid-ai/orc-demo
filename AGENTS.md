@@ -19,5 +19,6 @@ with a stock Apache-2.0 voice: stage it with python3 tools/setup_spirit_voice.py
 Her lines are authored, chosen by rules from d1 /spirit labels; see docs/spirit.md.
 Speech input (hold Left Option) uses Whisper through the SDK: stage it with
 python3 tools/setup_asr.py; see docs/voice-input.md.
+Subtitles reveal phrase by phrase (display only, speech unchanged); see docs/subtitles.md.
 Default validation: one Editor confirmation; no builds or measurement suites
 unless explicitly requested. See README.md for external dependency limits.
