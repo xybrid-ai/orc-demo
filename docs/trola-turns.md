@@ -31,10 +31,11 @@ turn, a hand-back after every turn, and that the JSON matches the asset.
 
 ## Writing for the voice
 
-Phonon hears each full stop as the end of a sentence, so Trola's voice falls and restarts at every one. The game
-speaks a line with its internal full stops turned into commas (see `docs/live-speech-debug.md`, Speech text), but
-writing helps more: one or two full sentences joined by commas and small words ("so", "but", "and") flow better than
-a chain of fragments ("Right. Go on. So talk."). Keep `?` where a question really is one (it rises mid-line; at the end
+Phonon hears each full stop as the end of a sentence, so Trola's voice falls and restarts at every one. A blanket
+comma rewrite lost to the written line in blind listening (see `docs/live-speech-debug.md`, Speech text), so it is
+off by default; writing is the lever. Where a short tag would stand alone ("Walk.", "Stop there."), join it with a
+word ("Walk away, while...", "...teeth, so before..."); a deliberate beat ("Right. Last chance. Surprise me.",
+"Oi. I was speaking.") can keep its full stops. Keep `?` where a question really is one (it rises mid-line; at the end
 of a line it falls in this voice), end each line with one mark, and avoid dashes and ellipses: the text frontend
 deletes dashes and turns ellipses into full stops.
 

@@ -5,7 +5,7 @@
   "lines": [
     {
       "id": "name-ask",
-      "text": "Stop there. This gate has teeth. Before you lose yours, give me your name.",
+      "text": "Stop there, this gate has teeth, so before you lose yours, give me your name.",
       "emotion": "contempt",
       "intensity": 0.5,
       "patience_delta": 0,
@@ -248,7 +248,7 @@
     },
     {
       "id": "camp-again",
-      "text": "Back to the camp? Fine. The stew's so bad the rats bring their own.",
+      "text": "Back to the camp? Fine, the stew's so bad the rats bring their own.",
       "emotion": "amusement",
       "intensity": 0.6,
       "patience_delta": 0,
@@ -275,7 +275,7 @@
     },
     {
       "id": "reckoning-open-high",
-      "text": "Right. Pay a fair toll, or make me laugh.",
+      "text": "Right, pay a fair toll, or make me laugh.",
       "emotion": "amusement",
       "intensity": 0.6,
       "patience_delta": 0,
@@ -337,8 +337,8 @@
       "delivery": "roar"
     },
     {
-      "id": "refuse-3",
-      "text": "Walk. While it's still your choice.",
+      "id": "refuse-walk",
+      "text": "Walk away, while it's still your choice.",
       "emotion": "anger",
       "intensity": 1.0,
       "patience_delta": 0,
@@ -795,7 +795,7 @@
           "max_patience": 2,
           "line_ids": [
             "refuse-toll",
-            "refuse-3"
+            "refuse-walk"
           ],
           "revisit_line_ids": [],
           "outcome": "Refused"
@@ -822,7 +822,7 @@
           "max_patience": 3,
           "line_ids": [
             "refuse-joke",
-            "refuse-3"
+            "refuse-walk"
           ],
           "revisit_line_ids": [],
           "outcome": "Refused"
@@ -850,7 +850,7 @@
           "max_patience": 5,
           "line_ids": [
             "refuse-out",
-            "refuse-3"
+            "refuse-walk"
           ],
           "revisit_line_ids": [],
           "outcome": "Refused"

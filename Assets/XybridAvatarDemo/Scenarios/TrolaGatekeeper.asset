@@ -49,7 +49,7 @@ MonoBehaviour:
   lines:
   - id: name-ask
     recordedMood: 0
-    text: Stop there. This gate has teeth. Before you lose yours, give me your name.
+    text: Stop there, this gate has teeth, so before you lose yours, give me your name.
     emotion: contempt
     intensity: 0.5
     patience_delta: 0
@@ -319,7 +319,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: camp-again
     recordedMood: 0
-    text: Back to the camp? Fine. The stew's so bad the rats bring their own.
+    text: Back to the camp? Fine, the stew's so bad the rats bring their own.
     emotion: amusement
     intensity: 0.6
     patience_delta: 0
@@ -349,7 +349,7 @@ MonoBehaviour:
     mouthCues: {fileID: 0}
   - id: reckoning-open-high
     recordedMood: 0
-    text: Right. Pay a fair toll, or make me laugh.
+    text: Right, pay a fair toll, or make me laugh.
     emotion: amusement
     intensity: 0.6
     patience_delta: 0
@@ -417,16 +417,16 @@ MonoBehaviour:
     delivery: roar
     audio: {fileID: 0}
     mouthCues: {fileID: 0}
-  - id: refuse-3
+  - id: refuse-walk
     recordedMood: 0
-    text: Walk. While it's still your choice.
+    text: Walk away, while it's still your choice.
     emotion: anger
     intensity: 1
     patience_delta: 0
     ends_scene: 1
     delivery: quiet threat
-    audio: {fileID: 8300000, guid: eaba19e30739140fc8169fc8a62fcf9b, type: 3}
-    mouthCues: {fileID: 4900000, guid: bfb994f3da129499da94d7825b7fca2d, type: 3}
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
   - id: idle-1
     recordedMood: 0
     text: Still thinking? Must be a very small thought.

@@ -67,11 +67,12 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     // persistentDataPath subfolder for the original WAVs, read when the worker starts. A second voice instance
     // sets its own; NonSerialized so the scene never changes.
     [NonSerialized] public string debugFolder = "TrolaSpeechDebug";
-    // What Phonon is given for a whole line: the authored text, or GatekeeperSpeechText.Flow of it (internal full stops
-    // as commas, so the voice does not restart at each one). One style for every instance, Trola's and Vesper's; F4
-    // toggles and remembers it, -xybridSpeechText written|flowing overrides it for a run. Main thread only.
+    // What Phonon is given for a whole line: the authored text (the default: in Glenn's blind listening it beat the
+    // comma rewrite on 6 of 11 lines, which won 2), or GatekeeperSpeechText.Flow of it (internal full stops as commas).
+    // One style for every instance, Trola's and Vesper's; F4 toggles and remembers it, -xybridSpeechText written|flowing
+    // overrides it for a run. Main thread only.
     public enum SpeechStyle { AsWritten, Flowing }
-    public static SpeechStyle Style { get; private set; } = SpeechStyle.Flowing;
+    public static SpeechStyle Style { get; private set; } = SpeechStyle.AsWritten;
     private const string SpeechStylePreference = "Trola.speechStyle";
     private static bool styleLoaded;
     public static string StyleName(SpeechStyle style) => style == SpeechStyle.Flowing ? "flowing" : "written";
