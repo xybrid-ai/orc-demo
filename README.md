@@ -10,12 +10,13 @@ Trola answers each player act with one spoken line; see
 
 ## Open locally
 
-Use **Unity 6000.6.4f1**, URP 17.6.0 and Xybrid Unity SDK **0.9.0**
+Use **Unity 6000.6.4f1**, URP 17.6.0 and Xybrid Unity SDK **0.16.0**
 (resolved through OpenUPM by `Packages/manifest.json`). This project currently
 speaks with the public **Phonon 31m** (`gradium/phonon-31m-en`) through
 **zzz v0.1.0-rc.9** (pinned to `5de2a037`) on CPU/macOS ARM64, keeps
 **ptts 0.6.0** selectable on the same checkpoint, and
-retains the direct zzz **rc.4** Kitten bridge. The SDK remains 0.9.0.
+retains the direct zzz **rc.4** Kitten bridge. The standard SDK native omits the zzz
+engine, so both voices keep their own bridges.
 
 1. Clone this repository. No Git LFS is required.
 2. Restore the local dependencies below. With an existing licensed installation:
@@ -51,8 +52,10 @@ hashes. Imported/derived assets stay local even outside `Assets/Synty`.
   binaries, extracted meshes, textures or shaders are redistributed here.
 - Cinzel font and locally generated authored/reaction audio at their original
   paths. These are also external pending explicit provenance/license packaging.
-- `Assets/Xybrid/Plugins/macOS/libxybrid_bolt.dylib` from the installed **0.9.0**
-  native bundle, preserving plugin importer metadata and the version marker.
+- `Assets/Xybrid/Plugins/macOS/libxybrid_bolt.dylib` from the **0.16.0** native
+  bundle, preserving plugin importer metadata and the version marker. The SDK
+  downloads it (SHA-256 checked) the first time the project opens with a
+  different marker; that first Play can pause while it does.
   The obsolete `libxybrid_ffi.dylib` is not part of this project's dependency set.
 - `Assets/XybridAvatarDemo/Plugins/macos-arm64/libzzz_embed.dylib`, the direct
   rc.4 bridge. Keep its provenance with the model bundle. This demo's validated

@@ -127,7 +127,10 @@ public sealed class GatekeeperNpcModel : MonoBehaviour
         var options = new XybridRunOptions(config, Array.Empty<XybridAbortSignal>(), false, 0, null);
         // Keep history in the immutable turn prompt, rather than growing a second
         // native history. The embedded GGUF chat template formats the system card.
-        ulong stream = model.RunStreamWithContext(Text(prompt), context, options);
+        // A cancelled turn (restart, new input) also stops the native run, not only the token loop below.
+        using var nativeCancel = new XybridCancellationToken();
+        using var registration = cancellation.Register(nativeCancel.Cancel);
+        ulong stream = model.RunStreamWithContext(Text(prompt), context, options, nativeCancel);
         try
         {
             while (true)

@@ -16,7 +16,7 @@ does not bypass encoder checks or reinterpret older beta embeddings.
 ## Local setup
 
 Use an Apple Silicon Mac, macOS 13+, Rust 1.98.0 (`rustup toolchain install 1.98.0`) and the existing Unity 6000.6.4f1 /
-Xybrid 0.9.0 installation. Supply the Phonon 31m folder described in
+Xybrid 0.16.0 installation. Supply the Phonon 31m folder described in
 [zzz rc.9](phonon-zzz.md#build-and-stage), containing `config.json`,
 `tokenizer.json` and `model.q8.gguf`, plus your cloned safetensors. ptts 0.4.0-rc.1
 misreads 31m's config, so do not stage 31m with an older bridge build:

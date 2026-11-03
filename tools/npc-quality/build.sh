@@ -3,10 +3,10 @@ set -euo pipefail
 cd "$(dirname "$0")"
 sdk_root="$(cd "${1:?usage: build.sh SDK_ROOT [DOTNET]}" && pwd)"
 dotnet_cli="${2:-dotnet}"
-mkdir -p ../../.context/npc-quality/sdk-0.9
-# Source compatibility stays on the demo's SDK version; no native SDK upgrade.
-git -C "$sdk_root" archive v0.9.0 bindings/unity/Runtime/Bolt | tar -x -C ../../.context/npc-quality/sdk-0.9
-"$dotnet_cli" build ScenarioChecks.csproj -p:SdkRoot="$(cd ../../.context/npc-quality/sdk-0.9 && pwd)" --nologo -v:q
+mkdir -p ../../.context/npc-quality/sdk-0.16
+# Source compatibility on the demo's pinned SDK version.
+git -C "$sdk_root" archive v0.16.0 bindings/unity/Runtime/Bolt | tar -x -C ../../.context/npc-quality/sdk-0.16
+"$dotnet_cli" build ScenarioChecks.csproj -p:SdkRoot="$(cd ../../.context/npc-quality/sdk-0.16 && pwd)" --nologo -v:q
 python3 - "$sdk_root" <<'PYBUILD'
 from pathlib import Path
 import sys,json

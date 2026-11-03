@@ -1,7 +1,7 @@
 # Trola decision layer
 
 The first implementation separates interpretation, game policy and spoken
-wording. Xybrid stays at 0.9.0; the voice pipeline is unchanged.
+wording. The voice pipeline is unchanged.
 
 ## Live behavior
 
@@ -113,7 +113,7 @@ local server.
 ## Verification
 
 The existing headless harness compiles the actual policy, writer parser and line
-source with Xybrid 0.9.0 bindings. After preparing that harness as described in
+source with the pinned Xybrid bindings. After preparing that harness as described in
 `tools/npc-quality/README.md`:
 
 ```sh
