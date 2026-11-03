@@ -16,7 +16,8 @@ public sealed class GatekeeperLineTiming
     public static float Overlap(long from, long to, long windowStart, long windowEnd) =>
         from == 0 || to == 0 ? 0 : Math.Max(0, Ms(Math.Max(from, windowStart), Math.Min(to, windowEnd)));
 
-    public string id = "", text = "", trigger = "", voice = "", fallback = "None";
+    // speech: the words the voice was given (GatekeeperSpeechText.Flow of text for a flowing Phonon line), else text.
+    public string id = "", text = "", speech = "", trigger = "", voice = "", fallback = "None";
     public int words, characters;
     public float audioSeconds;
     // Counted milliseconds; they add up to totalMs.

@@ -67,10 +67,31 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     // persistentDataPath subfolder for the original WAVs, read when the worker starts. A second voice instance
     // sets its own; NonSerialized so the scene never changes.
     [NonSerialized] public string debugFolder = "TrolaSpeechDebug";
+    // What Phonon is given for a whole line: the authored text, or GatekeeperSpeechText.Flow of it (internal full stops
+    // as commas, so the voice does not restart at each one). One style for every instance, Trola's and Vesper's; F4
+    // toggles and remembers it, -xybridSpeechText written|flowing overrides it for a run. Main thread only.
+    public enum SpeechStyle { AsWritten, Flowing }
+    public static SpeechStyle Style { get; private set; } = SpeechStyle.Flowing;
+    private const string SpeechStylePreference = "Trola.speechStyle";
+    private static bool styleLoaded;
+    public static string StyleName(SpeechStyle style) => style == SpeechStyle.Flowing ? "flowing" : "written";
+    public static void SetStyle(SpeechStyle style)
+    {
+        Style = style; styleLoaded = true;
+        PlayerPrefs.SetString(SpeechStylePreference, StyleName(style)); PlayerPrefs.Save();
+    }
+    private static bool TryParseStyle(string value, out SpeechStyle style)
+    {
+        style = string.Equals(value, "written", StringComparison.OrdinalIgnoreCase) ? SpeechStyle.AsWritten : SpeechStyle.Flowing;
+        return style == SpeechStyle.AsWritten || string.Equals(value, "flowing", StringComparison.OrdinalIgnoreCase);
+    }
+    // Whether lines prepared now are spoken flowing: Phonon whole lines only, since complete clauses need their own endings.
+    public bool FlowsSpeech => provider == Provider.Phonon && phononWholeLines && Style == SpeechStyle.Flowing;
 
     public sealed class Generated
     {
-        public string text, cues, lipSyncError, debugAudioPath;
+        // text: the line (or clause) as displayed; speechText: the words the voice was given, Flow(text) when flowing.
+        public string text, speechText, cues, lipSyncError, debugAudioPath;
         public Task<Generated>[] clauses;
         public double totalSynthesisSeconds, totalAudioSeconds;
         public byte[] pcm;
@@ -93,7 +114,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
     {
         public string text, rhubarb;
         public Fault fault;
-        public bool warmup;
+        public bool warmup, flow;
         public float hangSeconds, lipSyncTimeout, budget;
         public long requestedAt;
         public CancellationToken session;
@@ -141,6 +162,14 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         var args = Environment.GetCommandLineArgs();
         int speechAt = Array.IndexOf(args, "-xybridSpeech");
         if (speechAt >= 0 && speechAt + 1 < args.Length && Enum.TryParse(args[speechAt + 1], true, out Provider selected)) provider = selected;
+        // Once per domain, so a later instance (Vesper's engine) cannot undo an F4 toggle.
+        if (!styleLoaded)
+        {
+            styleLoaded = true;
+            if (TryParseStyle(PlayerPrefs.GetString(SpeechStylePreference, ""), out var saved)) Style = saved;
+            int styleAt = Array.IndexOf(args, "-xybridSpeechText");
+            if (styleAt >= 0 && styleAt + 1 < args.Length && TryParseStyle(args[styleAt + 1], out var forced)) Style = forced;
+        }
         if (Array.IndexOf(args, "-xybridKittenSentenceChunks") >= 0) sentenceChunks = true;
         if (Array.IndexOf(args, "-xybridKittenBatch") >= 0) streamKitten = false;
         int at = Array.IndexOf(args, "-xybridVoiceFault");
@@ -201,7 +230,7 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
         {
             text = resolvedText, session = session.Token, rhubarb = RhubarbPath,
             fault = simulatedFault, hangSeconds = simulatedHangSeconds, lipSyncTimeout = lipSyncTimeout, budget = preparationTimeout,
-            requestedAt = GatekeeperLineTiming.Now
+            requestedAt = GatekeeperLineTiming.Now, flow = Style == SpeechStyle.Flowing // read here, so a toggle never races the worker
         };
         // Observe failures even when a restart abandons a prefetch.
         request.completion.Task.ContinueWith(t => { var ignored = t.Exception; },
@@ -313,6 +342,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                         if (request.fault == Fault.SynthesisHangs) await Task.Delay(TimeSpan.FromSeconds(request.hangSeconds), cancel.Token).ConfigureAwait(false);
                         if (request.fault == Fault.SynthesisFails) throw new InvalidOperationException("Simulated synthesis failure.");
                         NativeCallRunning = true;
+                        // A flowing whole line is spoken as GatekeeperSpeechText.Flow; clauses (Kitten, Kokoro) and the warm-up as written.
+                        bool flowing = wholeLines && request.flow && !request.warmup;
+                        string speech = flowing ? GatekeeperSpeechText.Flow(request.text) : request.text;
                         string[] texts = request.warmup || wholeLines ? new[] { request.text } : SplitClauses(request.text);
                         var completions = texts.Select(_ => new TaskCompletionSource<Generated>(TaskCreationOptions.RunContinuationsAsynchronously)).ToArray();
                         foreach (var completion in completions) Observe(completion.Task);
@@ -325,13 +357,14 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                             {
                                 cancel.Token.ThrowIfCancellationRequested();
                                 long clauseStart = GatekeeperLineTiming.Now;
-                                var spoken = model.Synthesize(texts[i], cancel.Token);
+                                string speechText = flowing ? speech : texts[i];
+                                var spoken = model.Synthesize(speechText, cancel.Token);
                                 if (spoken.completion == SpeechCompletion.Cancelled) throw new OperationCanceledException(cancel.Token);
                                 byte[] pcm = spoken.pcm;
                                 if (pcm == null || pcm.Length < 2 || pcm.Length % 2 != 0) throw new InvalidOperationException("TTS returned no valid PCM.");
                                 int generatedBytes = pcm.Length; // RTF stays synthesis over generated (untrimmed) audio, as for Kitten.
                                 if (wholeLines && !request.warmup) pcm = GatekeeperSpeechTrim.Tighten(pcm, spoken.sampleRate == 0 ? 24000 : (int)spoken.sampleRate);
-                                var data = new Generated { text = texts[i], pcm = pcm, outcome = spoken,
+                                var data = new Generated { text = texts[i], speechText = speechText, pcm = pcm, outcome = spoken,
                                     synthesisSeconds = spoken.synthesisSeconds, requestedAt = request.requestedAt,
                                     synthesisStartedAt = clauseStart, synthesisEndedAt = GatekeeperLineTiming.Now, debugAudioPath = debugPath };
                                 if (first == null) { first = data; first.clauses = completions.Select(c => c.Task).ToArray(); }
@@ -339,7 +372,8 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                                 first.totalAudioSeconds += generatedBytes / 48000.0;
                                 collected.Write(pcm, 0, pcm.Length);
                                 spoken.pcm = null;
-                                var clauseRequest = new Request { text = texts[i], rhubarb = request.rhubarb, fault = request.fault, lipSyncTimeout = request.lipSyncTimeout };
+                                // Rhubarb's --dialogFile gets the words as spoken.
+                                var clauseRequest = new Request { text = speechText, rhubarb = request.rhubarb, fault = request.fault, lipSyncTimeout = request.lipSyncTimeout };
                                 // Analysis owns its own cancellation registration; the synthesis worker can move on.
                                 var analysisCancel = CancellationTokenSource.CreateLinkedTokenSource(owner.lifetime.Token, request.session);
                                 data.analysis = Task.Run(async () =>
@@ -365,7 +399,9 @@ public sealed class GatekeeperLiveSpeech : MonoBehaviour
                             {
                                 Directory.CreateDirectory(debugRoot);
                                 WriteWav(debugPath, collected.ToArray());
-                                File.WriteAllText(Path.ChangeExtension(debugPath, ".txt"), request.text);
+                                // First line as before, the line as displayed; then what the voice was given, and in which style.
+                                File.WriteAllText(Path.ChangeExtension(debugPath, ".txt"), request.text + "\nspeech: " + speech
+                                    + "\nstyle: " + StyleName(flowing ? SpeechStyle.Flowing : SpeechStyle.AsWritten) + "\n");
                             }
                             stalled = false;
                         }

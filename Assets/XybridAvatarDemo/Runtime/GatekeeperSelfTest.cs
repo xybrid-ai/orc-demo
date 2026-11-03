@@ -26,6 +26,8 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
     [Serializable] public sealed class LineRecord
     {
         public string id, text, emotion, expectedFamily, family = "", fallback, failure;
+        // What the voice was given for the line's first clip, and what it should have been.
+        public string speechText = "", expectedSpeech = "";
         public bool live, audible, subtitleShown = true;
         public int cues, frames, jawOpenFrames;
         public float preparationSeconds, synthesisSeconds, analysisSeconds, deliverySeconds, readableSeconds, jawMin = 100, jawMax;
@@ -406,6 +408,9 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
             string.Join(" ", Result.states.Select(m => m.state + ":" + F(m.seconds) + "s/still " + F(m.longestStillSeconds) + "s/" + m.blinks + " blinks")));
         Check(Result.longestFrameSeconds < .5f, "no frame hitch", "longest frame " + F(Result.longestFrameSeconds) + " s (" + Result.longestFrameAt + ")");
         Check(errors == 0, "no errors or exceptions logged", string.Join(" | ", Result.logs.Where(m => m.StartsWith("Error", StringComparison.Ordinal) || m.StartsWith("Exception", StringComparison.Ordinal)).Take(3)));
+        var voiced = Result.lines.Where(l => l.speechText.Length > 0).ToList();
+        Check(voiced.All(l => l.speechText == l.expectedSpeech), "every voiced line was given " + (c.liveSpeech.FlowsSpeech ? "its flowing speech text" : "its text as written"),
+            string.Join(" | ", voiced.Where(l => l.speechText != l.expectedSpeech).Take(3).Select(l => l.id + ": '" + l.speechText + "', expected '" + l.expectedSpeech + "'")));
     }
 
     // ---------- Observation ----------
@@ -413,8 +418,13 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
     private void OnLine(GatekeeperScenario.Line spoken)
     {
         bool silent = c.CurrentFallback == GatekeeperController.VoiceFallback.SubtitleOnly;
+        var voice = c.LastGenerated; var engine = c.liveSpeech;
+        bool whole = engine.provider == GatekeeperLiveSpeech.Provider.Phonon && engine.phononWholeLines;
         line = new LineRecord
         {
+            // Phonon speaks the whole line, flowed unless the style is as written; other voices speak each clause as written.
+            speechText = voice?.speechText ?? "",
+            expectedSpeech = voice == null ? "" : engine.FlowsSpeech ? GatekeeperSpeechText.Flow(spoken.text) : whole ? spoken.text : voice.text,
             id = spoken.id, text = spoken.text, emotion = spoken.emotion, live = c.CurrentWasLive, fallback = c.CurrentFallback.ToString(),
             failure = c.CurrentFallback == GatekeeperController.VoiceFallback.None ? "" : c.LastVoiceFailure,
             cues = silent ? 0 : c.character.CueCount, preparationSeconds = c.PlaybackPreparationSeconds, readableSeconds = c.ReadableSeconds(spoken.text),

@@ -83,6 +83,7 @@ public sealed class GatekeeperTimingOverlay : MonoBehaviour
         text.Append('\n').Append(title).Append(": ").Append(t.id).Append(", ").Append(t.words).Append(" words, ")
             .Append(t.audioSeconds.ToString("0.0", CultureInfo.InvariantCulture)).Append(" s audio\n")
             .Append("  ").Append(t.voice).Append(t.fallback != "None" ? ", fallback " + t.fallback : "").Append(", after ").Append(t.trigger).Append('\n');
+        if (!string.IsNullOrEmpty(t.speech) && t.speech != t.text) Wrapped("  Spoken as: ", t.speech, 60);
         Row("First sound (reaction)", t.firstSoundMs);
         Row("First word (reply onset)", t.firstWordMs);
         if (t.reaction.Length > 0) text.Append("  Reaction: ").Append(t.reaction).Append('\n');
@@ -96,6 +97,19 @@ public sealed class GatekeeperTimingOverlay : MonoBehaviour
         Row("Audio clip creation", t.clipMs);
         Row("Playback start", t.playbackStartMs);
         text.Append("  ").Append(Pad(t.fallback == "SubtitleOnly" ? "Total to subtitle" : "Total to reply audio", 30)).Append(Left(Ms(t.totalMs), 7)).Append(" ms\n");
+    }
+    // The box does not wrap; a long line breaks at spaces, indented under its label, about as wide as the table below.
+    private void Wrapped(string label, string body, int width)
+    {
+        text.Append(label);
+        int column = 0;
+        foreach (string word in body.Split(' '))
+        {
+            if (column > 0 && column + 1 + word.Length > width) { text.Append('\n').Append(' ', label.Length); column = 0; }
+            else if (column > 0) { text.Append(' '); column++; }
+            text.Append(word); column += word.Length;
+        }
+        text.Append('\n');
     }
     private void Row(string label, float ms, float raw = -1)
     {

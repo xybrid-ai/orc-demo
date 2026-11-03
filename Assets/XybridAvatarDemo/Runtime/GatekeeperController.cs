@@ -511,6 +511,8 @@ public sealed class GatekeeperController : MonoBehaviour
         var timing = new GatekeeperLineTiming
         {
             id = line.id, text = line.text, trigger = trigger, fallback = fallback.ToString(),
+            // Compared with the clip's own text: with Kitten, voice is one clause of the line.
+            speech = voice != null && voice.speechText != null && voice.speechText != voice.text ? voice.speechText : line.text,
             words = GatekeeperLineTiming.CountWords(line.text), characters = line.text.Length,
             audioSeconds = fallback == VoiceFallback.SubtitleOnly || character.CurrentClip == null ? 0 : voice?.stream != null ? voice.stream.DurationSeconds : character.CurrentClip.length,
             pacingMs = GatekeeperLineTiming.Ms(triggerAt, lineRequestedAt), lineSourceMs = GatekeeperLineTiming.Ms(lineRequestedAt, lineReadyAt),

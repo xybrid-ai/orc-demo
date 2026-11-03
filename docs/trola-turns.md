@@ -29,6 +29,15 @@ a joined reply and question within 135 characters with sample names, so the
 subtitle fits on two lines. `verify.py` checks the length budget, one line per
 turn, a hand-back after every turn, and that the JSON matches the asset.
 
+## Writing for the voice
+
+Phonon hears each full stop as the end of a sentence, so Trola's voice falls and restarts at every one. The game
+speaks a line with its internal full stops turned into commas (see `docs/live-speech-debug.md`, Speech text), but
+writing helps more: one or two full sentences joined by commas and small words ("so", "but", "and") flow better than
+a chain of fragments ("Right. Go on. So talk."). Keep `?` where a question really is one (it rises mid-line; at the end
+of a line it falls in this voice), end each line with one mark, and avoid dashes and ellipses: the text frontend
+deletes dashes and turns ellipses into full stops.
+
 ## Waiting, taunts and interruptions
 
 - An idle taunt at a choice checkpoint keeps the buttons live. Clicking a choice

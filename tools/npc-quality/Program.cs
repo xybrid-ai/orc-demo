@@ -69,7 +69,7 @@ class Program {
       GatekeeperScenario.Line Ask(GatekeeperPlayerInput input) {
        var l=source.NextLineAsync(conv,input,System.Threading.CancellationToken.None).GetAwaiter().GetResult();
        if(l!=null) {GatekeeperLineSources.ValidateOutput(l);conv.Encounter.ChangePatience(l.patience_delta);
-        lines.Add(new{l.id,l.text,l.emotion,l.delivery,chars=l.text.Length,words=l.text.Split(' ',StringSplitOptions.RemoveEmptyEntries).Length});}
+        lines.Add(new{l.id,l.text,speech=GatekeeperSpeechText.Flow(l.text),l.emotion,l.delivery,chars=l.text.Length,words=l.text.Split(' ',StringSplitOptions.RemoveEmptyEntries).Length});}
        return l;
       }
       var line=Ask(first);
