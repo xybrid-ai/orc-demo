@@ -233,7 +233,7 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
         yield return Until(() => { openedEarly |= gate.IsOpen && c.State != GatekeeperController.Phase.Ended; return c.State == GatekeeperController.Phase.Ended; }, 90, "the friendship ending");
         var ending = Result.lines.Skip(endingFrom).ToList();
         Check(c.Outcome == GatekeeperOutcome.Liked, "sharing the joke at high patience wins his friendship", c.Outcome + ", patience " + c.Patience);
-        Check(ending.Count == 3 && ending.All(l => l.family == "Warm" && l.audible && l.fallback == "None"), "the three friendship lines play warm, voiced and lip-synced",
+        Check(ending.Count == 2 && ending.All(l => l.family == "Warm" && l.audible && l.fallback == "None"), "the two friendship lines play warm, voiced and lip-synced",
             string.Join(" | ", ending.Select(l => l.text + " [" + l.family + "]")));
         Check(!openedEarly, "the gate stays shut until his last line ends");
         yield return Until(() => gate.IsFullyOpen, 3, "both gate doors to open");

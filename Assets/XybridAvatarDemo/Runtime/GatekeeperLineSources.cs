@@ -57,6 +57,13 @@ public static class GatekeeperLineSources
             audio = live ? null : original.audio, mouthCues = live ? null : original.mouthCues
         };
     }
+    // One utterance from a reply and the question it leads into: one synthesis, one clip, one subtitle.
+    // The reply owns the performance (emotion, intensity, delivery); slots are already resolved.
+    public static GatekeeperScenario.Line Join(GatekeeperScenario.Line reply, GatekeeperScenario.Line prompt) => new GatekeeperScenario.Line
+    {
+        id = reply.id + "+" + prompt.id, text = reply.text + " " + prompt.text, emotion = reply.emotion, intensity = reply.intensity,
+        patience_delta = reply.patience_delta + prompt.patience_delta, ends_scene = prompt.ends_scene, recordedMood = reply.recordedMood, delivery = reply.delivery
+    };
     public static void ValidateOutput(GatekeeperScenario.Line line)
     {
         if (line == null || string.IsNullOrWhiteSpace(line.text) || string.IsNullOrWhiteSpace(line.emotion)

@@ -42,6 +42,7 @@ public static class XybridAuthoredGatekeeperScene
         var live = controller.GetComponent<GatekeeperLiveSpeech>();
         if (live == null) live = Undo.AddComponent<GatekeeperLiveSpeech>(controller.gameObject);
         Undo.RecordObject(controller, "Connect authored speech"); controller.liveSpeech = live;
+        controller.subtitleHoldMaximum = Mathf.Max(controller.subtitleHoldMaximum, 10); // A voiceless whole turn (~110 characters) stays readable.
         var atmosphere = UnityEngine.Object.FindFirstObjectByType<TrolaAtmosphere>();
         if (atmosphere == null || atmosphere.fireLights == null || atmosphere.fireLights.Length < 2) throw new InvalidOperationException("The existing torch scene is required.");
         Undo.RecordObject(atmosphere, "Connect patience to torchlight"); atmosphere.gatekeeper = controller;
@@ -49,6 +50,7 @@ public static class XybridAuthoredGatekeeperScene
         if (view != null)
         {
             Undo.RecordObject(view.sentence, "Use literal slot subtitles"); view.sentence.supportRichText = false;
+            view.sentence.verticalOverflow = VerticalWrapMode.Overflow; // Same as GatekeeperView.OnEnable: a whole turn wraps to two lines.
             view.Refresh();
         }
         EditorUtility.SetDirty(scenario);

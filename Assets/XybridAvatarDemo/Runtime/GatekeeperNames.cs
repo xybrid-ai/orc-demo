@@ -24,6 +24,8 @@ public static class GatekeeperNames
         string text;
         try { text = input.Trim().Replace('\u2019', '\'').Replace('\u2018', '\'').Normalize(NormalizationForm.FormC); }
         catch (ArgumentException) { return false; }
+        // A typed answer often ends like a sentence ("Sam.", "Buy weapons!"): drop that ending, keep rejecting the rest.
+        text = text.TrimEnd('.', '!', '?', ',', ';', ':', '…', ' ');
         var clean = new StringBuilder();
         bool space = false, letter = false;
         foreach (char c in text)

@@ -318,6 +318,7 @@ public sealed class SpiritDirector : MonoBehaviour
             if (kind == GatekeeperInputKind.Choice)
             {
                 lastChoiceLabel = label ?? "";
+                tauntedSince = false; // A click can answer an idle taunt; the taunt must not make the next checkpoint a re-entry.
                 if (Checkpoint != null) Policy.NoteChoice(Checkpoint, lastChoiceLabel);
                 SpiritOption chosen = null;
                 if (Advice != null) foreach (var option in Advice.Options) if (option.Label == lastChoiceLabel) chosen = option;

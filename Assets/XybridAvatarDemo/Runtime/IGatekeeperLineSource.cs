@@ -22,8 +22,8 @@ public readonly struct GatekeeperPlayerInput
 }
 public sealed class GatekeeperChoice
 {
-    public readonly string label;
-    public GatekeeperChoice(string label) { this.label = label; }
+    public readonly string label, say;
+    public GatekeeperChoice(string label, string say = null) { this.label = label; this.say = say; }
 }
 public sealed class GatekeeperPresentation
 {
@@ -34,6 +34,8 @@ public sealed class GatekeeperPresentation
     public bool PersistentText, Ended, AwaitGate;
     public bool CanInterrupt = true, PointerInterrupts = true, ShowInterruptButton = true;
     public bool IsReaction, ProtectedReaction, WaitForPrefetch;
+    // An idle taunt at this checkpoint keeps its choices on screen and clickable; a click during it is the choice.
+    public bool TauntKeepsChoices;
     public string InterruptLabel = "Interrupt";
     public float IdleSeconds = 8, LineGapSeconds = .28f;
 }
