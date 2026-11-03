@@ -179,7 +179,7 @@ public sealed class SpiritVoice : MonoBehaviour
     {
         var option = voices.Find(v => v.Key == key);
         if (!built || option == null || option.Key == VoiceKey) return false;
-        Stop(.05f);
+        Stop(.05f, false);
         Use(option);
         warned = ""; LastFailure = "";
         CheckFiles();
@@ -424,12 +424,15 @@ public sealed class SpiritVoice : MonoBehaviour
         return clip;
     }
 
-    // Fade, cancel her pending synthesis and end any subtitle hold. Lines end silently: no LineFinished.
-    public void Stop(float fadeSeconds)
+    // Fade, cancel her pending synthesis and end any subtitle hold. Lines end silently: no LineFinished. The reveal holds
+    // while her line fades (a hide or her next line follows); keepHeard false shows it whole: a voice swap or a style
+    // toggle leaves the line up until the moment ends.
+    public void Stop(float fadeSeconds, bool keepHeard = true)
     {
         generation++;
         if (player != null) { StopCoroutine(player); player = null; }
-        queue.Clear(); current = null; IsSilentLine = false; revealVoice = null; // The reveal holds while her line fades.
+        queue.Clear(); current = null; IsSilentLine = false; revealVoice = null;
+        if (!keepHeard) RevealWhole();
         if (engine != null) engine.InterruptPending();
         prefetched.Clear();
         if (output == null) return;

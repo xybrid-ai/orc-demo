@@ -60,6 +60,9 @@ public sealed class SpiritPresence : MonoBehaviour
     private float lineAlpha, lineTarget, lineShownAt = -10, labelShownAt = -10, ghostAt = -10;
     private string lineText = "";
     private List<(int start, int length)> lineSentences = new List<(int start, int length)>();
+    private int revealVisible = -1; // what the line's markup was last built for; -1 rebuilds it
+    private float revealNewest;
+    private byte revealAlpha;
     private ThoughtMode thoughtMode;
     private string thoughtText = "";
     private float thoughtAt, thoughtAlpha;
@@ -289,7 +292,7 @@ public sealed class SpiritPresence : MonoBehaviour
     public void ShowLine(string text, bool firstOfSession)
     {
         if (!built) return;
-        lineText = text ?? ""; lineSentences = GatekeeperSubtitleTiming.Sentences(lineText); // AnimateText writes it.
+        lineText = text ?? ""; lineSentences = GatekeeperSubtitleTiming.Sentences(lineText); revealVisible = -1; // AnimateText writes it.
         nameTag.text = Spaced(spiritName); nameTag.enabled = firstOfSession;
         lineAlpha = 0; lineTarget = 1; lineShownAt = Time.unscaledTime;
     }
@@ -472,13 +475,19 @@ public sealed class SpiritPresence : MonoBehaviour
         line.rectTransform.anchoredPosition = new Vector2(0, -6 * (1 - lineAlpha)); // Drifts up 6 px as it fades in.
         // Sentence by sentence as she says them (GatekeeperView.RevealBySentence): the unspoken rest stays laid out but
         // transparent through the line's fade, and the newest sentence's fade multiplies with it. Rich text only then.
+        // Rebuilt only when its inputs change, as GatekeeperView does: a cut line holds its reveal until her next line.
         float newest = 1;
         int visible = voice != null && GatekeeperView.RevealBySentence ? voice.RevealedSentences(lineText, out newest) : int.MaxValue;
-        string shown = visible >= lineSentences.Count && newest >= 1 ? lineText
-            : GatekeeperSubtitleTiming.Markup(lineText, lineSentences, visible, newest, line.color, out _);
-        bool markup = shown != lineText;
-        if (line.supportRichText != markup) line.supportRichText = markup;
-        if (line.text != shown) line.text = shown;
+        byte alpha = ((Color32)line.color).a;
+        if (visible != revealVisible || newest != revealNewest || alpha != revealAlpha)
+        {
+            revealVisible = visible; revealNewest = newest; revealAlpha = alpha;
+            string shown = visible >= lineSentences.Count && newest >= 1 ? lineText
+                : GatekeeperSubtitleTiming.Markup(lineText, lineSentences, visible, newest, line.color, out _);
+            bool markup = shown != lineText;
+            if (line.supportRichText != markup) line.supportRichText = markup;
+            if (line.text != shown) line.text = shown;
+        }
         nameTag.color = new Color(LineColor.r, LineColor.g, LineColor.b, .7f * lineAlpha);
 
         if (fieldOpen)

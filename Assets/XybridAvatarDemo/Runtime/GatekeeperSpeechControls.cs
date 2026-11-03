@@ -107,7 +107,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         {
             GatekeeperLiveSpeech.SetStyle(flowing ? GatekeeperLiveSpeech.SpeechStyle.AsWritten : GatekeeperLiveSpeech.SpeechStyle.Flowing);
             var vesper = SpiritDirector.Instance;
-            if (vesper != null && vesper.Voice != null) vesper.Voice.Stop(.05f);
+            if (vesper != null && vesper.Voice != null) vesper.Voice.Stop(.05f, false);
         }
         GUILayout.Label("Phonon only; applies from the next line. Restart authored encounter replays the same route.");
         // Display only, Trola's and Vesper's subtitles, at once; remembered, and -xybridSubtitles sentences|whole sets it per run.

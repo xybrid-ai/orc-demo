@@ -94,17 +94,20 @@ public static class SubtitleTimingChecks
         Check(Contract(GatekeeperSubtitleTiming.Onsets(written, "Something else entirely, said by nobody at all, twice over.", clip.pcm, Rate), 2, clip.pcm.Length / 2),
             "different spoken words: the contract holds");
         Check(Contract(GatekeeperSubtitleTiming.Onsets("Use <b>this</b>. Then go.", "Use <b>this</b>. Then go.", clip.pcm, Rate), 1, clip.pcm.Length / 2), "tags in the text: the contract holds");
-        // 400 sentences against 40 s of speech, and against a 1 s clip (far over the work caps): both answer at once.
+        // 400 sentences against 40 s of speech: far over the search-step cap, so the character-share estimate (this fails
+        // if the cap stops binding). Against a 1 s clip with no pause: nothing to search, each start placed by its letters.
         string stress = string.Concat(Enumerable.Repeat("Go now. ", 400)).Trim();
         var forty = Speak(string.Concat(Enumerable.Repeat("Go now. ", 48)).Trim(), Rate, 7).pcm;
         var timer = Stopwatch.StartNew();
         var many = GatekeeperSubtitleTiming.Onsets(stress, stress, forty, Rate);
         double stressMs = timer.Elapsed.TotalMilliseconds;
-        Check(many.Length == 399 && many.Zip(many.Skip(1), (a, b) => a <= b).All(x => x), "400 sentences: 399 ordered onsets");
+        var stressSpans = GatekeeperSubtitleTiming.Sentences(stress);
+        var share = stressSpans.Skip(1).Select(s => (int)((long)(forty.Length / 2) * s.start / stress.Length));
+        Check(many.Length == 399 && many.SequenceEqual(share), "400 sentences in 40 s: the work caps give the character-share estimate");
         Check(stressMs < 500, "400 sentences align in well under a second: " + stressMs.ToString("0.0") + " ms");
         timer.Restart();
-        var capped = GatekeeperSubtitleTiming.Onsets(stress, stress, clip.pcm.Take(Rate * 2).ToArray(), Rate);
-        Check(Contract(capped, 399, Rate) && timer.Elapsed.TotalMilliseconds < 500, "400 sentences in a 1 s clip: the character-share estimate at once");
+        var unpaused = GatekeeperSubtitleTiming.Onsets(stress, stress, clip.pcm.Take(Rate * 2).ToArray(), Rate);
+        Check(Contract(unpaused, 399, Rate) && timer.Elapsed.TotalMilliseconds < 500, "400 sentences in a 1 s clip with no pause: 399 onsets at once");
 
         // ---- ClauseStarts: clause playback ----
         string clauses = "Stop there, traveller. This gate has teeth; mind them. Go!";
