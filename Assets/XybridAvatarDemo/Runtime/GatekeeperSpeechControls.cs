@@ -57,7 +57,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
-        var controller = UnityEngine.Object.FindFirstObjectByType<GatekeeperController>();
+        var controller = UnityEngine.Object.FindAnyObjectByType<GatekeeperController>();
         if (controller == null) return;
         controller.gameObject.AddComponent<GatekeeperSpeechControls>().controller = controller;
     }

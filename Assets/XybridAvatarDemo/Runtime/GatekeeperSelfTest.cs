@@ -135,8 +135,8 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
 
     private void Bind()
     {
-        c = FindFirstObjectByType<GatekeeperController>(); view = FindFirstObjectByType<GatekeeperView>();
-        gate = FindFirstObjectByType<GatekeeperBarrier>(); performer = FindFirstObjectByType<GatekeeperPerformer>();
+        c = FindAnyObjectByType<GatekeeperController>(); view = FindAnyObjectByType<GatekeeperView>();
+        gate = FindAnyObjectByType<GatekeeperBarrier>(); performer = FindAnyObjectByType<GatekeeperPerformer>();
         Require(c != null && view != null && gate != null && performer != null && c.liveSpeech != null, "Open the gatekeeper scene.");
         if (performer.Previewing) performer.EndPreview();
         foreach (var renderer in c.character.GetComponentsInChildren<SkinnedMeshRenderer>(true))
@@ -270,7 +270,7 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
     private IEnumerator Timing()
     {
         Require(c.liveSpeech.simulatedFault == GatekeeperLiveSpeech.Fault.None, "Run the timing stage without a simulated fault.");
-        var overlay = FindFirstObjectByType<GatekeeperTimingOverlay>();
+        var overlay = FindAnyObjectByType<GatekeeperTimingOverlay>();
         Check(overlay != null && overlay.gatekeeper == c, "the scene has the timing overlay");
         if (overlay != null) overlay.visible = true;
         Check(c.PreparedReactionCount == 8, "all eight authored reactions are prepared", c.PreparedReactionCount + " clips");
