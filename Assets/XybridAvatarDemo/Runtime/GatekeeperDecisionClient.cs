@@ -24,14 +24,16 @@ public sealed class GatekeeperDecisionClient
     }
     [Serializable] public sealed class Reply
     {
-        public string scope, intent;
+        public string scope, intent, topic;
         public string[] facts;
-        public float scope_confidence, intent_confidence;
+        public float scope_confidence, intent_confidence, topic_confidence;
     }
     [Serializable] public sealed class Health
     {
         public bool ready;
         public string model, revision, device, error;
+        public string[] questions;
+        public bool SupportsTopics => questions != null && Array.IndexOf(questions, "topic") >= 0;
     }
     private static readonly Dictionary<string, GatekeeperScope> Scopes = new Dictionary<string, GatekeeperScope>(StringComparer.Ordinal)
     {
@@ -48,6 +50,27 @@ public sealed class GatekeeperDecisionClient
     };
     private static readonly Dictionary<string, GatekeeperFact> Facts = new Dictionary<string, GatekeeperFact>(StringComparer.Ordinal)
     { ["player_name"] = GatekeeperFact.PlayerName, ["player_business"] = GatekeeperFact.Business, ["other_player_fact"] = GatekeeperFact.Unknown };
+    private static readonly Dictionary<string, GatekeeperTopic> Topics = new Dictionary<string, GatekeeperTopic>(StringComparer.Ordinal)
+    {
+        ["other"] = GatekeeperTopic.Other,
+        ["identity"] = GatekeeperTopic.Identity,
+        ["wall"] = GatekeeperTopic.Wall,
+        ["wall_motive"] = GatekeeperTopic.WallMotive,
+        ["food"] = GatekeeperTopic.Food,
+        ["beds"] = GatekeeperTopic.Beds,
+        ["captain"] = GatekeeperTopic.Captain,
+        ["camp"] = GatekeeperTopic.Camp,
+        ["job"] = GatekeeperTopic.Job,
+        ["day_off"] = GatekeeperTopic.DayOff,
+        ["lonely"] = GatekeeperTopic.Lonely,
+        ["self"] = GatekeeperTopic.Self,
+        ["beyond"] = GatekeeperTopic.Beyond,
+        ["fire"] = GatekeeperTopic.Fire,
+        ["humor"] = GatekeeperTopic.Humor,
+        ["trade"] = GatekeeperTopic.Trade,
+        ["repeat"] = GatekeeperTopic.Repeat,
+        ["player"] = GatekeeperTopic.Player,
+    };
     // One pooled client: no proxy lookup for loopback, and no 100-continue round trip on Mono.
     private static readonly HttpClient Http = CreateHttp();
     private static HttpClient CreateHttp()
@@ -152,11 +175,14 @@ public sealed class GatekeeperDecisionClient
             var known = GatekeeperFactQuestions.Interpret(message);
             if (known != null && known.Intent == GatekeeperDialogueIntent.PlayerFacts) facts |= known.Facts;
         }
+        bool knownTopic = Topics.TryGetValue(reply.topic ?? "", out var topic);
+        if (!knownTopic) topic = GatekeeperTopic.Other; // An older or unknown topic only loses wording specificity.
         string detail = "d1 " + reply.scope + " " + reply.scope_confidence.ToString("0.00", CultureInfo.InvariantCulture)
             + " / " + reply.intent + " " + reply.intent_confidence.ToString("0.00", CultureInfo.InvariantCulture)
             + (promoted ? " → player_facts" : statement ? " → other (not a request)" : "")
-            + (facts != GatekeeperFact.None ? " / " + facts : "") + timing;
-        return new GatekeeperDecision(scope, intent, facts, detail);
+            + (facts != GatekeeperFact.None ? " / " + facts : "") + " / topic " + (knownTopic ? reply.topic : "other (missing or unknown)")
+            + " " + reply.topic_confidence.ToString("0.00", CultureInfo.InvariantCulture) + timing;
+        return new GatekeeperDecision(scope, intent, facts, detail, topic);
     }
     private static GatekeeperDecision Unclear(string detail) => new GatekeeperDecision(GatekeeperScope.Unclear, GatekeeperDialogueIntent.Other, GatekeeperFact.None, detail);
     private static string Clip(string text, int limit) => string.IsNullOrEmpty(text) ? "" : text.Length <= limit ? text : text.Substring(0, limit);

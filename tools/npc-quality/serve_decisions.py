@@ -2,7 +2,7 @@
 """Local d1 decisions for Play Mode: the pinned checkpoint on the Apple GPU, 127.0.0.1 only.
 
 Unity's GatekeeperDecisionService posts the encounter snapshot and the player's new message.
-The reply carries scope, intent and requested player-fact slots; the game's C# policy owns
+The reply carries scope, intent, topic and requested player-fact slots; the game's C# policy owns
 every effect. Start it before or during Play Mode and leave it running across sessions.
 POST /spirit classifies a thought to Vesper, the mind voice, with its own question set and the
 same resident model; SpiritPolicy picks her authored answer.
@@ -29,9 +29,10 @@ SPEAKERS = ('Player', 'Trola')
 
 
 def questions():
-    """The two spike questions, unchanged, plus one yes/no question per player-fact slot."""
+    """Scope and intent, player-fact slots, and one topic choice, packed in a single pass."""
     asked = json.loads((ROOT / 'decision-questions.json').read_text())
     asked.update(json.loads((ROOT / 'decision-fact-slots.json').read_text()))
+    asked.update(json.loads((ROOT / 'decision-topics.json').read_text()))
     return asked
 
 
@@ -101,10 +102,11 @@ def prime_state():
 
 def summarize(answers):
     """Choice labels with their confidence; a slot is requested at P(yes) >= 0.5, d1's own reading of a noul."""
-    scope, intent = answers['scope'], answers['intent']
+    scope, intent, topic = answers['scope'], answers['intent'], answers['topic']
     slots = {slot: answers[slot]['noul'] for slot in SLOTS}
     return dict(scope=scope['choice'], scope_confidence=scope['confidence'],
                 intent=intent['choice'], intent_confidence=intent['confidence'],
+                topic=topic['choice'], topic_confidence=topic['confidence'],
                 facts=[slot for slot, p in slots.items() if p >= 0.5], fact_probabilities=slots)
 
 

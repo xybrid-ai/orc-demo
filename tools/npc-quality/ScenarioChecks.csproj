@@ -6,5 +6,6 @@
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/SpiritCore/*.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperSpeechTrim.cs"/><Compile Include="SpeechTrimChecks.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperSpeechText.cs"/><Compile Include="SpeechTextChecks.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/PlayerSpeechAudio.cs"/><Compile Include="PlayerSpeechChecks.cs"/><Compile Include="Spirit*Checks.cs"/>
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperDecision.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperFactQuestions.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperDecisionClient.cs"/>
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/FreeFormGatekeeperLineSource.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperLineSources.cs"/>
+<Compile Include="../../Assets/XybridAvatarDemo/Runtime/GatekeeperAuthoredReplies.cs"/>
 <Compile Include="../../Assets/XybridAvatarDemo/Runtime/AuthoredGatekeeperLineSource.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/IntentGatekeeperLineSource.cs"/><Compile Include="../../Assets/XybridAvatarDemo/Runtime/PlaceholderGatekeeperLineSource.cs"/>
 <Compile Include="$(SdkRoot)/bindings/unity/Runtime/Bolt/*.cs"/></ItemGroup></Project>

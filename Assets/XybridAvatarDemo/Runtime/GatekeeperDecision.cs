@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 public enum GatekeeperScope { Unclear, InWorld, OutOfWorld, RoleOverride }
 public enum GatekeeperDialogueIntent { Other, PlayerFacts, NpcQuestion, OfferRecall, AdmissionStatus, Insult, Praise, Apology, PlayerFear, Farewell }
+public enum GatekeeperTopic { Other, Identity, Wall, WallMotive, Food, Beds, Captain, Camp, Job, DayOff, Lonely, Self, Beyond, Fire, Humor, Trade, Repeat, Player }
 [Flags] public enum GatekeeperFact { None = 0, PlayerName = 1, Business = 2, Unknown = 4 }
 
 // Interpretation describes the player's message. It cannot supply game effects or facts.
@@ -13,19 +14,21 @@ public sealed class GatekeeperDecision
     public readonly GatekeeperScope Scope;
     public readonly GatekeeperDialogueIntent Intent;
     public readonly GatekeeperFact Facts;
+    public readonly GatekeeperTopic Topic;
     public readonly string Detail; // Debug text only, such as labels, confidences and latency.
-    public GatekeeperDecision(GatekeeperScope scope, GatekeeperDialogueIntent intent, GatekeeperFact facts = GatekeeperFact.None, string detail = null)
+    public GatekeeperDecision(GatekeeperScope scope, GatekeeperDialogueIntent intent, GatekeeperFact facts = GatekeeperFact.None, string detail = null,
+        GatekeeperTopic topic = GatekeeperTopic.Other)
     {
         if (!Enum.IsDefined(typeof(GatekeeperScope), scope) || !Enum.IsDefined(typeof(GatekeeperDialogueIntent), intent)
-            || (facts & ~(GatekeeperFact.PlayerName | GatekeeperFact.Business | GatekeeperFact.Unknown)) != 0)
+            || !Enum.IsDefined(typeof(GatekeeperTopic), topic) || (facts & ~(GatekeeperFact.PlayerName | GatekeeperFact.Business | GatekeeperFact.Unknown)) != 0)
             throw new ArgumentOutOfRangeException(nameof(scope), "Unknown decision label.");
-        Scope = scope; Intent = intent; Facts = facts; Detail = detail;
+        Scope = scope; Intent = intent; Facts = facts; Detail = detail; Topic = topic;
     }
 }
 
 // A local d1 adapter can implement this without changing Xybrid or the speaker.
 // Implementations must observe cancellation and map invalid/ambiguous output to Unclear.
-// While a source is unavailable, the line source keeps the path it used before decisions.
+// While a source is unavailable, the default line source uses built-in facts and neutral authored replies.
 public interface IGatekeeperDecisionSource
 {
     bool IsAvailable { get; }
