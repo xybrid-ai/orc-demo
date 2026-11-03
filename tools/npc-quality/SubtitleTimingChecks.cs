@@ -1,6 +1,8 @@
 // Headless checks for GatekeeperSubtitleTiming: the sentence splitter, the onset aligner on synthetic Phonon-like clips
 // (noise-burst words, trimmed pauses: a full stop ~420 ms, a comma ~280 ms, an interjection's comma as long as a full
 // stop), flowing speech text, hostile input, the clause mapping, the reveal clock and the subtitle markup. No WAV files.
+// Headless only: the guard keeps it (and its Color32 stub) out of a Unity compile of changed files.
+#if !UNITY_5_3_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +11,8 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using UnityEngine;
+
+namespace UnityEngine { public struct Color32 { public byte r, g, b, a; public Color32(byte r, byte g, byte b, byte a) { this.r = r; this.g = g; this.b = b; this.a = a; } } }
 
 public static class SubtitleTimingChecks
 {
@@ -214,3 +218,4 @@ public static class SubtitleTimingChecks
         return clip;
     }
 }
+#endif
