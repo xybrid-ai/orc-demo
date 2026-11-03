@@ -47,6 +47,16 @@ public sealed class SpiritVoice : MonoBehaviour
     public event Action<SpiritCue> LineStarted;
     public event Action<SpiritCue> LineFinished;
 
+    // Her line's subtitle reveal (SpiritPresence, docs/subtitles.md), as GatekeeperController.RevealedPhrases: the
+    // phrases of `text` her clip has reached and the newest one's fade; int.MaxValue (whole) for any other text, a
+    // silent line, or a line no longer playing. A cut line keeps only what was heard.
+    public int RevealedPhrases(string text, out float newestAlpha)
+    {
+        bool whole = revealed == int.MaxValue || revealText == null || text != revealText;
+        newestAlpha = whole ? 1 : revealAlpha;
+        return whole ? int.MaxValue : revealed;
+    }
+
     private sealed class Pending { public SpiritCue cue; public int token; public float requestedAt; }
     [Serializable] private sealed class Provenance { public string name = "", key = "", sha256 = ""; }
 
@@ -65,6 +75,11 @@ public sealed class SpiritVoice : MonoBehaviour
     private bool built, filesPresent, armRequested, supportedEngine, sfxBroken;
     private float armRequestedAt, fadeRate;
     private string checkpointPath = "", voicePath = "", voiceFile = "", warned = "";
+    private string revealText;
+    private GatekeeperLiveSpeech.Generated revealVoice; // the clip the reveal follows; null holds it
+    private int revealed = int.MaxValue, revealClause;
+    private float revealAlpha = 1;
+    private int[] revealClauses;
 
     public static SpiritVoice Create(Transform parent, GatekeeperController controller, SpiritLines.Voice settings)
     {
@@ -164,7 +179,7 @@ public sealed class SpiritVoice : MonoBehaviour
     {
         var option = voices.Find(v => v.Key == key);
         if (!built || option == null || option.Key == VoiceKey) return false;
-        Stop(.05f);
+        Stop(.05f, false);
         Use(option);
         warned = ""; LastFailure = "";
         CheckFiles();
@@ -289,10 +304,11 @@ public sealed class SpiritVoice : MonoBehaviour
             LastSynthesisSeconds = first.synthesisSeconds;
             LastStartSeconds = Time.realtimeSinceStartup - requested;
             float lineStarted = Time.realtimeSinceStartup;
+            int count = first.clauses?.Length ?? 1;
+            StartReveal(cue.Text, text, first, count);
             PlayClip(first.clip);
             Raise(LineStarted, cue);
             if (session != generation) yield break;
-            int count = first.clauses?.Length ?? 1;
             for (int i = 0; ; i++)
             {
                 while (session == generation && (output.isPlaying || AudioListener.pause)) yield return null;
@@ -307,20 +323,54 @@ public sealed class SpiritVoice : MonoBehaviour
                     try { clause = engine.Materialize(next); } catch (Exception error) { Warn("clause failed: " + error.Message); }
                 if (clause == null)
                 {
-                    // Keep the text readable; drop the rest of the audio.
+                    // Keep the text readable (all of it); drop the rest of the audio.
+                    RevealWhole();
                     if (next.Status != TaskStatus.RanToCompletion) Warn("clause " + (i + 2) + " of '" + cue.LineId + "' not ready");
                     float until = lineStarted + ReadableSeconds(text);
                     while (session == generation && Time.realtimeSinceStartup < until) yield return null;
                     if (session != generation) yield break;
                     break;
                 }
+                revealVoice = clause; revealClause = i + 1;
                 PlayClip(clause.clip);
             }
-            current = null;
+            current = null; RevealWhole();
             Raise(LineFinished, cue);
         }
         if (session == generation) { player = null; current = null; }
     }
+
+    // From her first phrase, following one clip's phrase onsets or each clause's ClauseStarts (the worker split
+    // `spoken`, the text it was given, with SplitClauses); a clip with neither shows the line whole.
+    private void StartReveal(string shown, string spoken, GatekeeperLiveSpeech.Generated first, int clips)
+    {
+        revealText = shown; revealVoice = first; revealClause = 0; revealed = 1; revealAlpha = 1; revealClauses = null;
+        if (clips > 1)
+        {
+            try
+            {
+                var starts = GatekeeperSubtitleTiming.ClauseStarts(spoken, GatekeeperLiveSpeech.SplitClauses(spoken), GatekeeperSubtitleTiming.Phrases(spoken));
+                if (starts.Length == clips) revealClauses = starts;
+            }
+            catch (ArgumentException) { }
+        }
+        if (clips > 1 ? revealClauses == null : first.phraseOnsets == null || first.stream != null) RevealWhole();
+    }
+
+    // Per frame: raised to what her playing clip has reached, in clip samples (a paused listener holds it).
+    private void Reveal()
+    {
+        var voice = revealVoice;
+        if (revealed == int.MaxValue || voice == null || !output.isPlaying || output.clip == null || output.clip != voice.clip) return;
+        int rate = output.clip.frequency, played = output.timeSamples, fade = Mathf.RoundToInt(GatekeeperController.RevealFadeSeconds * rate);
+        int count; float alpha;
+        if (revealClauses != null) { count = revealClauses[Mathf.Min(revealClause, revealClauses.Length - 1)]; alpha = Mathf.Clamp01(played / (float)fade); }
+        else count = GatekeeperSubtitleTiming.Reached(voice.phraseOnsets, played, Mathf.RoundToInt(GatekeeperController.RevealLeadSeconds * rate), fade, out alpha);
+        if (count > revealed) { revealed = count; revealAlpha = alpha; }
+        else if (count == revealed && alpha > revealAlpha) revealAlpha = alpha;
+    }
+
+    private void RevealWhole() { revealed = int.MaxValue; revealAlpha = 1; revealVoice = null; }
 
     private Task<GatekeeperLiveSpeech.Generated> Take(string text)
     {
@@ -335,7 +385,7 @@ public sealed class SpiritVoice : MonoBehaviour
         LastFailure = failure;
         float hold = ReadableSeconds(cue.Text);
         Warn(failure + "; her lines show as subtitles"); // No per-line hold in the text: one warning per failure.
-        IsSilentLine = true;
+        IsSilentLine = true; revealText = null; RevealWhole();
         PlaySfx(SpiritSound.Exhale, .45f);
         Raise(LineStarted, cue);
         float until = Time.realtimeSinceStartup + hold;
@@ -378,12 +428,15 @@ public sealed class SpiritVoice : MonoBehaviour
         return clip;
     }
 
-    // Fade, cancel her pending synthesis and end any subtitle hold. Lines end silently: no LineFinished.
-    public void Stop(float fadeSeconds)
+    // Fade, cancel her pending synthesis and end any subtitle hold. Lines end silently: no LineFinished. The reveal holds
+    // while her line fades (a hide or her next line follows); keepHeard false shows it whole: a voice swap or a style
+    // toggle leaves the line up until the moment ends.
+    public void Stop(float fadeSeconds, bool keepHeard = true)
     {
         generation++;
         if (player != null) { StopCoroutine(player); player = null; }
-        queue.Clear(); current = null; IsSilentLine = false;
+        queue.Clear(); current = null; IsSilentLine = false; revealVoice = null;
+        if (!keepHeard) RevealWhole();
         if (engine != null) engine.InterruptPending();
         prefetched.Clear();
         if (output == null) return;
@@ -417,6 +470,7 @@ public sealed class SpiritVoice : MonoBehaviour
         TryCreateEngine();
         // The golden rule, enforced here too: she is never heard unless Trola waits or has ended.
         if (IsSpeaking && (!SpiritSignals.Enabled || !TrolaWaitingOrEnded)) Stop(.12f);
+        Reveal();
         // Her sounds never cover his voice (the flinch gasp is cut the moment he speaks).
         if (sfx.isPlaying && controller != null && controller.State == GatekeeperController.Phase.Speaking) sfx.Stop();
         if (fadeRate > 0)

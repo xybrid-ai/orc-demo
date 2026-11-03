@@ -89,6 +89,22 @@ public sealed class GatekeeperController : MonoBehaviour
     public float PhaseElapsed => Mathf.Max(0, Time.realtimeSinceStartup - phaseStartedAt);
     public int SpeechStartedFrame { get; private set; } = -1;
     public string CurrentText { get; private set; } = "";
+    // Subtitle reveal (GatekeeperView, docs/subtitles.md): how many phrases of CurrentText the voice has reached and the
+    // newest one's fade-in (0-1); int.MaxValue shows the whole line. A line shows its first phrase until its voice starts,
+    // then follows its clip; once the line is no longer playing (finished, skipped, no voice) it shows whole. It never
+    // shrinks within a line, so an interrupted line keeps only what was heard until the next line replaces it.
+    public int RevealedPhrases(out float newestAlpha)
+    {
+        bool whole = revealed == int.MaxValue || IsPreparedReaction;
+        newestAlpha = whole ? 1 : revealAlpha;
+        return whole ? int.MaxValue : revealed;
+    }
+    // A phrase shows 100 ms before its onset (the onset is where speech resumes; a pause before a sentence lasts 190-440
+    // ms, a comma's can be shorter, so its phrase may show just before that pause), then fades in over 150 ms, in clip time.
+    public const float RevealLeadSeconds = .1f, RevealFadeSeconds = .15f;
+    private int revealed = int.MaxValue;
+    private float revealAlpha = 1;
+    private int[] revealClauses; // ClauseStarts while the line plays clause by clause; null for one clip per line
     public string CurrentLineId { get; private set; } = "";
     public GatekeeperScenario.Line CurrentLine { get; private set; }
     public bool IsWaitingForPlayer => IsWaiting;
@@ -165,7 +181,7 @@ public sealed class GatekeeperController : MonoBehaviour
         if (scenario == null || character == null || liveSpeech == null)
         { Halt("Assign scenario, character and live speech."); return false; }
         if (!GatekeeperLineSources.ValidateScenario(scenario, out var error)) { Halt(error); return false; }
-        liveSpeech.ResetSession(); liveSpeech.Warm(); prefetch.Clear(); LastGenerated = null; CurrentText = ""; CurrentWasLive = false;
+        liveSpeech.ResetSession(); liveSpeech.Warm(); prefetch.Clear(); LastGenerated = null; CurrentText = ""; CurrentWasLive = false; RevealWhole();
         source = GatekeeperLineSources.Create(scenario, conversation?.AssignedNameIndex ?? 0, out conversation);
         Encounter.PatienceChanged += ForwardPatience;
         PatienceChanged?.Invoke(Patience, Patience);
@@ -176,7 +192,7 @@ public sealed class GatekeeperController : MonoBehaviour
     public void Suspend()
     {
         if (suspended) return;
-        Cancel(); suspended = true; CurrentText = ""; CurrentLine = null;
+        Cancel(); suspended = true; CurrentText = ""; CurrentLine = null; RevealWhole();
         SetState(Phase.Inactive);
     }
     public void Resume() { if (!suspended) return; suspended = false; Restart(); }
@@ -327,6 +343,7 @@ public sealed class GatekeeperController : MonoBehaviour
         SetState(Phase.Inactive);
         CurrentText = line.text; CurrentLineId = line.id; CurrentLine = line;
         CurrentWasLive = true;
+        revealed = 1; revealAlpha = 1; revealClauses = null; // Its first phrase until the voice starts.
         debugLine = new DebugLine { line = line, patienceBefore = Patience, patienceAfter = Patience };
         DebugLines.Add(debugLine);
         LastGenerated = null;
@@ -395,6 +412,7 @@ public sealed class GatekeeperController : MonoBehaviour
         SetState(Phase.Speaking);
         var firstClause = LastGenerated;
         int clauseCount = firstClause?.clauses?.Length ?? 1;
+        if (clauseCount > 1) revealClauses = ClauseReveal(line.text, clauseCount);
         for (int clauseIndex = 0; clauseIndex < clauseCount && version == revision; clauseIndex++)
         {
             if (clauseIndex > 0)
@@ -419,6 +437,7 @@ public sealed class GatekeeperController : MonoBehaviour
         {
             if (HasQueuedReply && character.IsPlaybackPaused) character.ResumePlayback();
             if (!character.speech.isPlaying && !character.IsPlaybackPaused && !AudioListener.pause) break;
+            Reveal(clauseIndex);
             if (LastGenerated?.stream != null)
             {
                 CurrentLineSeconds = LastGenerated.stream.DurationSeconds;
@@ -454,7 +473,35 @@ public sealed class GatekeeperController : MonoBehaviour
             StartCoroutine(FinishAnalysisTiming(timing, LastGenerated));
         if (version == revision) character.StopSpeech();
         }
+        if (version == revision) RevealWhole();
     }
+    // Raises the reveal to what the clip playing now has reached: its phrase onsets (one clip per line) or its clause's
+    // ClauseStarts. In clip samples, so a paused clip holds it and pitch does not matter. A clip without either (a streamed
+    // line, or no onsets) shows the line whole.
+    private void Reveal(int clause)
+    {
+        var output = character.speech; var voice = LastGenerated;
+        if (revealed == int.MaxValue || output == null || voice == null || output.clip == null || output.clip != voice.clip) return;
+        int rate = output.clip.frequency, played = output.timeSamples, fade = Mathf.RoundToInt(RevealFadeSeconds * rate);
+        int count; float alpha;
+        if (revealClauses != null) { count = revealClauses[Mathf.Min(clause, revealClauses.Length - 1)]; alpha = Mathf.Clamp01(played / (float)fade); }
+        else if (voice.phraseOnsets != null && voice.stream == null)
+            count = GatekeeperSubtitleTiming.Reached(voice.phraseOnsets, played, Mathf.RoundToInt(RevealLeadSeconds * rate), fade, out alpha);
+        else { RevealWhole(); return; }
+        if (count > revealed) { revealed = count; revealAlpha = alpha; }
+        else if (count == revealed && alpha > revealAlpha) revealAlpha = alpha;
+    }
+    // The worker split this line with SplitClauses; null (the whole line) if that no longer gives one entry per clip.
+    private static int[] ClauseReveal(string text, int clips)
+    {
+        try
+        {
+            var starts = GatekeeperSubtitleTiming.ClauseStarts(text, GatekeeperLiveSpeech.SplitClauses(text), GatekeeperSubtitleTiming.Phrases(text));
+            return starts.Length == clips ? starts : null;
+        }
+        catch (ArgumentException) { return null; }
+    }
+    private void RevealWhole() { revealed = int.MaxValue; revealAlpha = 1; revealClauses = null; }
     private void ObserveReaction()
     {
         var output = character.speech;
@@ -490,7 +537,7 @@ public sealed class GatekeeperController : MonoBehaviour
     private IEnumerator HoldSubtitle(GatekeeperScenario.Line line, int version, float started, string failure)
     {
         character.StopSpeech();
-        LastGenerated = null; CurrentFallback = VoiceFallback.SubtitleOnly;
+        LastGenerated = null; CurrentFallback = VoiceFallback.SubtitleOnly; RevealWhole();
         float hold = ReadableSeconds(line.text);
         ReportVoiceFailure(line, failure + ". Showing the subtitle for " + hold.ToString("0.0") + " s without audio");
         CurrentLineSeconds = hold; PlaybackPreparationSeconds = Time.realtimeSinceStartup - started;
@@ -573,7 +620,7 @@ public sealed class GatekeeperController : MonoBehaviour
         requestCancellation.Cancel();
         if (character != null) character.StopSpeech();
         if (liveSpeech != null) liveSpeech.ResetSession();
-        prefetch.Clear(); CurrentText = "Something went wrong at the gate. Try again."; ClearIdleHolds();
+        prefetch.Clear(); CurrentText = "Something went wrong at the gate. Try again."; RevealWhole(); ClearIdleHolds();
         SetState(Phase.VoiceFailed); Debug.LogError("[Gatekeeper] " + error, this);
     }
     private void OnDisable()

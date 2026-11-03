@@ -10,6 +10,8 @@ Trola answers each player act with one spoken line; see
 [docs/trola-turns.md](docs/trola-turns.md) before editing his script.
 Hold Left Option to talk instead of typing (Whisper, on device; stage it with
 `python3 tools/setup_asr.py`, see [docs/voice-input.md](docs/voice-input.md)).
+Subtitles appear phrase by phrase as Trola and Vesper speak; see
+[docs/subtitles.md](docs/subtitles.md).
 
 ## Open locally
 

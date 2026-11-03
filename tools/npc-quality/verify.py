@@ -99,5 +99,7 @@ try:
     assert flow["passed"],flow
     voice=adapter.ask(dict(command="spirit",suite="PlayerSpeechChecks"))
     assert voice["passed"],voice
-    print("PASS: names ("+str(len(names))+" answers, "+str(len(businesses))+" businesses), asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+"), speech text ("+flow["checks"]+"), player speech audio ("+voice["checks"]+")")
+    subs=adapter.ask(dict(command="spirit",suite="SubtitleTimingChecks"))
+    assert subs["passed"],subs
+    print("PASS: names ("+str(len(names))+" answers, "+str(len(businesses))+" businesses), asset lockstep, authored endings, one clip per turn ("+str(len(turns))+" turns), parser rejection, six-exchange rollover, patience depletion, speech trim ("+trim["checks"]+"), speech text ("+flow["checks"]+"), player speech audio ("+voice["checks"]+"), subtitle timing ("+subs["checks"]+")")
 finally:adapter.close()
