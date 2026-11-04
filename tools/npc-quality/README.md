@@ -145,3 +145,9 @@ See [decision-layer staging](../../docs/decision-layer.md) for the local d1
 server used in Play Mode and the separate, explicitly requested four-case d1/MPS
 feasibility probe. Replays do not measure
 classifier accuracy, generated dialogue quality, or model latency.
+
+## Gemma context experiment
+
+The A/B/C context comparison for the optional planned writer (flattened transcript, native roles, roles plus
+grounding) lives in [context/](context/README.md); results are in
+[docs/gemma-context-experiment-2026-11-03.md](../../docs/gemma-context-experiment-2026-11-03.md).
