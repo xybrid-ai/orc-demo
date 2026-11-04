@@ -236,6 +236,42 @@ Raw receipts, package versions and source hashes are preserved locally under
 required resuming byte ranges and recovering small runtime files; downloading
 and hash verification are excluded from the model timings above.
 
+## Spoken answers at the buttons: `POST /choose`
+
+Words the player says at Trola's choice buttons ([voice-input.md](voice-input.md#answering-at-the-buttons))
+go to the same resident d1 through `POST /choose`. d1 only labels them;
+`GatekeeperSpokenChoice` turns the labels into a click, a rebuke or a request to
+say it again, and the story owns every effect.
+
+**Questions** (one packed pass): Trola's own `scope` question from
+`decision-questions.json`, and a `choice` question built per request from the
+buttons on screen plus `none`. d1 reads only each option's description, from
+`decision-choice-options.json`, keyed by the story's choice target.
+
+**Request** (400 on any violation, like `/decide`): `message` 1–240 characters;
+`stage` hub or reckoning; `options` 1–4 different targets from that file, in
+screen order; `history` ≤6 Player/Trola turns of ≤240 characters (Trola's last
+line is the question being answered). No name, business or patience is sent.
+
+**Reply**: `{scope, scope_confidence, choice, choice_confidence, options[],
+probabilities[], seconds, input_tokens}`. `options` is the requested targets
+then `none`, and `probabilities` their d1 probabilities, as parallel arrays
+because Unity's JsonUtility reads no dictionaries.
+
+A request waits at most 1 s for the model lock (503 busy); the client gives up
+after 2.5 s. The route has its own handler and never sets or clears Trola's
+failure state. `/decide`, `/spirit`, the prime and `/health` are unchanged.
+Receipts carry `kind: "choice"`, and stdout prints one
+`choice <label> <p> / <scope>` line per answer. An older server answers 404:
+the game then uses keywords for 30 s at a time and F4 says to restart
+`serve_decisions.py`; other failures use keywords for 5 s.
+
+In LLM mode (`-xybridWriter gemma`) an in-world off-topic answer is worded by
+the planned writer with reaction `off-topic`; the authored line stands in when
+it fails or takes over 5 s (see voice-input.md). Not measured: d1's accuracy on
+these options (the only recorded plan evidence is the spirit probe's threaten,
+joke and demand cases) and the first request's time without a prime.
+
 ## Vesper's thoughts: `POST /spirit`
 
 Vesper, the spirit in the player's head (`docs/spirit.md`), asks the same

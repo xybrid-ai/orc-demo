@@ -6,6 +6,8 @@ The reply carries scope, intent, topic and requested player-fact slots; the game
 every effect. Start it before or during Play Mode and leave it running across sessions.
 POST /spirit classifies a thought to Vesper, the mind voice, with its own question set and the
 same resident model; SpiritPolicy picks her authored answer.
+POST /choose reads words spoken at Trola's choice buttons: which on-screen choice they carry out,
+or none. GatekeeperSpokenChoice turns that into a click, a rebuke or a request to say it again.
 """
 import argparse
 import hashlib
@@ -57,6 +59,15 @@ def spirit_questions():
 
 SPIRIT_QUESTIONS = spirit_questions()
 SPIRIT_FLAGS = tuple(json.loads((ROOT / 'decision-spirit-flags.json').read_text()))
+
+# Words spoken at Trola's buttons (PlayerVoiceInput): the choice question is built per request from the choices on
+# screen plus none, each described in decision-choice-options.json (d1 reads only the descriptions); scope is Trola's own.
+CHOICES = json.loads((ROOT / 'decision-choice-options.json').read_text())
+TROLA_SCOPE = json.loads((ROOT / 'decision-questions.json').read_text())['scope']
+CHOICE_STAGES = ('hub', 'reckoning')
+CHOICE_TEXT, CHOICE_TURNS, CHOICE_OPTIONS = 240, 6, 4
+# The client waits 2.5 s and then uses keywords, so a request still queued after 1 s answers busy.
+CHOICE_QUEUE_SECONDS = 1
 
 
 def text(request, key, limit, default=None):
@@ -157,6 +168,43 @@ def spirit_summarize(answers):
                 flags=[flag for flag, p in flags.items() if p >= 0.5], flag_probabilities=flags)
 
 
+def choice_request(request):
+    """Words spoken at the buttons, from validated fields only: the state and its per-request questions."""
+    if not isinstance(request, dict):
+        raise ValueError('request: a JSON object')
+    message = text(request, 'message', CHOICE_TEXT)
+    if not message.strip():
+        raise ValueError('message: empty')
+    stage, options, history = request.get('stage'), request.get('options'), request.get('history', [])
+    if not isinstance(stage, str) or stage not in CHOICE_STAGES:
+        raise ValueError('stage: one of ' + ', '.join(CHOICE_STAGES))
+    if not isinstance(options, list) or not 1 <= len(options) <= CHOICE_OPTIONS \
+            or not all(isinstance(o, str) and o in CHOICES['options'] for o in options) or len(set(options)) != len(options):
+        raise ValueError(f'options: 1 to {CHOICE_OPTIONS} different choices of ' + ', '.join(CHOICES['options']))
+    if not isinstance(history, list) or len(history) > CHOICE_TURNS:
+        raise ValueError(f'history: up to {CHOICE_TURNS} turns')
+    turns = []
+    for turn in history:
+        if not isinstance(turn, dict) or turn.get('speaker') not in SPEAKERS:
+            raise ValueError('history: turns of Player or Trola')
+        turns.append(dict(speaker=turn['speaker'], text=text(turn, 'text', CHOICE_TEXT)))
+    state = dict(setting='A fantasy camp gate. Modern devices and Wi-Fi are outside this world.',
+                 npc=dict(name='Trola', role='troll gatekeeper', personality='Proud wall builder; dry jokes, gruff, grudging respect.'),
+                 encounter=dict(stage=stage), recent_history=turns, player_message=message)
+    criteria = {option: CHOICES['options'][option] for option in options}
+    criteria['none'] = CHOICES['none']
+    return state, dict(scope=TROLA_SCOPE, choice=dict(type='choice', instructions=CHOICES['instructions'], criteria=criteria))
+
+
+def choice_summarize(answers, options):
+    """Labels with confidence, and the choice's distribution as parallel arrays: Unity's JsonUtility reads no dicts."""
+    scope, choice = answers['scope'], answers['choice']
+    probabilities = choice.get('probabilities') or {}
+    return dict(scope=scope['choice'], scope_confidence=scope['confidence'],
+                choice=choice['choice'], choice_confidence=choice['confidence'],
+                options=list(options), probabilities=[float(probabilities.get(option, 0.0)) for option in options])
+
+
 def verify(model):
     manifest = json.loads((ROOT / 'decision-model.json').read_text())
     for entry in manifest['files']:
@@ -214,7 +262,7 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(200, self.server.health())
 
     def do_POST(self):
-        if self.path not in ('/decide', '/spirit'):
+        if self.path not in ('/decide', '/spirit', '/choose'):
             return self.reply(404, dict(error='not found'))
         spirit = self.path == '/spirit'
         # JSON content also keeps browser pages from posting without a preflight this server never answers.
@@ -226,6 +274,8 @@ class Handler(BaseHTTPRequestHandler):
             length = -1
         if not 0 < length <= MAX_BODY:
             return self.reply(413, dict(error=f'body: 1 to {MAX_BODY} bytes'))
+        if self.path == '/choose':
+            return self.choose(length)
         try:
             state = (spirit_state_for if spirit else state_for)(json.loads(self.rfile.read(length)))
         except ValueError as error:  # Includes malformed JSON.
@@ -241,6 +291,24 @@ class Handler(BaseHTTPRequestHandler):
             self.server.lock.release()
         self.reply(200, decision)
         self.server.record(state, decision, spirit)
+
+    def choose(self, length):
+        """POST /choose: its own validation, queue and receipts. A failure costs the game one keyword fallback, never Trola's health."""
+        try:
+            state, asked = choice_request(json.loads(self.rfile.read(length)))
+        except ValueError as error:  # Includes malformed JSON.
+            return self.reply(400, dict(error=str(error)))
+        if not self.server.lock.acquire(timeout=CHOICE_QUEUE_SECONDS):
+            return self.reply(503, dict(error='busy'))
+        try:
+            decision = self.server.run_choice(state, asked)
+        except Exception as error:
+            print(f'choice failed: {error!r}', file=sys.stderr, flush=True)
+            return self.reply(500, dict(error=type(error).__name__))
+        finally:
+            self.server.lock.release()
+        self.reply(200, decision)
+        self.server.record_choice(state, decision)
 
     def reply(self, status, body):
         data = json.dumps(body).encode()
@@ -283,6 +351,16 @@ class Server(ThreadingHTTPServer):
             self.failure = None
         return decision
 
+    def run_choice(self, state, asked):
+        """Words spoken at the buttons, with the lock held. Shares the stall check; never sets or clears Trola's failure."""
+        started = self.busy_since = time.monotonic()
+        try:
+            result = self.engine.decide(state, asked)
+            return dict(choice_summarize(result['answers'], list(asked['choice']['criteria'])),
+                        seconds=round(time.monotonic() - started, 4), input_tokens=result.get('usage', {}).get('input_tokens', 0))
+        finally:
+            self.busy_since = None
+
     def health(self):
         busy = self.busy_since
         if busy is not None and time.monotonic() - busy > STALL_SECONDS:
@@ -313,6 +391,14 @@ class Server(ThreadingHTTPServer):
         if self.receipts:
             with self.receipts_lock, self.receipts.open('a') as output:
                 output.write(json.dumps(dict(at=time.time(), state=state, decision=decision)) + '\n')
+
+    def record_choice(self, state, decision):
+        """One stdout line per spoken answer; receipts carry kind 'choice'."""
+        print(f"{decision['seconds'] * 1000:6.0f} ms  choice {decision['choice']} {decision['choice_confidence']:.2f} / {decision['scope']}  "
+              f"{state['player_message'][:72]!r}", flush=True)
+        if self.receipts:
+            with self.receipts_lock, self.receipts.open('a') as output:
+                output.write(json.dumps(dict(at=time.time(), kind='choice', state=state, decision=decision)) + '\n')
 
 
 def main():

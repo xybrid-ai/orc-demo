@@ -14,14 +14,57 @@ audio leaves the machine.
   her, sent at once. While you hold the key her field shows `...`, which also
   keeps her window from closing mid-sentence. At the name and business prompts
   Trola wins: she is telling you to answer him.
+- **Trola's choice buttons** (the hub and the reckoning), while Vesper is not
+  listening: d1 reads the words and presses the button they mean, or Trola
+  reacts. See [Answering at the buttons](#answering-at-the-buttons).
 - **Free talk after the gate:** the words fill the reply field and are sent
   after a second, or queued while Trola is still speaking.
-- **Anywhere else** (the choice hubs, while Trola speaks an authored line)
-  nothing is sent; a note at the bottom left says so. Choices are still
-  clicked.
+- **Anywhere else** (while Trola speaks an authored line) nothing is sent; a
+  note at the bottom left says so.
+
+Who hears the words is fixed when the key goes down. If Vesper's field closes
+before the words are ready, nothing is sent ("Vesper stopped listening"). The
+hint at the bottom left names the listener at the buttons ("Hold Option to
+answer Trola" or "…Vesper").
 
 Holding the key also counts as activity, so Trola's idle taunt waits while you
 speak and while the words are transcribed.
+
+## Answering at the buttons
+
+Say what you would click, in your own words ("That's a fine wall you built",
+"I'll pay you a fair toll"). The buttons stay on screen as hints.
+
+- **A button:** it lights up for 0.45 s and is pressed exactly like a click,
+  so Trola answers it, Vesper reacts to it and patience moves as usual. The
+  player line shows your words. d1 must give the button 0.6, or 0.8 for
+  Threaten and Demand the gate (they cost two patience; the second ends the
+  encounter).
+- **Something else in the world** (d1 says none at 0.6 or more): Trola
+  rebukes you, loses one patience and asks again with the same buttons. At one
+  patience left his rebuke is a last warning; with none left he throws you out
+  (the Demand the gate expulsion, Refused).
+- **An unrelated task or a role override** (scope out_of_world or
+  role_override at 0.5): the same authored rebuke and cost.
+- **Anything unsure** (a low score, a near tie, a garbled transcript): Trola
+  asks you to say it again, at no cost.
+
+With `-xybridWriter gemma`, an in-world off-topic answer is worded by the
+planned Gemma writer (reaction `off-topic`, the cost stays one patience). The
+last warning, the expulsion, out-of-world answers and fact questions ("What is
+my name?") stay authored, and so does any rebuke Gemma fails or takes more than
+5 s to write. F4 shows the line's source (LLM, LLM fallback or authored).
+
+d1 answers through `POST /choose` on `serve_decisions.py`; restart the server
+after updating (see [decision-layer.md](decision-layer.md#spoken-answers-at-the-buttons-post-choose)).
+Without it (server off, d1 off in F4, an older server or a request over 2.5 s),
+Vesper's keyword reading picks a button or asks again, and never costs patience;
+Threaten and Demand the gate then need the word "threat" or "demand". F4's
+voice line shows the last spoken answer, what it became and why
+(`"nice wall" → Flatter (d1 flatter 0.91 (next none 0.05) / in_world 0.95, 312 ms)`).
+The option descriptions d1 reads are in `tools/npc-quality/decision-choice-options.json`;
+the rebukes are `off_topic_lines`, `off_topic_last_line` and `unclear_lines`
+in the story.
 
 ## Setup
 
@@ -60,5 +103,6 @@ Whisper's transcript loses bracketed tags, notes and its silence fillers ("you",
 transcript and its time.
 
 Not yet: live partial transcripts while you talk (the SDK's `Model.Stream`),
-choosing hub options by voice, and talking over Trola. Unity's microphone has no
-echo cancellation, so that would need headphones.
+typed answers at the buttons, and talking over Trola. Unity's microphone has no
+echo cancellation, so that would need headphones; speaking during his idle taunt
+or Vesper's voice can transcribe them too.

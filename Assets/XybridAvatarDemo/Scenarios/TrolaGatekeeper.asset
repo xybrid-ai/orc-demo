@@ -477,6 +477,66 @@ MonoBehaviour:
     delivery:
     audio: {fileID: 8300000, guid: 93b30c8ab4f2c42429e367a7caae9d2d, type: 3}
     mouthCues: {fileID: 4900000, guid: f224816c477ab43a2a2c44e75ede9e64, type: 3}
+  - id: offtopic-1
+    recordedMood: 0
+    text: That's not an answer, so try again, and make it count.
+    emotion: impatience
+    intensity: 0.55
+    patience_delta: -1
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: offtopic-2
+    recordedMood: 0
+    text: Did I ask about that? Stick to the question, before my patience runs out.
+    emotion: irritation
+    intensity: 0.6
+    patience_delta: -1
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: offtopic-3
+    recordedMood: 0
+    text: You're wasting my day, so give me a real answer, or start walking.
+    emotion: annoyance
+    intensity: 0.65
+    patience_delta: -1
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: offtopic-last
+    recordedMood: 0
+    text: That's the last of my patience, so one more like that, and you're out.
+    emotion: anger
+    intensity: 0.75
+    patience_delta: -1
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: unclear-1
+    recordedMood: 0
+    text: Hm? Speak up, and make some sense this time.
+    emotion: suspicion
+    intensity: 0.4
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
+  - id: unclear-2
+    recordedMood: 0
+    text: Mumbling won't open my gate, so say it again, plainly.
+    emotion: impatience
+    intensity: 0.45
+    patience_delta: 0
+    ends_scene: 0
+    delivery:
+    audio: {fileID: 0}
+    mouthCues: {fileID: 0}
   voices:
   - mood: 0
     pitch: 0.9

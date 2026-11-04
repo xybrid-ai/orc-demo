@@ -114,5 +114,10 @@ public sealed class GatekeeperDecisionService : MonoBehaviour, IGatekeeperDecisi
         }
     }
 
+    // Words spoken at the buttons (PlayerVoiceInput). Its failures never touch the free-form connection or backoff:
+    // the caller falls back to keywords and keeps its own retry window.
+    public Task<GatekeeperDecisionClient.ChoiceReply> ChooseAsync(GatekeeperConversationSnapshot state, string stage, System.Collections.Generic.IReadOnlyList<string> targets,
+        string message, CancellationToken cancellation) => client.ChooseAsync(state, stage, targets, message, cancellation);
+
     private void OnDestroy() => lifetime.Cancel();
 }

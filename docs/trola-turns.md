@@ -52,6 +52,14 @@ the completed turn still ends in a full stop. Shared checkpoint prompts keep the
   the Interrupt button interrupts, and it ignores presses in the first 0.5 s of a
   line, so the second click of a double-click on a choice doesn't count.
   Interrupting costs one patience and returns to the same checkpoint.
+- An answer spoken at the buttons ([voice-input.md](voice-input.md#answering-at-the-buttons))
+  that picks one is a click. One that picks none gets a protected reaction and
+  then the same buttons, like an interruption: an `off_topic_lines` rebuke for
+  one patience (round-robin), `off_topic_last_line` when that leaves none, and
+  with none left the `expelled` ending. An unsure one gets an `unclear_lines`
+  line at no cost. These lines hand the turn back themselves, since no
+  checkpoint question is joined after them; `Validate` checks their costs. In
+  LLM mode Gemma may word an in-world rebuke instead (same cost).
 - The name field takes 48 characters, so the player can answer in a sentence.
   `GatekeeperNames.ReadName` reads the name out of it: "I am Malik", "Hello,
   I'm Malik" and "I go by the name of Anna Maria" give Malik and Anna Maria,

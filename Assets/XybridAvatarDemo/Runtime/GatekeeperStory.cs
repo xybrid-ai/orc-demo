@@ -14,6 +14,11 @@ public sealed class GatekeeperStory
         public List<Node> nodes;
         public string[] idle_lines;
         public string interruption_line;
+        // Spoken answers at a choice checkpoint that pick no button: round-robin rebukes costing one patience each, the
+        // warning spoken when that leaves none (the next one is thrown out), and free "say it again" lines.
+        public string[] off_topic_lines;
+        public string off_topic_last_line;
+        public string[] unclear_lines;
     }
     [Serializable] public sealed class Node
     {
@@ -51,7 +56,7 @@ public sealed class GatekeeperStory
     public bool WaitsForPlayer => !string.IsNullOrEmpty(CurrentNode.input_slot) || CurrentNode.choices != null && CurrentNode.choices.Count > 0;
     private readonly HashSet<string> entered = new HashSet<string>();
     private readonly HashSet<string> approaches = new HashSet<string>();
-    private int idleIndex = -1;
+    private int idleIndex = -1, offTopicIndex = -1, unclearIndex = -1;
 
     public GatekeeperStory(GatekeeperScenario scenario, GatekeeperEncounter encounter = null)
     {
@@ -103,6 +108,13 @@ public sealed class GatekeeperStory
     }
     // Round-robin guarantees no adjacent repeat, including after interruptions.
     public string NextIdleLine() { idleIndex = (idleIndex + 1) % Data.idle_lines.Length; return Data.idle_lines[idleIndex]; }
+    // At one patience the rebuke that spends it is the warning; above that, round-robin.
+    public string NextOffTopicLine(int patience)
+    {
+        if (patience <= 1) return Data.off_topic_last_line;
+        offTopicIndex = (offTopicIndex + 1) % Data.off_topic_lines.Length; return Data.off_topic_lines[offTopicIndex];
+    }
+    public string NextUnclearLine() { unclearIndex = (unclearIndex + 1) % Data.unclear_lines.Length; return Data.unclear_lines[unclearIndex]; }
 
     public static bool Validate(GatekeeperScenario scenario, out string error)
     {
@@ -128,6 +140,12 @@ public sealed class GatekeeperStory
         }
         if (!ids.Contains(data.interruption_line) || scenario.FindLine(data.interruption_line).patience_delta != -1) { error = "Interruption must cost one patience."; return false; }
         foreach (string id in data.idle_lines) if (!ids.Contains(id) || scenario.FindLine(id).ends_scene || scenario.FindLine(id).patience_delta != 0) { error = "Invalid idle taunt."; return false; }
+        if (data.off_topic_lines == null || data.off_topic_lines.Length == 0 || data.unclear_lines == null || data.unclear_lines.Length == 0)
+        { error = "Provide off-topic and unclear reactions for spoken answers."; return false; }
+        foreach (string id in new List<string>(data.off_topic_lines) { data.off_topic_last_line })
+            if (id == null || !ids.Contains(id) || scenario.FindLine(id).ends_scene || scenario.FindLine(id).patience_delta != -1) { error = "Off-topic reactions must cost one patience: " + id; return false; }
+        foreach (string id in data.unclear_lines)
+            if (!ids.Contains(id) || scenario.FindLine(id).ends_scene || scenario.FindLine(id).patience_delta != 0) { error = "Unclear reactions must be free: " + id; return false; }
         var nodes = new HashSet<string>();
         foreach (var node in data.nodes) if (node == null || string.IsNullOrEmpty(node.id) || !nodes.Add(node.id)) { error = "Duplicate or empty node."; return false; }
         foreach (string id in new[] { "name", "named", "assigned", "business", "business-accepted", "business-assigned", "hub", "flatter", "bribe", "threaten", "camp", "reckoning", "passage", "friendship", "expelled" })

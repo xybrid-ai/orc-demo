@@ -29,9 +29,12 @@ public sealed class GatekeeperController : MonoBehaviour
     public event Action Restarted;
     // Where the wait before each line's first audio went; raised once the audio starts (or the subtitle, without a voice).
     public event Action<GatekeeperLineTiming> TimingRecorded;
-    // A player choice, typed text (direct or queued) or interruption, raised before the controller acts on it.
-    // Label: the choice label, the typed text, or "" for an interruption. Subscribers must not drive the controller.
+    // A player choice (clicked or spoken), typed text (direct or queued), interruption, or a spoken answer that picked no
+    // button (OffTopic, OutOfWorld, Unclear), raised before the controller acts on it. Label: the choice label, the typed
+    // text, "" for an interruption, or the spoken words. Subscribers must not drive the controller.
     public event Action<GatekeeperInputKind, string> PlayerActed;
+    // The player's own words while PlayerActed reports a spoken choice (ChooseSpoken); null otherwise.
+    public string SpokenWords { get; private set; }
     public GatekeeperLineTiming LastTiming { get; private set; }
     public sealed class DebugLine
     {
@@ -227,6 +230,21 @@ public sealed class GatekeeperController : MonoBehaviour
         RaisePlayerActed(GatekeeperInputKind.Choice, CurrentChoices[index].label);
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Choice, choice: index)); return true;
     }
+    // A button picked by voice (PlayerVoiceInput): exactly a click, with the player's words shown instead of the choice's say.
+    public bool ChooseSpoken(int index, string words)
+    {
+        SpokenWords = string.IsNullOrWhiteSpace(words) ? null : words;
+        try { return Choose(index); }
+        finally { SpokenWords = null; }
+    }
+    // Spoken at the buttons without picking one: Trola's reaction, then the same buttons (see GatekeeperInputKind).
+    public bool AnswerSpoken(GatekeeperInputKind kind, string words)
+    {
+        if (kind != GatekeeperInputKind.OffTopic && kind != GatekeeperInputKind.OutOfWorld && kind != GatekeeperInputKind.Unclear) return false;
+        if (!AcceptsChoice || suspended || string.IsNullOrWhiteSpace(words)) return false;
+        RaisePlayerActed(kind, words);
+        Begin(new GatekeeperPlayerInput(kind, words)); return true;
+    }
     public void Skip()
     {
         if (Prompt.CanInterrupt) { Interrupt(); return; }
@@ -258,7 +276,9 @@ public sealed class GatekeeperController : MonoBehaviour
     {
         MarkTrigger(input.Kind == GatekeeperInputKind.Text ? "typed input" : input.Kind == GatekeeperInputKind.Choice ? "choice"
             : input.Kind == GatekeeperInputKind.Start ? "start" : input.Kind == GatekeeperInputKind.Idle ? "idle taunt"
-            : input.Kind == GatekeeperInputKind.Interrupt ? "interruption" : input.Kind.ToString());
+            : input.Kind == GatekeeperInputKind.Interrupt ? "interruption"
+            : input.Kind == GatekeeperInputKind.OffTopic || input.Kind == GatekeeperInputKind.OutOfWorld || input.Kind == GatekeeperInputKind.Unclear ? "spoken answer"
+            : input.Kind.ToString());
         performing = input.Kind;
         Cancel(); SetState(Phase.Inactive);
         performance = StartCoroutine(Perform(input, revision));
