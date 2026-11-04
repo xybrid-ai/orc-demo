@@ -28,6 +28,21 @@ public sealed class GatekeeperDecisionClient
         public string[] facts;
         public float scope_confidence, intent_confidence, topic_confidence;
     }
+    // POST /choose: words spoken at the buttons, the on-screen choices (story targets) and the last six Player/Trola turns.
+    [Serializable] private sealed class ChoiceRequest
+    {
+        public string message, stage;
+        public string[] options;
+        public Turn[] history;
+    }
+    // options/probabilities are parallel (the requested choices, then "none"): JsonUtility reads no dictionaries.
+    [Serializable] public sealed class ChoiceReply
+    {
+        public string scope, choice;
+        public float scope_confidence, choice_confidence, seconds;
+        public string[] options;
+        public float[] probabilities;
+    }
     [Serializable] public sealed class Health
     {
         public bool ready;
@@ -81,14 +96,15 @@ public sealed class GatekeeperDecisionClient
     }
 
     public readonly Uri Endpoint;
-    private readonly TimeSpan decisionTimeout, healthTimeout;
-    public GatekeeperDecisionClient(string endpoint, double decisionSeconds = 4, double healthSeconds = 1)
+    private readonly TimeSpan decisionTimeout, healthTimeout, choiceTimeout;
+    public GatekeeperDecisionClient(string endpoint, double decisionSeconds = 4, double healthSeconds = 1, double choiceSeconds = 2.5)
     {
         Endpoint = new Uri(endpoint.EndsWith("/") ? endpoint : endpoint + "/", UriKind.Absolute);
         // Player text stays on this machine, like the NPC model.
         if (!Endpoint.IsLoopback || Endpoint.Scheme != Uri.UriSchemeHttp)
             throw new ArgumentException("d1 decisions must use http on this machine (127.0.0.1).", nameof(endpoint));
         decisionTimeout = TimeSpan.FromSeconds(decisionSeconds); healthTimeout = TimeSpan.FromSeconds(healthSeconds);
+        choiceTimeout = TimeSpan.FromSeconds(choiceSeconds);
     }
 
     public Task<Health> HealthAsync(CancellationToken cancellation) => SendAsync<Health>(HttpMethod.Get, "health", null, healthTimeout, cancellation);
@@ -100,6 +116,14 @@ public sealed class GatekeeperDecisionClient
         var timer = Stopwatch.StartNew();
         var reply = await SendAsync<Reply>(HttpMethod.Post, "decide", body, decisionTimeout, cancellation).ConfigureAwait(false);
         return Map(reply, message, timer.Elapsed.TotalMilliseconds);
+    }
+
+    // Which on-screen choice (story target, in screen order) the spoken words carry out, or "none". The reply is mapped by
+    // GatekeeperSpokenChoice; an older server without /choose answers 404 (an HttpRequestException naming the status).
+    public Task<ChoiceReply> ChooseAsync(GatekeeperConversationSnapshot state, string stage, IReadOnlyList<string> targets, string message, CancellationToken cancellation)
+    {
+        cancellation.ThrowIfCancellationRequested();
+        return SendAsync<ChoiceReply>(HttpMethod.Post, "choose", JsonUtility.ToJson(BuildChoice(state, stage, targets, message)), choiceTimeout, cancellation);
     }
 
     private async Task<T> SendAsync<T>(HttpMethod method, string path, string body, TimeSpan limit, CancellationToken cancellation)
@@ -143,6 +167,23 @@ public sealed class GatekeeperDecisionClient
             outcome = state.Outcome.ToString(), patience = Math.Max(0, Math.Min(100, state.Patience)),
             approaches = approaches.ToArray(), history = turns.ToArray()
         };
+    }
+
+    // Not named Build: tools/npc-quality/Program.cs finds Build by reflection. The server checks the same limits.
+    private static ChoiceRequest BuildChoice(GatekeeperConversationSnapshot state, string stage, IReadOnlyList<string> targets, string message)
+    {
+        var turns = new List<Turn>();
+        for (int i = state.History.Count - 1; i >= 0 && turns.Count < 6; i--)
+        {
+            string entry = state.History[i];
+            int colon = entry.IndexOf(": ", StringComparison.Ordinal);
+            string speaker = colon < 0 ? null : entry.Substring(0, colon);
+            if (speaker == "Troll") speaker = "Trola";
+            if (speaker == "Player" || speaker == "Trola") turns.Insert(0, new Turn { speaker = speaker, text = Clip(entry.Substring(colon + 2), 240) });
+        }
+        var options = new List<string>();
+        foreach (string target in targets) options.Add(target);
+        return new ChoiceRequest { message = Clip(message, 240), stage = stage, options = options.ToArray(), history = turns.ToArray() };
     }
 
     // Unknown labels become Unclear rather than a guessed intent.

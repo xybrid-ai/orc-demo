@@ -212,9 +212,12 @@ public sealed class GatekeeperView : MonoBehaviour
         string said = null;
         if (kind == GatekeeperInputKind.Choice)
         {
-            foreach (var choice in gatekeeper.CurrentChoices) if (choice != null && choice.label == label) said = choice.say;
+            // A button picked by voice shows the player's own words; a click shows the choice's.
+            said = Safe(gatekeeper.SpokenWords);
+            if (said == null) foreach (var choice in gatekeeper.CurrentChoices) if (choice != null && choice.label == label) said = choice.say;
         }
         else if (kind == GatekeeperInputKind.Text) said = Echo(label);
+        else if (kind == GatekeeperInputKind.OffTopic || kind == GatekeeperInputKind.OutOfWorld || kind == GatekeeperInputKind.Unclear) said = Safe(label);
         if (string.IsNullOrWhiteSpace(said)) return;
         PlayerLine().text = "You: \"" + said.Trim() + "\"";
     }
@@ -224,8 +227,42 @@ public sealed class GatekeeperView : MonoBehaviour
     {
         var slot = gatekeeper.Prompt.InputSlot;
         if (slot != GatekeeperInputSlot.Name && slot != GatekeeperInputSlot.Business) return null;
+        return Safe(typed);
+    }
+    private string Safe(string words)
+    {
+        if (string.IsNullOrWhiteSpace(words)) return null;
         var blocklist = gatekeeper.scenario != null ? gatekeeper.scenario.nameBlocklist : null;
-        return GatekeeperNames.TryReadSaid(typed, blocklist, out var said) ? said : null;
+        return GatekeeperNames.TryReadSaid(words, blocklist, out var said) ? said : null;
+    }
+
+    // A button picked by voice lights up for a moment before PlayerVoiceInput clicks it. Found by name, like Vesper's marks
+    // and the self-test; its name, listeners and interactable state never change. The buttons are rebuilt whenever the
+    // choices change, which also drops the light.
+    private static readonly Color SpokenTint = new Color(1f, .8f, .42f);
+    private Graphic spokenGraphic;
+    private Transform spokenButton;
+    private Color spokenColor;
+    private Vector3 spokenScale;
+    public void MarkSpokenChoice(string label)
+    {
+        ClearSpokenChoice();
+        if (choiceRow == null) return;
+        foreach (Transform child in choiceRow)
+        {
+            if (!child.gameObject.activeInHierarchy || child.name != "Choice " + label) continue;
+            var button = child.GetComponent<Button>();
+            if (button == null || button.targetGraphic == null) return;
+            spokenGraphic = button.targetGraphic; spokenButton = child; spokenColor = spokenGraphic.color; spokenScale = child.localScale;
+            spokenGraphic.color = SpokenTint; child.localScale = spokenScale * 1.06f;
+            return;
+        }
+    }
+    public void ClearSpokenChoice()
+    {
+        if (spokenGraphic != null) spokenGraphic.color = spokenColor;
+        if (spokenButton != null) spokenButton.localScale = spokenScale;
+        spokenGraphic = null; spokenButton = null;
     }
     // A sibling of the subtitle, not part of it: the self-test requires ShownLine == line.text while he speaks.
     private Text PlayerLine()

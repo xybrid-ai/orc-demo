@@ -9,12 +9,15 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
     private readonly GatekeeperScenario scenario;
     private readonly GatekeeperConversationState state;
     private readonly GatekeeperStory story;
+    // The optional writer (-xybridWriter gemma), null by default. Here it only words in-world off-topic answers at the buttons.
+    private readonly GatekeeperNpcModel writer;
+    private const double WriterSeconds = 5;
     private int lineIndex;
     private bool reaction;
     public GatekeeperPresentation Presentation { get; private set; } = new GatekeeperPresentation();
-    public AuthoredGatekeeperLineSource(GatekeeperScenario scenario, GatekeeperConversationState state)
+    public AuthoredGatekeeperLineSource(GatekeeperScenario scenario, GatekeeperConversationState state, GatekeeperNpcModel writer = null)
     {
-        this.scenario = scenario; this.state = state; story = new GatekeeperStory(scenario, state.Encounter);
+        this.scenario = scenario; this.state = state; this.writer = writer; story = new GatekeeperStory(scenario, state.Encounter);
     }
     public IEnumerable<GatekeeperScenario.Line> AnticipatedLines
     {
@@ -71,6 +74,35 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
             Presentation.LineGapSeconds = 0;
             return Task.FromResult(GatekeeperLineSources.Resolve(scenario.FindLine(story.Data.interruption_line), state.Encounter));
         }
+        else if (input.Kind == GatekeeperInputKind.OffTopic || input.Kind == GatekeeperInputKind.OutOfWorld || input.Kind == GatekeeperInputKind.Unclear)
+        {
+            // Spoken at the buttons without picking one (see GatekeeperInputKind). Never a story turn or an approach.
+            if (story.CurrentNode.choices == null || story.CurrentNode.choices.Count == 0 || state.Encounter.Outcome != GatekeeperOutcome.Playing || string.IsNullOrWhiteSpace(input.Text))
+                throw new InvalidOperationException("Spoken answers need a choice checkpoint.");
+            var snapshot = state.Snapshot(); // Without the new words, as the writer expects.
+            state.Record("Player", input.Text);
+            int patience = state.Encounter.Patience;
+            if (input.Kind != GatekeeperInputKind.Unclear && patience <= 0)
+            {
+                // No patience left: the complete authored expulsion, then Refused. EndReaction also clears an idle taunt's
+                // reaction, which would otherwise skip the second ending line.
+                story.Enter("expelled"); lineIndex = 0; EndReaction();
+            }
+            else
+            {
+                // Like an interruption: a protected reaction (its cost applied as it plays), then the same buttons again.
+                reaction = true; Presentation.IsReaction = Presentation.ProtectedReaction = true;
+                Presentation.LineGapSeconds = 0;
+                var authored = GatekeeperLineSources.Resolve(scenario.FindLine(input.Kind == GatekeeperInputKind.Unclear
+                    ? story.NextUnclearLine() : story.NextOffTopicLine(patience)), state.Encounter);
+                authored.debugDecision = "spoken answer: " + input.Kind;
+                // Facts stay in code (docs/gemma-context-experiment-2026-11-03.md), and the warning before the expulsion stays authored.
+                if (input.Kind == GatekeeperInputKind.OffTopic && patience > 1 && writer != null && writer.IsReady
+                    && GatekeeperFactQuestions.Interpret(input.Text) == null)
+                    return WriteOffTopic(snapshot, input.Text, patience, authored, cancellation);
+                return Task.FromResult(authored);
+            }
+        }
         if (reaction)
         {
             reaction = false; Presentation.IsReaction = Presentation.ProtectedReaction = false;
@@ -99,6 +131,28 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
         }
     }
     private void EndReaction() { reaction = false; Presentation.IsReaction = Presentation.ProtectedReaction = false; }
+    // LLM mode: the planned writer words the rebuke to what was said; the game keeps its one-patience cost. The authored
+    // rebuke stands in when the writer fails or takes longer than WriterSeconds.
+    private async Task<GatekeeperScenario.Line> WriteOffTopic(GatekeeperConversationSnapshot snapshot, string words, int patience,
+        GatekeeperScenario.Line authored, CancellationToken cancellation)
+    {
+        var plan = new GatekeeperResponsePlan("off-topic", patience >= 4 ? "impatience" : "irritation", patience >= 4 ? .5f : .6f, -1,
+            direction: "The player's answer is not one of the choices you offered. Answer it in one short gruff line, let your patience show, and tell them to choose.");
+        GatekeeperScenario.Line line = null;
+        using (var limit = CancellationTokenSource.CreateLinkedTokenSource(cancellation))
+        {
+            limit.CancelAfter(TimeSpan.FromSeconds(WriterSeconds));
+            try { line = await writer.ReplyAsync(snapshot, words, limit.Token, plan); }
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested) { line = null; }
+        }
+        cancellation.ThrowIfCancellationRequested();
+        var spoken = line ?? authored;
+        spoken.debugSource = line != null ? "LLM" : "LLM fallback";
+        spoken.debugDecision = authored.debugDecision;
+        spoken.debugRaw = writer.LastRawReply ?? "";
+        spoken.debugModelSeconds = writer.LastReplySeconds;
+        return spoken;
+    }
     private Task<GatekeeperScenario.Line> WaitAtCheckpoint()
     {
         Presentation = new GatekeeperPresentation { IdleSeconds = story.Data.idle_seconds };

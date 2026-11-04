@@ -36,8 +36,9 @@ public static class GatekeeperLineSources
         var model = PrepareWriter(scenario);
         if (!scenario.debugUsePlaceholderReplies) GatekeeperDecisionService.Prepare(); // Connects during the authored intro, without loading a writer.
         if (scenario.debugStartInFreeForm) { state.GateOpenRequested = true; return FreeForm(scenario, model); }
+        // In LLM mode the writer also words in-world off-topic answers spoken at the buttons (null by default).
         IGatekeeperLineSource first = scenario.authoredConversation
-            ? new AuthoredGatekeeperLineSource(scenario, state)
+            ? new AuthoredGatekeeperLineSource(scenario, state, model)
             : new IntentGatekeeperLineSource(scenario);
         return new Session(first, scenario, model);
     }

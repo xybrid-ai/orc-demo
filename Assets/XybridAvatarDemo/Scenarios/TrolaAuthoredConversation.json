@@ -389,6 +389,60 @@
       "patience_delta": -1,
       "ends_scene": false,
       "delivery": ""
+    },
+    {
+      "id": "offtopic-1",
+      "text": "That's not an answer, so try again, and make it count.",
+      "emotion": "impatience",
+      "intensity": 0.55,
+      "patience_delta": -1,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "offtopic-2",
+      "text": "Did I ask about that? Stick to the question, before my patience runs out.",
+      "emotion": "irritation",
+      "intensity": 0.6,
+      "patience_delta": -1,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "offtopic-3",
+      "text": "You're wasting my day, so give me a real answer, or start walking.",
+      "emotion": "annoyance",
+      "intensity": 0.65,
+      "patience_delta": -1,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "offtopic-last",
+      "text": "That's the last of my patience, so one more like that, and you're out.",
+      "emotion": "anger",
+      "intensity": 0.75,
+      "patience_delta": -1,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "unclear-1",
+      "text": "Hm? Speak up, and make some sense this time.",
+      "emotion": "suspicion",
+      "intensity": 0.4,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
+    },
+    {
+      "id": "unclear-2",
+      "text": "Mumbling won't open my gate, so say it again, plainly.",
+      "emotion": "impatience",
+      "intensity": 0.45,
+      "patience_delta": 0,
+      "ends_scene": false,
+      "delivery": ""
     }
   ],
   "nodes": [
@@ -865,5 +919,15 @@
     "idle-3",
     "idle-4"
   ],
-  "interruption_line": "interrupted"
+  "interruption_line": "interrupted",
+  "off_topic_lines": [
+    "offtopic-1",
+    "offtopic-2",
+    "offtopic-3"
+  ],
+  "off_topic_last_line": "offtopic-last",
+  "unclear_lines": [
+    "unclear-1",
+    "unclear-2"
+  ]
 }
