@@ -138,6 +138,7 @@ class Program {
     var result=suite.GetMethod("Run",BindingFlags.Public|BindingFlags.Static).Invoke(null,new object[]{req,scenario,doc});
     Console.WriteLine(JsonSerializer.Serialize(result,result.GetType(),options));continue;
    }
+   if(command.StartsWith("context_",StringComparison.Ordinal)) {Console.WriteLine(ContextExperiment.Handle(req,scenario,tags));continue;}
    if(command=="parse") {
     var parsed=GatekeeperNpcModel.Parse(req["raw"].GetValue<string>(),tags);
     Console.WriteLine(JsonSerializer.Serialize(new {valid=parsed!=null,line=parsed},options));continue;

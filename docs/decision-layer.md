@@ -53,7 +53,10 @@ metadata. No Gemma component is created by default.
 
 The historical writer remains opt-in with `-xybridWriter gemma` (and the
 build-only Gemma3 trial symbol). It receives `{"text":"..."}` only on planned
-writer routes, and extra output fields are rejected. Policy supplies the final line metadata,
+writer routes, and extra output fields are rejected. Its context is the layout that won the
+[context experiment](gemma-context-experiment-2026-11-03.md): a stable grounded Trola card, the
+last six exchanges as native user/assistant turns rebuilt for every reply, and a compact game
+note (player identity, explicit admission, trusted offer or "unknown", the selected reaction). Policy supplies the final line metadata,
 which feeds the existing facial performer and speech system. A calm insult
 selects amusement; an insult at one remaining patience starts both authored
 expulsion lines, applying the decrement once when presented.

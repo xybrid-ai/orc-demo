@@ -91,7 +91,8 @@ Gemma no longer preloads. The game owns facts, patience, admission and endings;
 without d1 it uses narrow factual routes and neutral authored fallbacks.
 F4 shows the writer, topic and decision status. To compare the historical
 Gemma writer explicitly, launch Unity with `-xybridWriter gemma`; it then
-preloads during the intro and retains the existing prompt/parser behavior.
+preloads during the intro and writes planned replies with the grounded context that won the
+[context experiment](docs/gemma-context-experiment-2026-11-03.md) (same parser and policy).
 See the [blind reading and implementation](docs/authored-replies-2026-11-03.md).
 
 ## Headless dialogue quality
