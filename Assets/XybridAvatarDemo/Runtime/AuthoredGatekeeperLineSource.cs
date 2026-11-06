@@ -74,7 +74,8 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
             Presentation.LineGapSeconds = 0;
             return Task.FromResult(GatekeeperLineSources.Resolve(scenario.FindLine(story.Data.interruption_line), state.Encounter));
         }
-        else if (input.Kind == GatekeeperInputKind.OffTopic || input.Kind == GatekeeperInputKind.OutOfWorld || input.Kind == GatekeeperInputKind.Unclear)
+        else if (input.Kind == GatekeeperInputKind.OffTopic || input.Kind == GatekeeperInputKind.OutOfWorld || input.Kind == GatekeeperInputKind.Unclear
+            || input.Kind == GatekeeperInputKind.Neutral)
         {
             // Spoken at the buttons without picking one (see GatekeeperInputKind). Never a story turn or an approach.
             if (story.CurrentNode.choices == null || story.CurrentNode.choices.Count == 0 || state.Encounter.Outcome != GatekeeperOutcome.Playing || string.IsNullOrWhiteSpace(input.Text))
@@ -82,7 +83,27 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
             var snapshot = state.Snapshot(); // Without the new words, as the writer expects.
             state.Record("Player", input.Text);
             int patience = state.Encounter.Patience;
-            if (input.Kind != GatekeeperInputKind.Unclear && patience <= 0)
+            var kind = input.Kind;
+            // A caller cannot launder an insult or scope rejection into a free remark by tagging the input Neutral.
+            if (kind == GatekeeperInputKind.Neutral)
+            {
+                if (input.Decision?.Scope == GatekeeperScope.OutOfWorld || input.Decision?.Scope == GatekeeperScope.RoleOverride)
+                    kind = GatekeeperInputKind.OutOfWorld;
+                else if (input.Decision?.Scope != GatekeeperScope.InWorld) kind = GatekeeperInputKind.Unclear;
+                else if (input.Decision.Intent == GatekeeperDialogueIntent.Insult) kind = GatekeeperInputKind.OffTopic;
+            }
+            if (kind == GatekeeperInputKind.Neutral)
+            {
+                reaction = true; Presentation.IsReaction = Presentation.ProtectedReaction = true;
+                Presentation.CanInterrupt = Presentation.PointerInterrupts = Presentation.ShowInterruptButton = false;
+                Presentation.LineGapSeconds = 0;
+                var plan = GatekeeperResponsePolicy.AtCheckpoint(snapshot, input.Decision);
+                var authored = GatekeeperAuthoredReplies.Reply(snapshot, input.Decision, plan, input.Text);
+                authored.debugSource = "authored reply";
+                authored.debugDecision = "spoken answer: Neutral / " + input.Decision.Detail + " → " + plan.Reaction;
+                return Task.FromResult(authored);
+            }
+            if (kind != GatekeeperInputKind.Unclear && patience <= 0)
             {
                 // No patience left: the complete authored expulsion, then Refused. EndReaction also clears an idle taunt's
                 // reaction, which would otherwise skip the second ending line.
@@ -93,11 +114,11 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
                 // Like an interruption: a protected reaction (its cost applied as it plays), then the same buttons again.
                 reaction = true; Presentation.IsReaction = Presentation.ProtectedReaction = true;
                 Presentation.LineGapSeconds = 0;
-                var authored = GatekeeperLineSources.Resolve(scenario.FindLine(input.Kind == GatekeeperInputKind.Unclear
+                var authored = GatekeeperLineSources.Resolve(scenario.FindLine(kind == GatekeeperInputKind.Unclear
                     ? story.NextUnclearLine() : story.NextOffTopicLine(patience)), state.Encounter);
-                authored.debugDecision = "spoken answer: " + input.Kind;
+                authored.debugDecision = "spoken answer: " + kind;
                 // Facts stay in code (docs/gemma-context-experiment-2026-11-03.md), and the warning before the expulsion stays authored.
-                if (input.Kind == GatekeeperInputKind.OffTopic && patience > 1 && writer != null && writer.IsReady
+                if (kind == GatekeeperInputKind.OffTopic && patience > 1 && writer != null && writer.IsReady
                     && GatekeeperFactQuestions.Interpret(input.Text) == null)
                     return WriteOffTopic(snapshot, input.Text, patience, authored, cancellation);
                 return Task.FromResult(authored);

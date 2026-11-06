@@ -7,7 +7,7 @@ every effect. Start it before or during Play Mode and leave it running across se
 POST /spirit classifies a thought to Vesper, the mind voice, with its own question set and the
 same resident model; SpiritPolicy picks her authored answer.
 POST /choose reads words spoken at Trola's choice buttons: which on-screen choice they carry out,
-or none. GatekeeperSpokenChoice turns that into a click, a rebuke or a request to say it again.
+or none, plus Trola's intent, topic and fact slots in the same pass. The game owns remark effects.
 """
 import argparse
 import hashlib
@@ -63,7 +63,8 @@ SPIRIT_FLAGS = tuple(json.loads((ROOT / 'decision-spirit-flags.json').read_text(
 # Words spoken at Trola's buttons (PlayerVoiceInput): the choice question is built per request from the choices on
 # screen plus none, each described in decision-choice-options.json (d1 reads only the descriptions); scope is Trola's own.
 CHOICES = json.loads((ROOT / 'decision-choice-options.json').read_text())
-TROLA_SCOPE = json.loads((ROOT / 'decision-questions.json').read_text())['scope']
+CHOICE_QUESTIONS = questions()
+TROLA_SCOPE = CHOICE_QUESTIONS['scope']
 CHOICE_STAGES = ('hub', 'reckoning')
 CHOICE_TEXT, CHOICE_TURNS, CHOICE_OPTIONS = 240, 6, 4
 # The client waits 2.5 s and then uses keywords, so a request still queued after 1 s answers busy.
@@ -193,14 +194,17 @@ def choice_request(request):
                  encounter=dict(stage=stage), recent_history=turns, player_message=message)
     criteria = {option: CHOICES['options'][option] for option in options}
     criteria['none'] = CHOICES['none']
-    return state, dict(scope=TROLA_SCOPE, choice=dict(type='choice', instructions=CHOICES['instructions'], criteria=criteria))
+    return state, dict(CHOICE_QUESTIONS, choice=dict(type='choice', instructions=CHOICES['instructions'], criteria=criteria))
 
 
 def choice_summarize(answers, options):
     """Labels with confidence, and the choice's distribution as parallel arrays: Unity's JsonUtility reads no dicts."""
-    scope, choice = answers['scope'], answers['choice']
+    choice = answers['choice']
     probabilities = choice.get('probabilities') or {}
-    return dict(scope=scope['choice'], scope_confidence=scope['confidence'],
+    classification = summarize(answers)
+    # /decide retains its dictionary; /choose exposes parallel arrays for Unity's JsonUtility.
+    facts = classification.pop('fact_probabilities')
+    return dict(classification, fact_options=list(SLOTS), fact_probabilities=[float(facts[slot]) for slot in SLOTS],
                 choice=choice['choice'], choice_confidence=choice['confidence'],
                 options=list(options), probabilities=[float(probabilities.get(option, 0.0)) for option in options])
 

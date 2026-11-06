@@ -12,17 +12,20 @@ public interface IGatekeeperLineSource
 }
 
 // Spoken at a choice checkpoint (PlayerVoiceInput, d1 POST /choose) without picking a button: OffTopic is an in-world
-// answer that is none of them, OutOfWorld an unrelated task or role override; both cost one patience, and with none
+// insult, OutOfWorld an unrelated task or role override; both cost one patience, and with none
 // left Trola throws the player out. Unclear (a mumble, a near tie) asks again for free. Only OffTopic may be worded
-// by the optional writer; the others are always authored.
-public enum GatekeeperInputKind { Start, Continue, Text, Choice, Idle, Interrupt, GateOpened, Skip, OffTopic, OutOfWorld, Unclear }
+// by the optional writer; the others are always authored. Neutral carries a trusted classification and reuses the
+// authored reply bank at the same checkpoint with zero patience/progress, including incidental praise or apology.
+public enum GatekeeperInputKind { Start, Continue, Text, Choice, Idle, Interrupt, GateOpened, Skip, OffTopic, OutOfWorld, Unclear, Neutral }
 public enum GatekeeperInputSlot { None, Name, Business, Reply }
 public readonly struct GatekeeperPlayerInput
 {
     public readonly GatekeeperInputKind Kind;
     public readonly string Text;
     public readonly int Choice;
-    public GatekeeperPlayerInput(GatekeeperInputKind kind, string text = null, int choice = -1) { Kind = kind; Text = text; Choice = choice; }
+    public readonly GatekeeperDecision Decision;
+    public GatekeeperPlayerInput(GatekeeperInputKind kind, string text = null, int choice = -1, GatekeeperDecision decision = null)
+    { Kind = kind; Text = text; Choice = choice; Decision = decision; }
 }
 public sealed class GatekeeperChoice
 {

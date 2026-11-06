@@ -240,12 +240,13 @@ and hash verification are excluded from the model timings above.
 
 Words the player says at Trola's choice buttons ([voice-input.md](voice-input.md#answering-at-the-buttons))
 go to the same resident d1 through `POST /choose`. d1 only labels them;
-`GatekeeperSpokenChoice` turns the labels into a click, a rebuke or a request to
-say it again, and the story owns every effect.
+`GatekeeperSpokenChoice` turns the labels into a click, a neutral authored reply, a rebuke or a free
+clarification, and the story owns every effect.
 
-**Questions** (one packed pass): Trola's own `scope` question from
-`decision-questions.json`, and a `choice` question built per request from the
-buttons on screen plus `none`. d1 reads only each option's description, from
+**Questions** (one packed pass): Trola's existing `scope`, `intent` and topic
+questions, player-fact slots, and a `choice` question built per request from the
+available actions plus `none`. All classifications share the same d1 pass;
+there is no extra `/decide` request. d1 reads only each option's description, from
 `decision-choice-options.json`, keyed by the story's choice target.
 
 **Request** (400 on any violation, like `/decide`): `message` 1–240 characters;
@@ -254,7 +255,8 @@ screen order; `history` ≤6 Player/Trola turns of ≤240 characters (Trola's la
 line is the question being answered). No name, business or patience is sent.
 
 **Reply**: `{scope, scope_confidence, choice, choice_confidence, options[],
-probabilities[], seconds, input_tokens}`. `options` is the requested targets
+probabilities[], intent, intent_confidence, topic, topic_confidence, facts[],
+fact_options[], fact_probabilities[], seconds, input_tokens}`. `options` is the requested targets
 then `none`, and `probabilities` their d1 probabilities, as parallel arrays
 because Unity's JsonUtility reads no dictionaries.
 
@@ -266,13 +268,23 @@ Receipts carry `kind: "choice"`, and stdout prints one
 the game then uses keywords for 30 s at a time and F4 says to restart
 `serve_decisions.py`; other failures use keywords for 5 s.
 
-In LLM mode (`-xybridWriter gemma`) an in-world off-topic answer is worded by
+Confident in-world non-actions use a checkpoint-specific policy: reuse authored
+responses with zero patience/progress and return to the same checkpoint, even
+for incidental praise, apology or farewell. Insults retain the rebuke and cost.
+Missing/uncertain classification fields use supported keywords or free
+clarification. See [voice-input.md](voice-input.md) for thresholds and UI timing.
+Restart `serve_decisions.py` after this contract update.
+
+In LLM mode (`-xybridWriter gemma`) an in-world insult is worded by
 the planned writer with reaction `off-topic`; the authored line stands in when
 it fails or takes over 5 s (see voice-input.md). Not measured: d1's accuracy on
 these options (the only recorded plan evidence is the spirit probe's threaten,
 joke and demand cases) and the first request's time without a prime.
 
-## Vesper's thoughts: `POST /spirit`
+## Historical Vesper thoughts: `POST /spirit`
+
+The milestone 1 encounter uses advice-only Vesper and does not call this route.
+The endpoint and replay checks remain for the earlier diagnostic workflow.
 
 Vesper, the spirit in the player's head (`docs/spirit.md`), asks the same
 resident d1 what a typed thought means. `serve_decisions.py` serves

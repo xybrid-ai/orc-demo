@@ -37,6 +37,13 @@ public sealed class SpiritAdvisor
         return "";
     }
 
+    // Label lookup only: the advice-only runtime never asks the graph for a winning move.
+    public string TargetForLabel(string nodeId, string label)
+    {
+        if (nodeId == null || !nodes.TryGetValue(nodeId, out var node) || node.choices == null) return "";
+        return node.choices.Find(choice => choice != null && choice.label == label)?.target ?? "";
+    }
+
     public SpiritAdvice Advise(string nodeId, int patience, int hubRoundsDone, IReadOnlyCollection<string> usedTargets)
     {
         patience = Clamp(patience);

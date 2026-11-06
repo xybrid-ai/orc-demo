@@ -269,10 +269,10 @@ public static class SpiritCoreChecks
         log.Check(SpiritLines.Resolve("Now choose, {name}.", "", "", true) == "Now choose, traveller.", "Empty name reads traveller");
         log.Check(SpiritLines.Resolve("He's calling you {assigned}.", "traveller", "Turnip", false) == "He's calling you Turnip.", "Assigned slot");
         var partial = SpiritLines.Parse("{\"version\":1,\"lines\":[]}");
-        log.Check(partial.timing.listen_seconds == 6 && partial.voice.threads == 4 && partial.visual.whisper_weight > .5f && partial.spirit_name == "Vesper" && partial.lines.Count == 0, "Partial JSON keeps defaults");
+        log.Check(partial.timing.listen_seconds == 6 && partial.voice.threads == 6 && partial.visual.whisper_weight > .5f && partial.spirit_name == "Vesper" && partial.lines.Count == 0, "Partial JSON keeps defaults");
         bool threw = false; try { SpiritLines.Parse("  "); } catch (ArgumentException) { threw = true; }
         log.Check(threw, "Empty JSON throws");
-        log.Check(lines.timing.listen_seconds == 6 && lines.timing.max_replies == 2 && lines.voice.label == "Bryony" && lines.voice.threads == 4 && lines.rules.reckoning_preference == "passage", "Real JSON tuning");
+        log.Check(lines.timing.listen_seconds == 6 && lines.timing.max_replies == 2 && lines.voice.label == "Bryony" && lines.voice.threads == 6 && lines.rules.reckoning_preference == "passage", "Real JSON tuning");
     }
 
     // ---------------------------------------------------------------- H3 policy

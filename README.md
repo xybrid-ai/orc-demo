@@ -118,8 +118,8 @@ use built-in factual routes and neutral authored replies. See
 for the server, the contract, recorded-decision replay and the focused Apple GPU probe.
 
 Vesper, an optional spirit in the player's head, advises at Trola's
-checkpoints with authored lines; the same local d1 labels the player's typed
-thoughts on a separate `/spirit` route. A procedural camp soundscape and
+choice checkpoints with authored advice. All player answers address Trola;
+temporary suggestions can be recalled with Tab or the Hints button. A procedural camp soundscape and
 tension music play with or without her. See [Vesper and the camp](docs/spirit.md)
 for setup, the F6 lens, F7 spirit, F8 ambience, Tab and Esc keys, and the
 `-xybridNoSpirit`, `-xybridNoAmbience` and `-xybridLens` flags.

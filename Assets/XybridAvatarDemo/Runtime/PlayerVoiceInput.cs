@@ -10,9 +10,8 @@ using UnityEngine.UI;
 
 // Hold Left Option to talk. The words are transcribed on this Mac by Whisper (Xybrid's whisper.cpp runtime, Metal) and
 // go where typing would: Trola's name or business field (sent on their own after a beat, so the player can still
-// correct them), a free-form reply, or a thought to Vesper while her field is open. Trola asking for the name or the
-// business wins over Vesper: at those prompts she is telling the player to answer him. At his choice buttons, with
-// Vesper not listening, d1 (POST /choose) reads the words: a button lights up and is clicked, or Trola reacts
+// correct them), or a free-form reply. Vesper is an adviser: all player speech addresses Trola. At his choice
+// checkpoints d1 (POST /choose) reads the words: a suggestion lights up and is selected, or Trola reacts
 // (GatekeeperSpokenChoice). Who the words are for is fixed when the key goes down. Staged by tools/setup_asr.py;
 // without the bundle the game is unchanged.
 public sealed class PlayerVoiceInput : MonoBehaviour
@@ -42,7 +41,7 @@ public sealed class PlayerVoiceInput : MonoBehaviour
     private float autoSendAt;
     private Text status;
     // Who the words are for, fixed when the key goes down; for the buttons, also which buttons (labels and story turn).
-    private enum Listener { Nobody, Trola, Vesper, Buttons }
+    private enum Listener { Nobody, Trola, Buttons }
     private Listener listener;
     private string listenedAt;
     // One spoken answer at the buttons at a time, with its own idle hold (Hear releases the holds owned by this).
@@ -50,6 +49,9 @@ public sealed class PlayerVoiceInput : MonoBehaviour
     private bool answering;
     private Coroutine answer;
     private CancellationTokenSource answerCancel;
+    private int inputVersion;
+    private bool captureActive, delivering;
+    private Task<string> transcription;
     // d1 /choose is skipped for 5 s after a failure, 30 s after a 404 (a server from before /choose); keywords meanwhile.
     private float choiceRetryAt;
     private string choiceProblem = "";
@@ -70,7 +72,7 @@ public sealed class PlayerVoiceInput : MonoBehaviour
     {
         controller = GetComponent<GatekeeperController>();
         view = FindAnyObjectByType<GatekeeperView>();
-        if (controller != null) controller.Restarted += CancelAnswer;
+        if (controller != null) { controller.Restarted += CancelInput; controller.PlayerActed += OnPlayerActed; }
         if (!File.Exists(Path.Combine(BundleDirectory, "model_metadata.json"))) { LastError = "not staged: python3 tools/setup_asr.py"; return; }
         State = Status.Loading;
         StartCoroutine(Load(BundleDirectory));
@@ -102,22 +104,27 @@ public sealed class PlayerVoiceInput : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (controller != null) controller.Restarted -= CancelAnswer;
-        CancelAnswer();
+        if (controller != null) { controller.Restarted -= CancelInput; controller.PlayerActed -= OnPlayerActed; }
+        CancelInput();
         if (holding && controller != null) controller.ReleaseIdle(this);
         if (mic != null) Microphone.End(null);
-        model?.Dispose(); model = null;
+        var loaded = model; model = null;
+        if (transcription != null && !transcription.IsCompleted)
+            transcription.ContinueWith(t => { var ignored = t.Exception; loaded?.Dispose(); }, TaskScheduler.Default);
+        else loaded?.Dispose();
     }
 
-    private bool TrolaAsks => controller.AcceptsText && (controller.Prompt.InputSlot == GatekeeperInputSlot.Name || controller.Prompt.InputSlot == GatekeeperInputSlot.Business);
-    private static SpiritPresence Vesper => SpiritDirector.Instance != null ? SpiritDirector.Instance.Presence : null;
-    // Someone is waiting for words: Trola's field, a free-form reply he will queue, Vesper's field, or Trola's buttons.
-    private bool Wanted => controller != null && (controller.AcceptsText || controller.CanSubmitText || Vesper != null && Vesper.FieldOpen || ButtonsListen);
+    // Hint visibility and Vesper's advice never determine which answers are accepted.
+    private bool Wanted => controller != null && (controller.AcceptsText || controller.CanSubmitText || ButtonsListen);
     private bool ButtonsListen => !answering && controller.AcceptsChoice && !controller.IsSuspended && Checkpoint(out _) != null;
 
     private void Update()
     {
         if (controller == null) return;
+        RecoverCancelledTranscription();
+        if (controller.IsSuspended && (captureActive || answering || autoSendText != null)) CancelInput();
+        if (captureActive) controller.HoldIdle(this);
+        if (answering) controller.HoldIdle(choiceHold);
         var keyboard = Keyboard.current;
         bool key = keyboard != null && keyboard.leftAltKey.isPressed;
         if (State == Status.Ready && key && !holding && keyboard.leftAltKey.wasPressedThisFrame)
@@ -145,21 +152,22 @@ public sealed class PlayerVoiceInput : MonoBehaviour
 
     private void BeginListening()
     {
+        // Fade her before microphone setup so the first captured answer cannot be routed to her.
+        SpiritDirector.Instance?.InterruptAdvice();
         if (!EnsureMicrophone()) return;
         holding = true; pressedAt = Time.unscaledTime;
         pressPosition = Microphone.GetPosition(null);
         State = Status.Listening; autoSendText = null;
         Aim();
-        controller.NotifyActivity(); controller.HoldIdle(this);
-        if (listener == Listener.Vesper) Vesper.ShowSpoken("...");
+        captureActive = true;
+        view?.SetChoiceInputBusy(true);
+        controller.HoldIdle(this);
     }
 
-    // Who the words are for: Trola's name or business, Vesper while her field is open, Trola's reply field, his buttons.
+    // The input slot and checkpoint are captured at key down, even if the hints are already gone.
     private void Aim()
     {
-        var vesper = Vesper;
-        listener = TrolaAsks ? Listener.Trola : vesper != null && vesper.FieldOpen ? Listener.Vesper
-            : controller.AcceptsText || controller.CanSubmitText ? Listener.Trola : ButtonsListen ? Listener.Buttons : Listener.Nobody;
+        listener = controller.AcceptsText || controller.CanSubmitText ? Listener.Trola : ButtonsListen ? Listener.Buttons : Listener.Nobody;
         listenedAt = listener == Listener.Buttons ? Signature() : null;
     }
     // The buttons on screen and the story turn: a round of the hub shows the same labels again on a later turn.
@@ -173,36 +181,45 @@ public sealed class PlayerVoiceInput : MonoBehaviour
     private IEnumerator EndListening()
     {
         holding = false; State = Status.Transcribing;
+        int version = inputVersion;
         yield return new WaitForSecondsRealtime(postRollSeconds);
-        yield return Hear(Read(pressPosition - Mathf.RoundToInt(preRollSeconds * micRate)), mic.channels, micRate);
+        if (version != inputVersion) { RecoverCancelledTranscription(); yield break; }
+        yield return Hear(Read(pressPosition - Mathf.RoundToInt(preRollSeconds * micRate)), mic.channels, micRate, version);
     }
 
     // Recorded audio through the same path as a key press, for checks without a microphone (e.g. macOS `say` output).
     public bool DebugHear(float[] interleaved, int channels, int rate)
     {
-        if (State != Status.Ready || controller == null) return false;
+        if (State != Status.Ready || controller == null || !Wanted) return false;
+        SpiritDirector.Instance?.InterruptAdvice();
         Aim();
-        State = Status.Transcribing; controller.NotifyActivity(); controller.HoldIdle(this);
-        StartCoroutine(Hear(interleaved, channels, rate));
+        State = Status.Transcribing; captureActive = true; controller.HoldIdle(this);
+        view?.SetChoiceInputBusy(true);
+        StartCoroutine(Hear(interleaved, channels, rate, inputVersion));
         return true;
     }
 
-    private IEnumerator Hear(float[] raw, int channels, int rate)
+    private IEnumerator Hear(float[] raw, int channels, int rate, int version)
     {
-        var task = Task.Run(() => Transcribe(raw, channels, rate));
+        var reader = model;
+        var task = transcription = Task.Run(() => Transcribe(raw, channels, rate, reader));
         while (!task.IsCompleted) yield return null;
-        controller.ReleaseIdle(this);
+        if (ReferenceEquals(transcription, task)) transcription = null;
+        if (version != inputVersion) { RecoverCancelledTranscription(); yield break; }
         State = model != null ? Status.Ready : Status.Failed;
+        captureActive = false;
         string heard = task.IsFaulted || task.IsCanceled ? null : task.Result;
         if (task.IsFaulted) { LastError = task.Exception.GetBaseException().Message; Debug.LogWarning("[Voice input] " + LastError, this); }
         if (heard == null)
         {
-            if (listener == Listener.Vesper && Vesper != null) Vesper.ShowSpoken("");
+            controller.ReleaseIdle(this); view?.SetChoiceInputBusy(false);
             Flash("Didn't catch that");
             yield break;
         }
         LastTranscript = heard;
         Deliver(heard);
+        controller.ReleaseIdle(this);
+        if (!answering) view?.SetChoiceInputBusy(false);
     }
 
     // Everything the looping clip recorded from `start` up to now, wrapping around its end.
@@ -226,29 +243,22 @@ public sealed class PlayerVoiceInput : MonoBehaviour
         return data;
     }
 
-    private string Transcribe(float[] interleaved, int channels, int rate)
+    private string Transcribe(float[] interleaved, int channels, int rate, Xybrid.Model reader)
     {
         var pcm = PlayerSpeechAudio.Resample(PlayerSpeechAudio.ToMono(interleaved, channels), rate);
         var gate = PlayerSpeechAudio.Analyze(pcm);
         LastSpeechSeconds = gate.VoicedSeconds;
-        if (!gate.HasSpeech || model == null) return null;
+        if (!gate.HasSpeech || reader == null) return null;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         string text;
         using (var envelope = Xybrid.Envelope.Audio(PlayerSpeechAudio.Wav(PlayerSpeechAudio.Slice(pcm, gate.Start, gate.End))))
-        using (var result = model.Run(envelope)) { result.ThrowIfFailed(); text = result.Text; }
+        using (var result = reader.Run(envelope)) { result.ThrowIfFailed(); text = result.Text; }
         LastTranscribeMs = watch.Elapsed.TotalMilliseconds;
         return PlayerSpeechAudio.Clean(text, gate.PeakDb < -30);
     }
 
     private void Deliver(string text)
     {
-        var vesper = Vesper;
-        if (listener == Listener.Vesper)
-        {
-            if (vesper != null && vesper.FieldOpen) vesper.SubmitSpoken(text);
-            else Flash("Vesper stopped listening");
-            return;
-        }
         if (listener == Listener.Buttons)
         {
             if (!answering && Signature() == listenedAt && controller.AcceptsChoice && !controller.IsSuspended)
@@ -259,7 +269,7 @@ public sealed class PlayerVoiceInput : MonoBehaviour
             else Flash("Trola moved on");
             return;
         }
-        if (view != null && (controller.AcceptsText || controller.CanSubmitText))
+        if (listener == Listener.Trola && view != null && (controller.AcceptsText || controller.CanSubmitText))
         {
             view.SetDraft(text);
             autoSendText = view.Draft; autoSendAt = Time.unscaledTime + autoSendSeconds;
@@ -300,15 +310,14 @@ public sealed class PlayerVoiceInput : MonoBehaviour
                 {
                     asked.ContinueWith(t => { var ignored = t.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
                     while (!asked.IsCompleted) yield return null;
-                    if (asked.Status == TaskStatus.RanToCompletion) { choiceProblem = ""; result = GatekeeperSpokenChoice.FromD1(asked.Result, node, targets, timer.Elapsed.TotalMilliseconds); }
+                    if (asked.Status == TaskStatus.RanToCompletion) { choiceProblem = ""; result = GatekeeperSpokenChoice.FromD1(asked.Result, node, targets, timer.Elapsed.TotalMilliseconds, text); }
                     else ChoiceFailed(asked.Exception?.GetBaseException());
                 }
-                answerCancel = null;
+                answerCancel?.Dispose(); answerCancel = null;
             }
             if (result == null)
                 result = GatekeeperSpokenChoice.FromKeywords(text, node, targets, service == null ? "no d1 service" : !GatekeeperDecisionService.UseD1 ? "d1 off (F4)"
                     : !service.IsAvailable ? "d1 offline" : choiceProblem);
-            controller.ReleaseIdle(choiceHold);
             if (Signature() != at || !controller.AcceptsChoice || controller.IsSuspended) { LastChoice = Said(text, "Trola moved on", result); Flash("Trola moved on"); yield break; }
             if (result.Kind == SpokenChoiceKind.Choose)
             {
@@ -318,18 +327,28 @@ public sealed class PlayerVoiceInput : MonoBehaviour
                 if (view != null) view.MarkSpokenChoice(label);
                 yield return new WaitForSecondsRealtime(choiceMarkSeconds);
                 if (view != null) view.ClearSpokenChoice();
-                if (Signature() == at && controller.AcceptsChoice && !controller.IsSuspended) controller.ChooseSpoken(result.Index, text);
+                if (Signature() == at && controller.AcceptsChoice && !controller.IsSuspended)
+                {
+                    delivering = true;
+                    try { controller.ChooseSpoken(result.Index, text); }
+                    finally { delivering = false; }
+                }
                 else Flash("Trola moved on");
             }
             else
             {
-                var kind = result.Kind == SpokenChoiceKind.OffTopic ? GatekeeperInputKind.OffTopic
-                    : result.Kind == SpokenChoiceKind.OutOfWorld ? GatekeeperInputKind.OutOfWorld : GatekeeperInputKind.Unclear;
-                LastChoice = Said(text, kind.ToString(), result);
-                controller.AnswerSpoken(kind, text);
+                LastChoice = Said(text, result.Kind.ToString(), result);
+                delivering = true;
+                try { controller.AnswerSpoken(result, text); }
+                finally { delivering = false; }
             }
         }
-        finally { answering = false; answerCancel = null; controller.ReleaseIdle(choiceHold); }
+        finally
+        {
+            answering = false; answer = null;
+            answerCancel?.Dispose(); answerCancel = null; controller.ReleaseIdle(choiceHold);
+            view?.ClearSpokenChoice(); view?.SetChoiceInputBusy(false);
+        }
     }
     private static string Said(string text, string outcome, SpokenChoice result) => "\"" + text + "\" → " + outcome + " (" + result.Detail + ")";
 
@@ -343,13 +362,27 @@ public sealed class PlayerVoiceInput : MonoBehaviour
     }
 
     // A restart or teardown drops a pending spoken answer: no late click, idle hold or lit button survives it.
-    private void CancelAnswer()
+    private void OnPlayerActed(GatekeeperInputKind kind, string words) { if (!delivering) CancelInput(); }
+    private void OnDisable() { CancelInput(); }
+    private void RecoverCancelledTranscription()
     {
+        // A deactivated GameObject stops coroutines, but its native task can still be running.
+        // Re-enable only after that task completes, so Whisper never receives concurrent runs.
+        if (captureActive || State != Status.Transcribing || transcription != null && !transcription.IsCompleted) return;
+        if (transcription != null) { var ignored = transcription.Exception; transcription = null; }
+        State = model != null ? Status.Ready : Status.NotStaged;
+    }
+    private void CancelInput()
+    {
+        inputVersion++; holding = false; captureActive = false; autoSendText = null;
+        if (State == Status.Listening) State = model != null ? Status.Ready : Status.NotStaged;
+        RecoverCancelledTranscription();
+        answerCancel?.Cancel();
         if (answer != null) { StopCoroutine(answer); answer = null; }
-        answerCancel?.Cancel(); answerCancel = null;
+        answerCancel?.Dispose(); answerCancel = null;
         answering = false;
-        if (controller != null) controller.ReleaseIdle(choiceHold);
-        if (view != null) view.ClearSpokenChoice();
+        if (controller != null) { controller.ReleaseIdle(choiceHold); controller.ReleaseIdle(this); }
+        if (view != null) { view.ClearSpokenChoice(); view.SetChoiceInputBusy(false); }
     }
 
     // The story node behind the buttons on screen (and its targets in screen order), cached per set of buttons; null when
@@ -386,9 +419,7 @@ public sealed class PlayerVoiceInput : MonoBehaviour
         if (label != null) label.text = text;
     }
 
-    // Says who will hear: at the buttons Vesper while her field is open, otherwise Trola.
-    private string Hint() => !TrolaAsks && Vesper != null && Vesper.FieldOpen ? (controller.AcceptsChoice ? "Hold Option to answer Vesper" : "Hold Option to speak")
-        : !controller.AcceptsText && !controller.CanSubmitText && controller.AcceptsChoice ? "Hold Option to answer Trola" : "Hold Option to speak";
+    private string Hint() => controller.AcceptsChoice ? "Hold Option to answer Trola · Tab for hints" : "Hold Option to speak";
 
     // A small line at the bottom left of the dialogue canvas, built the first time it has something to say.
     private Text StatusText()

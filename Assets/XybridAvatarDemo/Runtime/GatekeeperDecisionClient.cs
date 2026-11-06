@@ -38,10 +38,10 @@ public sealed class GatekeeperDecisionClient
     // options/probabilities are parallel (the requested choices, then "none"): JsonUtility reads no dictionaries.
     [Serializable] public sealed class ChoiceReply
     {
-        public string scope, choice;
-        public float scope_confidence, choice_confidence, seconds;
-        public string[] options;
-        public float[] probabilities;
+        public string scope, choice, intent, topic;
+        public float scope_confidence, choice_confidence, intent_confidence, topic_confidence, seconds;
+        public string[] options, facts, fact_options;
+        public float[] probabilities, fact_probabilities;
     }
     [Serializable] public sealed class Health
     {
@@ -225,6 +225,32 @@ public sealed class GatekeeperDecisionClient
             + " " + reply.topic_confidence.ToString("0.00", CultureInfo.InvariantCulture) + timing;
         return new GatekeeperDecision(scope, intent, facts, detail, topic);
     }
+    // Only complete, known /choose metadata can authorize a checkpoint remark. Old servers still select supported
+    // choices; they cannot turn a confident "none" into a penalty or invent a factual response.
+    public static GatekeeperDecision MapChoice(ChoiceReply reply, string message, double milliseconds)
+    {
+        if (reply == null || !Intents.ContainsKey(reply.intent ?? "") || !Topics.ContainsKey(reply.topic ?? "")
+            || reply.facts == null || reply.fact_options == null || reply.fact_probabilities == null
+            || reply.fact_options.Length != Facts.Count || reply.fact_probabilities.Length != Facts.Count
+            || !Probability(reply.scope_confidence) || !Probability(reply.intent_confidence) || !Probability(reply.topic_confidence))
+            return Unclear("d1 /choose classification missing or invalid");
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var requested = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string fact in reply.facts)
+            if (fact == null || !Facts.ContainsKey(fact) || !requested.Add(fact)) return Unclear("d1 /choose unknown or duplicate fact");
+        for (int i = 0; i < reply.fact_options.Length; i++)
+        {
+            string fact = reply.fact_options[i];
+            float confidence = reply.fact_probabilities[i];
+            if (fact == null || !Facts.ContainsKey(fact) || !seen.Add(fact) || !Probability(confidence)
+                || requested.Contains(fact) != (confidence >= .5f))
+                return Unclear("d1 /choose fact probabilities missing or invalid");
+        }
+        return Map(new Reply { scope = reply.scope, scope_confidence = reply.scope_confidence,
+            intent = reply.intent, intent_confidence = reply.intent_confidence, topic = reply.topic, topic_confidence = reply.topic_confidence,
+            facts = reply.facts }, message, milliseconds);
+    }
+    private static bool Probability(float value) => !float.IsNaN(value) && !float.IsInfinity(value) && value >= 0 && value <= 1;
     private static GatekeeperDecision Unclear(string detail) => new GatekeeperDecision(GatekeeperScope.Unclear, GatekeeperDialogueIntent.Other, GatekeeperFact.None, detail);
     private static string Clip(string text, int limit) => string.IsNullOrEmpty(text) ? "" : text.Length <= limit ? text : text.Substring(0, limit);
 }
