@@ -13,9 +13,21 @@ public sealed class GatekeeperView : MonoBehaviour
     public Button action;
     public Text actionText;
     public RectTransform choiceRow;
+    [Tooltip("Suggestion fade, stagger and time the complete row remains visible, in seconds.")]
+    public float hintFadeSeconds = .2f, hintStaggerSeconds = .15f, hintHoldSeconds = 2;
+    public Button hintsButton;
     [Tooltip("What the player just said (a choice's words, or a typed name or business), above Trola's subtitle. Built at runtime when unset.")]
     public Text playerLine;
     private string shownChoices; // The label set the current buttons were built for; null while the row is hidden.
+    private readonly HashSet<string> previewedCheckpoints = new HashSet<string>();
+    private readonly List<Button> choiceButtons = new List<Button>();
+    private readonly List<CanvasGroup> choiceGroups = new List<CanvasGroup>();
+    private readonly List<int> suggestionIndices = new List<int>();
+    private string choiceCheckpoint;
+    private bool advising, hintsPinned, choiceInputBusy;
+    private int previewFrame = -1, markedIndex = -1;
+    private float previewAt = -1;
+    private bool tabHeld => Keyboard.current != null && Keyboard.current.tabKey.isPressed;
     // Subtitles reveal phrase by phrase as he says them (default) or show whole lines: F4 toggles and remembers it
     // ("phrases" or "whole"; an older "sentences" reads as by phrase), -xybridSubtitles phrases|whole overrides it for a
     // run ("sentences" is an alias). Display only, applied at once; Vesper's line follows it too. True is by phrase
@@ -46,20 +58,27 @@ public sealed class GatekeeperView : MonoBehaviour
 
     private void OnEnable()
     {
-        if (gatekeeper != null) { gatekeeper.Changed += Refresh; gatekeeper.PlayerActed += ShowPlayerLine; gatekeeper.Restarted += ClearPlayerLine; }
+        if (gatekeeper != null) { gatekeeper.Changed += Refresh; gatekeeper.PlayerActed += ShowPlayerLine; gatekeeper.Restarted += ResetChoices; }
         // A reply and its hand-back wrap to two lines; Truncate would silently drop the second one.
         if (sentence != null) sentence.verticalOverflow = VerticalWrapMode.Overflow;
         if (send != null) send.onClick.AddListener(Submit);
         if (action != null) action.onClick.AddListener(Advance);
+        if (hintsButton != null) hintsButton.onClick.AddListener(ToggleHints);
         if (input != null) { input.onEndEdit.AddListener(SubmitOnEnter); input.onValueChanged.AddListener(InputActivity); }
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (gatekeeper != null) { gatekeeper.Changed -= Refresh; gatekeeper.PlayerActed -= ShowPlayerLine; gatekeeper.Restarted -= ClearPlayerLine; }
+        if (gatekeeper != null)
+        {
+            gatekeeper.Changed -= Refresh; gatekeeper.PlayerActed -= ShowPlayerLine; gatekeeper.Restarted -= ResetChoices;
+            gatekeeper.ReleaseIdle(this);
+        }
+        InterruptChoicePresentation();
         if (send != null) send.onClick.RemoveListener(Submit);
         if (action != null) action.onClick.RemoveListener(Advance);
+        if (hintsButton != null) hintsButton.onClick.RemoveListener(ToggleHints);
         if (input != null) { input.onEndEdit.RemoveListener(SubmitOnEnter); input.onValueChanged.RemoveListener(InputActivity); }
     }
 
@@ -122,6 +141,7 @@ public sealed class GatekeeperView : MonoBehaviour
     {
         ShowSubtitle();
         RefreshSubmissionStatus();
+        AnimateChoices();
         if (caretToEnd && input != null && input.isFocused)
         {
             caretToEnd = false;
@@ -168,20 +188,160 @@ public sealed class GatekeeperView : MonoBehaviour
         }
         bool choosing = gatekeeper.AcceptsChoice;
         choiceRow.gameObject.SetActive(choosing);
+        EnsureHintsButton();
+        if (hintsButton != null) hintsButton.gameObject.SetActive(choosing);
         var choices = gatekeeper.CurrentChoices;
         string shown = null;
         if (choosing) { shown = ""; foreach (var choice in choices) shown += choice.label + "\n"; }
         // An idle taunt keeps the same choices live: the buttons under the pointer survive its start and end,
         // so a press that began before the taunt still clicks when released.
         if (shown == shownChoices) return;
+        ClearSpokenChoice();
         shownChoices = shown;
         foreach (Transform child in choiceRow) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
-        if (!choosing) return;
+        choiceButtons.Clear(); choiceGroups.Clear(); suggestionIndices.Clear();
+        if (!choosing)
+        {
+            InterruptChoicePresentation();
+            return;
+        }
+        string checkpoint = gatekeeper.Turns + "\n" + shown;
+        if (choiceCheckpoint != checkpoint)
+        {
+            choiceCheckpoint = checkpoint;
+            InterruptChoicePresentation();
+        }
         for (int i = 0; i < choices.Count; i++)
         {
             int index = i;
             var button = MakeChoice(choices[i].label);
-            button.onClick.AddListener(() => gatekeeper.Choose(index));
+            button.onClick.AddListener(() => SelectHint(index));
+            choiceButtons.Add(button);
+            var visibility = button.GetComponent<CanvasGroup>();
+            if (visibility == null) visibility = button.gameObject.AddComponent<CanvasGroup>();
+            visibility.alpha = 0; visibility.interactable = visibility.blocksRaycasts = false;
+            choiceGroups.Add(visibility);
+            bool aggressive = choices[i].label == "Threaten" || choices[i].label == "Demand the gate";
+            var layout = button.GetComponent<LayoutElement>();
+            if (layout == null) layout = button.gameObject.AddComponent<LayoutElement>();
+            // Aggressive actions stay available to speech. They only appear when acknowledged, in their story slot.
+            layout.ignoreLayout = aggressive;
+            if (!aggressive) suggestionIndices.Add(i);
+        }
+        // Give Vesper time to claim the checkpoint before starting the preview. Without her, hints still preview.
+        if (previewedCheckpoints.Add(checkpoint)) previewFrame = Time.frameCount + 2;
+    }
+
+    public void BeginChoiceAdvice()
+    {
+        if (gatekeeper == null || !gatekeeper.AcceptsChoice) return;
+        // The UI may have subscribed after the spirit (for example after re-enabling the view).
+        // Initialize this checkpoint before claiming it so Refresh cannot erase the advice hold.
+        RefreshChoices();
+        advising = true; previewFrame = -1; previewAt = -1;
+        gatekeeper.HoldIdle(this);
+    }
+    public void EndChoiceAdvice()
+    {
+        if (!advising) return;
+        advising = false;
+        if (!choiceInputBusy && gatekeeper != null && gatekeeper.AcceptsChoice) previewAt = Time.unscaledTime;
+    }
+    public void InterruptChoicePresentation()
+    {
+        advising = false; hintsPinned = false; previewAt = -1; previewFrame = -1;
+        if (gatekeeper != null) gatekeeper.ReleaseIdle(this);
+        foreach (var group in choiceGroups)
+            if (group != null) { group.alpha = 0; group.interactable = group.blocksRaycasts = false; }
+    }
+    public void SetChoiceInputBusy(bool busy)
+    {
+        choiceInputBusy = busy;
+        if (busy) InterruptChoicePresentation();
+    }
+    private void ResetChoices()
+    {
+        ClearPlayerLine(); ClearSpokenChoice(); InterruptChoicePresentation();
+        choiceInputBusy = false; choiceCheckpoint = null; previewedCheckpoints.Clear();
+    }
+    private void SelectHint(int index)
+    {
+        // A second click during the spoken acknowledgement must not execute another action.
+        if (markedIndex >= 0 || gatekeeper == null || !gatekeeper.AcceptsChoice) return;
+        SpiritDirector.Instance?.InterruptAdvice();
+        InterruptChoicePresentation();
+        gatekeeper.Choose(index);
+    }
+    private void ToggleHints()
+    {
+        if (markedIndex >= 0 || choiceInputBusy || gatekeeper == null || !gatekeeper.AcceptsChoice) return;
+        hintsPinned = !hintsPinned;
+        if (hintsPinned) { previewAt = -1; previewFrame = -1; }
+    }
+    private void EnsureHintsButton()
+    {
+        if (hintsButton != null || send == null) return;
+        hintsButton = Instantiate(send, choiceRow.parent);
+        hintsButton.name = "Hints";
+        hintsButton.onClick.RemoveAllListeners(); hintsButton.onClick.AddListener(ToggleHints);
+        var rect = hintsButton.GetComponent<RectTransform>();
+        rect.anchorMin = rect.anchorMax = new Vector2(.94f, .035f); rect.pivot = new Vector2(.5f, 0);
+        rect.anchoredPosition = Vector2.zero; rect.sizeDelta = new Vector2(88, 36);
+        var text = hintsButton.GetComponentInChildren<Text>(true);
+        if (text != null) { text.text = "Hints"; text.font = sentence.font; text.fontSize = 18; text.supportRichText = false; }
+    }
+    private void AnimateChoices()
+    {
+        if (gatekeeper == null) return;
+        bool choosing = gatekeeper.AcceptsChoice && isActiveAndEnabled;
+        if (!choosing)
+        {
+            gatekeeper.ReleaseIdle(this);
+            return;
+        }
+        float now = Time.unscaledTime;
+        if (previewFrame >= 0 && Time.frameCount >= previewFrame && !advising && !choiceInputBusy)
+        { previewFrame = -1; previewAt = now; }
+        float fade = Mathf.Max(.01f, hintFadeSeconds), stagger = Mathf.Max(0, hintStaggerSeconds);
+        float completeAt = Mathf.Max(0, suggestionIndices.Count - 1) * stagger + fade;
+        float endAt = completeAt + Mathf.Max(0, hintHoldSeconds) + fade;
+        bool preview = previewAt >= 0 && now - previewAt < endAt;
+        if (!preview) previewAt = -1;
+        bool recalling = !choiceInputBusy && (hintsPinned || tabHeld);
+        if (advising || previewFrame >= 0 || preview || recalling || choiceInputBusy || markedIndex >= 0) gatekeeper.HoldIdle(this);
+        else gatekeeper.ReleaseIdle(this);
+        if (hintsButton != null)
+        {
+            hintsButton.interactable = !choiceInputBusy && markedIndex < 0;
+            var text = hintsButton.GetComponentInChildren<Text>(true);
+            if (text != null) text.text = hintsPinned ? "Hide hints" : "Hints";
+        }
+        for (int i = 0; i < choiceGroups.Count; i++)
+        {
+            var group = choiceGroups[i];
+            if (group == null) continue;
+            int order = suggestionIndices.IndexOf(i);
+            float target = 0;
+            if (markedIndex >= 0) target = markedIndex == i ? 1 : 0;
+            else if (order >= 0 && !choiceInputBusy)
+            {
+                if (recalling) target = 1;
+                else if (preview)
+                {
+                    float elapsed = now - previewAt;
+                    target = Mathf.Min(Mathf.Clamp01((elapsed - order * stagger) / fade), Mathf.Clamp01((endAt - elapsed) / fade));
+                }
+            }
+            // Preview already contains its fade envelope; recall fades at the same rate.
+            group.alpha = preview || markedIndex >= 0 || choiceInputBusy ? target : Mathf.MoveTowards(group.alpha, target, Time.unscaledDeltaTime / fade);
+            group.interactable = group.blocksRaycasts = target > 0 && group.alpha > .01f && !choiceInputBusy && markedIndex < 0;
+            if (i == markedIndex && order < 0)
+            {
+                var rect = choiceButtons[i].GetComponent<RectTransform>();
+                rect.anchorMin = rect.anchorMax = new Vector2((i + .5f) / choiceGroups.Count, .5f);
+                rect.pivot = new Vector2(.5f, .5f); rect.anchoredPosition = Vector2.zero;
+                rect.sizeDelta = new Vector2((choiceRow.rect.width - 10 * (choiceGroups.Count - 1)) / choiceGroups.Count, 52);
+            }
         }
     }
     // The current line whole, or its phrases the voice has reached with the rest laid out but transparent
@@ -217,7 +377,7 @@ public sealed class GatekeeperView : MonoBehaviour
             if (said == null) foreach (var choice in gatekeeper.CurrentChoices) if (choice != null && choice.label == label) said = choice.say;
         }
         else if (kind == GatekeeperInputKind.Text) said = Echo(label);
-        else if (kind == GatekeeperInputKind.OffTopic || kind == GatekeeperInputKind.OutOfWorld || kind == GatekeeperInputKind.Unclear) said = Safe(label);
+        else if (kind == GatekeeperInputKind.OffTopic || kind == GatekeeperInputKind.OutOfWorld || kind == GatekeeperInputKind.Unclear || kind == GatekeeperInputKind.Neutral) said = Safe(label);
         if (string.IsNullOrWhiteSpace(said)) return;
         PlayerLine().text = "You: \"" + said.Trim() + "\"";
     }
@@ -248,13 +408,16 @@ public sealed class GatekeeperView : MonoBehaviour
     {
         ClearSpokenChoice();
         if (choiceRow == null) return;
-        foreach (Transform child in choiceRow)
+        for (int index = 0; index < choiceButtons.Count; index++)
         {
+            var child = choiceButtons[index].transform;
             if (!child.gameObject.activeInHierarchy || child.name != "Choice " + label) continue;
-            var button = child.GetComponent<Button>();
+            var button = choiceButtons[index];
             if (button == null || button.targetGraphic == null) return;
             spokenGraphic = button.targetGraphic; spokenButton = child; spokenColor = spokenGraphic.color; spokenScale = child.localScale;
+            markedIndex = index;
             spokenGraphic.color = SpokenTint; child.localScale = spokenScale * 1.06f;
+            AnimateChoices();
             return;
         }
     }
@@ -263,6 +426,7 @@ public sealed class GatekeeperView : MonoBehaviour
         if (spokenGraphic != null) spokenGraphic.color = spokenColor;
         if (spokenButton != null) spokenButton.localScale = spokenScale;
         spokenGraphic = null; spokenButton = null;
+        markedIndex = -1;
     }
     // A sibling of the subtitle, not part of it: the self-test requires ShownLine == line.text while he speaks.
     private Text PlayerLine()
@@ -290,7 +454,7 @@ public sealed class GatekeeperView : MonoBehaviour
         var size = button.GetComponent<LayoutElement>();
         if (size != null) { size.preferredWidth = -1; size.flexibleWidth = 1; }
         var text = button.GetComponentInChildren<Text>(true);
-        if (text != null) { text.text = label; text.font = sentence.font; text.fontSize = 23; text.supportRichText = false; }
+        if (text != null) { text.text = label == "Ask about the camp" ? "Talk about camp" : label; text.font = sentence.font; text.fontSize = 23; text.supportRichText = false; }
         button.interactable = true; button.gameObject.SetActive(true);
         return button;
     }

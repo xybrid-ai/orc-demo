@@ -42,8 +42,12 @@ public sealed class SpiritCheckpoint
     public IReadOnlyList<string> Choices = Array.Empty<string>(), UsedTargets = Array.Empty<string>();
     public bool NameAssigned, Interrupted, Taunted, FirstSession;
     public GatekeeperOutcome Outcome; public string PlayerName = "", LastChoiceLabel = "", TrolaLastLineId = "";
+    public string LastApproach = "";
+    public bool PreviousApproachRepeated;
     public int TrolaLastDelta; public double Now;
     public string VisitKey => Stage + ":" + HubRoundsDone + ":" + Visit;
+    // Identity of a real choice checkpoint, unchanged by neutral remarks, clarification or idle taunts.
+    public string AdviceKey => Stage + ":" + HubRoundsDone + ":" + string.Join(",", UsedTargets);
 }
 public sealed class SpiritCue
 {

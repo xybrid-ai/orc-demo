@@ -71,6 +71,23 @@ public static class GatekeeperResponsePolicy
             return new GatekeeperResponsePlan("preserve-identity", "contempt", text: "I'm Trola. I guard this gate. State your business.");
         if (decision.Scope == GatekeeperScope.OutOfWorld)
             return new GatekeeperResponsePlan("redirect", intensity: .35f, text: "Speak plainly. What has that to do with my gate?");
+        return InWorld(state, decision);
+    }
+
+    // Remarks do not take an approach, repair patience or end the story. Reuse the ordinary authored wording and
+    // performance, but never its progress effects. Unlike free talk, zero patience alone does not expel a neutral speaker.
+    public static GatekeeperResponsePlan AtCheckpoint(GatekeeperConversationSnapshot state, GatekeeperDecision decision)
+    {
+        if (state == null) throw new ArgumentNullException(nameof(state));
+        if (decision == null || decision.Scope != GatekeeperScope.InWorld || decision.Intent == GatekeeperDialogueIntent.Insult)
+            throw new ArgumentException("Checkpoint remarks need an in-world, non-insult classification.", nameof(decision));
+        var plan = InWorld(state, decision);
+        return new GatekeeperResponsePlan(plan.Reaction, plan.Emotion, plan.Intensity,
+            text: plan.AuthoredText, direction: plan.WriterDirection);
+    }
+
+    private static GatekeeperResponsePlan InWorld(GatekeeperConversationSnapshot state, GatekeeperDecision decision)
+    {
         switch (decision.Intent)
         {
             case GatekeeperDialogueIntent.PlayerFacts:

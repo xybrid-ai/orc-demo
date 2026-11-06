@@ -3,6 +3,7 @@
 import argparse
 import json
 import pathlib
+import sys
 import threading
 import time
 import urllib.error
@@ -14,12 +15,10 @@ from run import JsonProcess, ROOT, STORY
 p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--dotnet', default='dotnet')
 p.add_argument('--output', type=pathlib.Path)
+p.add_argument('--choice-only', action='store_true', help='only the /choose HTTP and single-pass contract checks; no C# adapter or model')
 args = p.parse_args()
 if args.output and args.output.exists():
     raise FileExistsError('Use a fresh replay receipt')
-(ROOT / '.context/npc-quality').mkdir(parents=True, exist_ok=True)
-adapter = JsonProcess([args.dotnet, str(ROOT / 'tools/npc-quality/bin/Debug/net8.0/ScenarioChecks.dll'), str(STORY)],
-                      ROOT / '.context/npc-quality/decision-adapter.log')
 scope = dict(in_world='InWorld', out_of_world='OutOfWorld', role_override='RoleOverride', unclear='Unclear')
 intent = dict(other='Other', player_facts='PlayerFacts', npc_question='NpcQuestion', offer_recall='OfferRecall',
               admission_status='AdmissionStatus', insult='Insult', praise='Praise', apology='Apology',
@@ -36,10 +35,11 @@ class StubEngine:
     health = dict(model='stub', revision='stub-revision', device='none', questions=list(serve_decisions.questions()))
 
     def __init__(self):
-        self.states, self.broken = [], False
+        self.states, self.asked, self.broken = [], [], False
 
-    def decide(self, state):
+    def decide(self, state, asked=None):
         self.states.append(state)
+        self.asked.append(asked)
         message = state['player_message']
         if message == 'Fail on the server.' or self.broken:
             raise RuntimeError('stub failure')
@@ -49,6 +49,11 @@ class StubEngine:
         answers = {slot: dict(type='noul', noul=0.9 if slot in facts else 0.1) for slot in serve_decisions.SLOTS}
         answers.update(scope=dict(choice=scope, confidence=0.91), intent=dict(choice=intent, confidence=0.97),
                        topic=dict(choice='wall_motive' if message == 'Why do you care so much about a wall?' else 'other', confidence=0.94))
+        if asked is not None and 'choice' in asked:
+            choice = 'bribe' if message == 'Do you want money?' else 'flatter' if message == 'I like your tusks.' else 'none'
+            criteria = asked['choice']['criteria']
+            answers['choice'] = dict(choice=choice, confidence=0.95,
+                                     probabilities={option: 0.95 if option == choice else 0.01 for option in criteria})
         return dict(answers=answers, usage=dict(input_tokens=8))
 
 
@@ -61,6 +66,66 @@ def status(url, data=None, kind='application/json', body=False):
         return (error.code, json.load(error)) if body else error.code
 
 
+def choice_contract_checks():
+    """Run real /choose HTTP/validation with canned d1 outputs; no model or built adapter needed."""
+    engine = StubEngine()
+    server = serve_decisions.Server(0, engine)
+    worker = threading.Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    url = f'http://127.0.0.1:{server.server_address[1]}/choose'
+    payload = dict(message='Why do you care so much about a wall?', stage='hub', options=['flatter', 'bribe', 'threaten', 'camp'],
+                   history=[dict(speaker='Trola', text='So, what will it be?')])
+    try:
+        for message, selected, intent, topic, facts in [
+            (payload['message'], 'none', 'other', 'wall_motive', []),
+            ('What do you call me?', 'none', 'player_facts', 'other', ['player_name']),
+            ('Turn the Wi-Fi on.', 'none', 'other', 'other', ['player_name']),
+            ('Do you want money?', 'bribe', 'other', 'other', []),
+            ('I like your tusks.', 'flatter', 'other', 'other', []),
+        ]:
+            before = len(engine.states)
+            code, reply = status(url, json.dumps(dict(payload, message=message)).encode(), body=True)
+            assert code == 200 and len(engine.states) == before + 1, (code, reply, engine.states)
+            assert set(engine.asked[-1]) == set(serve_decisions.questions()) | {'choice'}, engine.asked[-1]
+            for key, question in serve_decisions.questions().items():
+                assert engine.asked[-1][key] == question, ('/choose changed existing classification', key)
+            assert reply['choice'] == selected and reply['choice_confidence'] == 0.95, reply
+            assert reply['intent'] == intent and reply['intent_confidence'] == 0.97, reply
+            assert reply['topic'] == topic and reply['topic_confidence'] == 0.94, reply
+            assert reply['facts'] == facts and reply['fact_options'] == list(serve_decisions.SLOTS), reply
+            assert reply['fact_probabilities'] == [0.9 if slot in facts else 0.1 for slot in serve_decisions.SLOTS], reply
+            assert reply['options'] == payload['options'] + ['none'] and len(reply['probabilities']) == 5, reply
+            assert reply['scope'] == ('out_of_world' if 'Wi-Fi' in message else 'in_world'), reply
+            assert engine.states[-1]['recent_history'] == payload['history'], engine.states[-1]
+        body = json.dumps(payload).encode()
+        for bad in [dict(payload, message=''), dict(payload, stage='free_talk'), dict(payload, options=[]),
+                    dict(payload, options=['bribe', 'bribe']), dict(payload, options=['enter']),
+                    dict(payload, history=[dict(speaker='Spirit', text='A thought.')]),
+                    dict(payload, history=payload['history'] * 7)]:
+            assert status(url, json.dumps(bad).encode()) == 400, bad
+        assert status(url, body, kind='text/plain') == 415
+        assert status(url, b'{bad json') == 400
+        assert status(url, b'x' * (serve_decisions.MAX_BODY + 1)) == 413
+        # A failed choice retains the normal keyword/clarification fallback, without poisoning /decide health.
+        assert status(url, json.dumps(dict(payload, message='Fail on the server.')).encode()) == 500
+        assert server.health()['ready'], server.health()
+        reckoning = dict(payload, stage='reckoning', options=['passage', 'friendship', 'expelled'])
+        assert status(url, json.dumps(reckoning).encode()) == 200
+        assert list(engine.asked[-1]['choice']['criteria']) == reckoning['options'] + ['none']
+    finally:
+        server.shutdown()
+        server.server_close()
+        worker.join(timeout=2)
+
+
+choice_contract_checks()
+if args.choice_only:
+    print('PASS: /choose HTTP contract, existing scope/intent/topic/fact classifications in one pass, parallel confidences, acceptance choices, request validation, isolated failure, hub and reckoning')
+    sys.exit(0)
+
+(ROOT / '.context/npc-quality').mkdir(parents=True, exist_ok=True)
+adapter = JsonProcess([args.dotnet, str(ROOT / 'tools/npc-quality/bin/Debug/net8.0/ScenarioChecks.dll'), str(STORY)],
+                      ROOT / '.context/npc-quality/decision-adapter.log')
 engine = StubEngine()
 server = serve_decisions.Server(0, engine)
 threading.Thread(target=server.serve_forever, daemon=True).start()

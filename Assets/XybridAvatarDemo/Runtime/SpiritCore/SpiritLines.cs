@@ -21,11 +21,13 @@ using System.Text.RegularExpressions;
     [Serializable] public sealed class Voice
     {
         public string engine = "XnPtts", checkpoint = "Phonon", voice_file = "Phonon/spirit.safetensors", label = "Bryony";
-        public int threads = 4;   // used only without Trola's live speech; otherwise she opens at his thread count (SpiritVoice)
+        public int threads = 6;   // used only without Trola's live speech; otherwise she opens at his thread count (SpiritVoice)
+        public float gain = .6f;
         public float preparation_timeout = 4;
     }
     [Serializable] public sealed class Visual
     {
+        public float effects_strength = .5f;
         public float whisper_weight = .55f, vignette = .44f, smoothness = .8f, chromatic = .55f, aperture = 1.6f;
         public float saturation = -28, exposure = -.12f, bloom = .85f, slow_motion = .6f, camera_push_mm = 3;
     }
@@ -83,10 +85,12 @@ using System.Text.RegularExpressions;
         if (rules.reckoning_preference != "passage" && rules.reckoning_preference != "friendship") return "reckoning_preference must be passage or friendship.";
         if (rules.distraction_patience_delta > 0 || rules.distraction_patience_delta < -1) return "distraction_patience_delta must be 0 or -1.";
         if (string.IsNullOrWhiteSpace(voice.engine) || string.IsNullOrWhiteSpace(voice.checkpoint) || string.IsNullOrWhiteSpace(voice.voice_file)
-            || voice.threads < 1 || voice.threads > 16 || !Positive(voice.preparation_timeout))
+            || voice.threads < 1 || voice.threads > 16 || !Positive(voice.preparation_timeout)
+            || !Finite(voice.gain) || voice.gain < 0 || voice.gain > 1)
             return "Invalid voice block.";
         var v = visual;
-        if (!Finite(v.whisper_weight, v.vignette, v.smoothness, v.chromatic, v.aperture, v.saturation, v.exposure, v.bloom, v.slow_motion, v.camera_push_mm)
+        if (!Finite(v.effects_strength, v.whisper_weight, v.vignette, v.smoothness, v.chromatic, v.aperture, v.saturation, v.exposure, v.bloom, v.slow_motion, v.camera_push_mm)
+            || v.effects_strength < 0 || v.effects_strength > 1
             || v.whisper_weight < 0 || v.whisper_weight > 1 || v.slow_motion < 0 || v.slow_motion > 1)
             return "Invalid visual block.";
         var ids = new HashSet<string>();
@@ -103,7 +107,8 @@ using System.Text.RegularExpressions;
                 foreach (bool useName in new[] { true, false })
                 {
                     if (line.always_name && !useName) continue;
-                    string problem = Problem(Resolve(line.text, name, name == Traveller ? "Turnip" : name, useName));
+                    string resolved = Resolve(line.text, name, name == Traveller ? "Turnip" : name, useName);
+                    string problem = line.family == "adviser.intro" ? IntroProblem(resolved) : Problem(resolved);
                     if (problem != null) return problem + ": " + line.id + " (" + name + (useName ? "" : ", no name") + ")";
                 }
         }
@@ -113,6 +118,40 @@ using System.Text.RegularExpressions;
                 if (!Has(need.family, need.key ?? "", patience))
                     return "Missing line: " + need.family + (string.IsNullOrEmpty(need.key) ? "" : "." + need.key) + " at patience " + patience;
         return null;
+    }
+
+    // Only onboarding may exceed the short-remark budget. Validate each sentence against the speech sanitizer,
+    // since the NPC sanitizer's two-sentence truncation must never shorten this three-sentence authored explanation.
+    private static string IntroProblem(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return "Empty introduction";
+        if (text.Contains("{") || text.Contains("}")) return "Unresolved slot";
+        if (Sentences.Matches(text).Count > 3 || text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length > 40 || text.Length > 240)
+            return "Introduction exceeds 3 sentences, 40 words or 240 characters";
+        foreach (Match sentence in Sentences.Matches(text))
+            if (GatekeeperNpcModel.SanitizeSpeech(sentence.Value.Trim()) != sentence.Value.Trim()) return "Introduction changed by SanitizeSpeech";
+        return null;
+    }
+
+    public static IEnumerable<(string family, string key, int minPatience, int maxPatience)> AdviserRequirements()
+    {
+        yield return ("adviser.intro", "", 0, 5);
+        foreach (string key in new[] { "none", "flatter", "bribe", "camp", "threaten", "repeat" })
+            yield return ("adviser.remark", key, 0, 5);
+    }
+
+    public SpiritCue AdviserCue(SpiritCheckpoint checkpoint, bool explain)
+    {
+        string family = explain ? "adviser.intro" : "adviser.remark";
+        string key = explain ? "" : checkpoint.PreviousApproachRepeated ? "repeat" : checkpoint.LastApproach;
+        if (!explain && key != "flatter" && key != "bribe" && key != "camp" && key != "threaten" && key != "repeat") key = "none";
+        var line = lines.Find(l => l != null && l.family == family && l.key == key && checkpoint.Patience >= l.min_patience && checkpoint.Patience <= l.max_patience);
+        if (line == null) return null;
+        return new SpiritCue
+        {
+            LineId = line.id, Family = family, Key = key,
+            Text = Resolve(line.text, checkpoint.PlayerName, checkpoint.PlayerName, false), Rule = "authored choice advice"
+        };
     }
 
     public bool Has(string family, string key, int patience)

@@ -3,14 +3,25 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-// Words spoken at Trola's choice buttons become a click, a rebuke or a request to say it again (docs/voice-input.md).
+// Words spoken at Trola's choice buttons become a click, a neutral remark, a rebuke or a free clarification.
 // d1 reads them through POST /choose; without it, Vesper's keyword reading can pick a button or ask again, never rebuke.
-public enum SpokenChoiceKind { Choose, OffTopic, OutOfWorld, Unclear }
+public enum SpokenChoiceKind { Choose, OffTopic, OutOfWorld, Unclear, Neutral }
 public sealed class SpokenChoice
 {
     public SpokenChoiceKind Kind;
     public int Index = -1; // The button, in screen order, when Kind is Choose.
     public string Detail = ""; // F4: labels, confidences and where they came from.
+    public GatekeeperDecision Decision; // Closed labels only; never effects or generated text.
+    // The controller owns acknowledgement and ChooseSpoken for actual choices. Non-choice answers carry this input
+    // through to the source so neutral wording keeps its classification instead of being reclassified or discarded.
+    public GatekeeperPlayerInput ToInput(string words)
+    {
+        if (Kind == SpokenChoiceKind.Choose) throw new InvalidOperationException("A recognized choice uses ChooseSpoken after acknowledgement.");
+        var kind = Kind == SpokenChoiceKind.Neutral ? GatekeeperInputKind.Neutral
+            : Kind == SpokenChoiceKind.OffTopic ? GatekeeperInputKind.OffTopic
+            : Kind == SpokenChoiceKind.OutOfWorld ? GatekeeperInputKind.OutOfWorld : GatekeeperInputKind.Unclear;
+        return new GatekeeperPlayerInput(kind, words, decision: Decision);
+    }
 }
 public static class GatekeeperSpokenChoice
 {
@@ -42,8 +53,9 @@ public static class GatekeeperSpokenChoice
     }
 
     // Order matters: an unrelated task or role override is always a rebuke; then a confident button; then a confident
-    // in-world "none"; anything else (a near tie, a low score, "unclear") asks again for free.
-    public static SpokenChoice FromD1(GatekeeperDecisionClient.ChoiceReply reply, GatekeeperStory.Node node, string[] targets, double milliseconds)
+    // in-world "none" classified as a remark or an insult; anything uncertain asks again for free.
+    public static SpokenChoice FromD1(GatekeeperDecisionClient.ChoiceReply reply, GatekeeperStory.Node node, string[] targets, double milliseconds,
+        string message = null)
     {
         if (reply == null) return new SpokenChoice { Kind = SpokenChoiceKind.Unclear, Detail = "d1 returned nothing" };
         string detail = "d1 " + reply.choice + " " + P(reply.choice_confidence) + RunnerUp(reply) + " / " + reply.scope + " " + P(reply.scope_confidence)
@@ -57,8 +69,26 @@ public static class GatekeeperSpokenChoice
             return reply.choice_confidence >= bar ? new SpokenChoice { Kind = SpokenChoiceKind.Choose, Index = index, Detail = detail }
                 : new SpokenChoice { Kind = SpokenChoiceKind.Unclear, Detail = detail + " (under " + P(bar) + ")" };
         }
-        if (reply.choice == "none" && reply.choice_confidence >= Bar && reply.scope == "in_world")
-            return new SpokenChoice { Kind = SpokenChoiceKind.OffTopic, Detail = detail };
+        if (reply.choice == "none" && reply.choice_confidence >= Bar && reply.scope == "in_world" && reply.scope_confidence >= ScopeBar)
+        {
+            var decision = GatekeeperDecisionClient.MapChoice(reply, message, milliseconds);
+            detail += " / " + decision.Detail;
+            if (decision.Scope != GatekeeperScope.InWorld)
+                return message == null ? new SpokenChoice { Kind = SpokenChoiceKind.Unclear, Detail = detail }
+                    : FromKeywords(message, node, targets, detail);
+            if (reply.intent_confidence < Bar)
+                return new SpokenChoice { Kind = SpokenChoiceKind.Unclear, Detail = detail + " (uncertain remark)" };
+            // Topic uncertainty cannot excuse an otherwise clear insult. It only limits neutral wording specificity.
+            if (decision.Intent == GatekeeperDialogueIntent.Insult)
+                return new SpokenChoice { Kind = SpokenChoiceKind.OffTopic, Decision = decision, Detail = detail };
+            if (reply.topic_confidence < Bar)
+                return new SpokenChoice { Kind = SpokenChoiceKind.Unclear, Detail = detail + " (uncertain topic)" };
+            // A barely-positive fact slot must not assert a remembered fact. All effects stay in checkpoint policy.
+            foreach (float probability in reply.fact_probabilities)
+                if (probability >= .5f && probability < Bar)
+                    return new SpokenChoice { Kind = SpokenChoiceKind.Unclear, Detail = detail + " (uncertain fact)" };
+            return new SpokenChoice { Kind = SpokenChoiceKind.Neutral, Decision = decision, Detail = detail };
+        }
         return new SpokenChoice { Kind = SpokenChoiceKind.Unclear, Detail = detail };
     }
 

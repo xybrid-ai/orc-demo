@@ -30,7 +30,7 @@ public sealed class GatekeeperController : MonoBehaviour
     // Where the wait before each line's first audio went; raised once the audio starts (or the subtitle, without a voice).
     public event Action<GatekeeperLineTiming> TimingRecorded;
     // A player choice (clicked or spoken), typed text (direct or queued), interruption, or a spoken answer that picked no
-    // button (OffTopic, OutOfWorld, Unclear), raised before the controller acts on it. Label: the choice label, the typed
+    // button (Neutral, OffTopic, OutOfWorld, Unclear), raised before the controller acts on it. Label: the choice label, the typed
     // text, "" for an interruption, or the spoken words. Subscribers must not drive the controller.
     public event Action<GatekeeperInputKind, string> PlayerActed;
     // The player's own words while PlayerActed reports a spoken choice (ChooseSpoken); null otherwise.
@@ -137,12 +137,18 @@ public sealed class GatekeeperController : MonoBehaviour
     private float idleSince;
     // Owner-keyed holds freeze (never reset) the idle-taunt clock: the restlessness pauses, and on the last
     // release the clock resumes where it stopped. Holds never block Choose, Submit or Interrupt.
-    private readonly HashSet<object> idleHolds = new HashSet<object>();
+    private readonly Dictionary<object, float> idleHolds = new Dictionary<object, float>();
     private float idleHeldAt;
     private const float MaxIdleHoldSeconds = 20;
     private float IdleNow => idleHolds.Count > 0 ? idleHeldAt : Time.realtimeSinceStartup;
     public bool IsIdleHeld => idleHolds.Count > 0;
-    public void HoldIdle(object owner) { if (owner != null && idleHolds.Add(owner) && idleHolds.Count == 1) idleHeldAt = Time.realtimeSinceStartup; }
+    // Active owners renew their lease each frame. Holding Tab can legitimately last longer than the watchdog.
+    public void HoldIdle(object owner)
+    {
+        if (owner == null) return;
+        if (idleHolds.Count == 0) idleHeldAt = Time.realtimeSinceStartup;
+        idleHolds[owner] = Time.realtimeSinceStartup;
+    }
     public void ReleaseIdle(object owner) { if (owner != null && idleHolds.Remove(owner) && idleHolds.Count == 0) idleSince += Time.realtimeSinceStartup - idleHeldAt; }
     private void ClearIdleHolds() { if (idleHolds.Count == 0) return; idleSince += Time.realtimeSinceStartup - idleHeldAt; idleHolds.Clear(); }
     // Each subscriber runs in isolation: a failing one is logged and never stops the input or the others.
@@ -245,6 +251,13 @@ public sealed class GatekeeperController : MonoBehaviour
         RaisePlayerActed(kind, words);
         Begin(new GatekeeperPlayerInput(kind, words)); return true;
     }
+    public bool AnswerSpoken(SpokenChoice answer, string words)
+    {
+        if (answer == null || answer.Kind == SpokenChoiceKind.Choose || !AcceptsChoice || suspended || string.IsNullOrWhiteSpace(words)) return false;
+        var input = answer.ToInput(words);
+        RaisePlayerActed(input.Kind, words);
+        Begin(input); return true;
+    }
     public void Skip()
     {
         if (Prompt.CanInterrupt) { Interrupt(); return; }
@@ -264,10 +277,16 @@ public sealed class GatekeeperController : MonoBehaviour
     private void Update()
     {
         // A hold its owner forgot to release must not freeze Trola for the rest of the session.
-        if (idleHolds.Count > 0 && Time.realtimeSinceStartup - idleHeldAt > MaxIdleHoldSeconds)
+        if (idleHolds.Count > 0)
         {
-            Debug.LogWarning("[Gatekeeper] Idle clock held for over " + MaxIdleHoldSeconds + " s; releasing " + idleHolds.Count + " hold(s).", this);
-            ClearIdleHolds();
+            List<object> expired = null;
+            foreach (var hold in idleHolds)
+                if (Time.realtimeSinceStartup - hold.Value > MaxIdleHoldSeconds) (expired ??= new List<object>()).Add(hold.Key);
+            if (expired != null)
+            {
+                Debug.LogWarning("[Gatekeeper] Releasing " + expired.Count + " idle hold(s) not renewed for " + MaxIdleHoldSeconds + " s.", this);
+                foreach (var owner in expired) ReleaseIdle(owner);
+            }
         }
         if (!suspended && source != null && IsWaiting && Prompt.IdleSeconds > 0 && IdleNow - idleSince >= Prompt.IdleSeconds)
             Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Idle));
@@ -277,7 +296,7 @@ public sealed class GatekeeperController : MonoBehaviour
         MarkTrigger(input.Kind == GatekeeperInputKind.Text ? "typed input" : input.Kind == GatekeeperInputKind.Choice ? "choice"
             : input.Kind == GatekeeperInputKind.Start ? "start" : input.Kind == GatekeeperInputKind.Idle ? "idle taunt"
             : input.Kind == GatekeeperInputKind.Interrupt ? "interruption"
-            : input.Kind == GatekeeperInputKind.OffTopic || input.Kind == GatekeeperInputKind.OutOfWorld || input.Kind == GatekeeperInputKind.Unclear ? "spoken answer"
+            : input.Kind == GatekeeperInputKind.OffTopic || input.Kind == GatekeeperInputKind.OutOfWorld || input.Kind == GatekeeperInputKind.Unclear || input.Kind == GatekeeperInputKind.Neutral ? "spoken answer"
             : input.Kind.ToString());
         performing = input.Kind;
         Cancel(); SetState(Phase.Inactive);

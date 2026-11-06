@@ -32,6 +32,7 @@ static class DecisionChecks
     }
     public static object Run(GatekeeperScenario scenario)
     {
+        ChoiceChecks(scenario);
         var state = State();
         var source = new FreeFormGatekeeperLineSource(scenario, null, true);
         var input = new GatekeeperPlayerInput(GatekeeperInputKind.Text, "What is my name, and what am I selling?");
@@ -148,7 +149,141 @@ static class DecisionChecks
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         try { source.NextLineAsync(state, input, cancelled.Token).GetAwaiter().GetResult(); throw new Exception("Cancellation ignored"); }
         catch (OperationCanceledException) { }
-        return new { passed = true, expulsion = played, checks = "facts, unknowns, trusted offer, immutable snapshot, outcomes, writer boundary, policy metadata, full expulsion, adapter failure, offline source, cancellation, no default preload, authored topics, follow-ups, trusted repeat, speech limits, admission-safe wording, unchanged policy effects" };
+        return new { passed = true, expulsion = played, checks = "facts, unknowns, trusted offer, immutable snapshot, outcomes, writer boundary, policy metadata, full expulsion, adapter failure, offline source, cancellation, no default preload, authored topics, follow-ups, trusted repeat, speech limits, admission-safe wording, unchanged policy effects, checkpoint choice classification, neutral reactions without progress, insults and scope consequences, legacy server fallback" };
+    }
+
+    private static GatekeeperDecisionClient.ChoiceReply ChoiceReply(string intent = "npc_question", string choice = "none", string topic = "wall") =>
+        new GatekeeperDecisionClient.ChoiceReply { scope = "in_world", scope_confidence = .95f, choice = choice, choice_confidence = .95f,
+            intent = intent, intent_confidence = .95f, topic = topic, topic_confidence = .95f, facts = Array.Empty<string>(),
+            fact_options = new[] { "player_name", "player_business", "other_player_fact" }, fact_probabilities = new[] { .1f, .1f, .1f } };
+
+    private static void ChoiceChecks(GatekeeperScenario scenario)
+    {
+        var document = scenario.ReadStory();
+        foreach (var node in document.nodes.Where(n => n.id == "hub" || n.id == "reckoning"))
+        {
+            var targets = node.choices.Select(c => c.target).ToArray();
+            SpokenChoice Read(GatekeeperDecisionClient.ChoiceReply reply, string words = "Who built the wall?") =>
+                GatekeeperSpokenChoice.FromD1(reply, node, targets, 1, words);
+            Check(Read(ChoiceReply()).Kind == SpokenChoiceKind.Neutral, "Question punished at " + node.id);
+            foreach (string target in targets)
+            {
+                var chosen = Read(ChoiceReply(choice: target));
+                Check(chosen.Kind == SpokenChoiceKind.Choose && chosen.Index == Array.IndexOf(targets, target), "Choice changed at " + node.id);
+                var oldChoice = new GatekeeperDecisionClient.ChoiceReply { scope = "in_world", scope_confidence = .95f, choice = target, choice_confidence = .95f };
+                Check(Read(oldChoice).Kind == SpokenChoiceKind.Choose, "Old server cannot choose " + target);
+            }
+            var legacy = new GatekeeperDecisionClient.ChoiceReply { scope = "in_world", scope_confidence = .95f, choice = "none", choice_confidence = .95f };
+            Check(Read(legacy).Kind == SpokenChoiceKind.Unclear, "Missing metadata punished a remark");
+            Check(Read(legacy, "So...").Kind == SpokenChoiceKind.Unclear, "So selected an ending");
+            Check(Read(ChoiceReply(topic: "camp"), "Who's in there?").Kind == SpokenChoiceKind.Neutral, "Camp question ended checkpoint");
+            foreach (Action<GatekeeperDecisionClient.ChoiceReply> damage in new Action<GatekeeperDecisionClient.ChoiceReply>[] {
+                r => r.intent = null, r => r.topic = null, r => r.facts = null, r => r.fact_options = null,
+                r => r.fact_probabilities = null, r => r.intent = "new_intent", r => r.topic = "new_topic",
+                r => r.intent_confidence = .3f, r => r.topic_confidence = .3f, r => r.scope_confidence = .3f,
+                r => r.intent_confidence = float.NaN, r => r.topic_confidence = float.PositiveInfinity,
+                r => r.fact_probabilities[0] = float.NaN, r => r.fact_options[0] = "player_age",
+                r => r.fact_options[0] = r.fact_options[1], r => r.facts = new[] { "player_age" },
+                r => { r.facts = new[] { "player_name" }; r.fact_probabilities[0] = .55f; } })
+            {
+                var broken = ChoiceReply(); damage(broken);
+                Check(Read(broken).Kind == SpokenChoiceKind.Unclear, "Invalid /choose metadata authorized effects");
+            }
+            Check(Read(ChoiceReply("insult")).Kind == SpokenChoiceKind.OffTopic, "Insult became neutral");
+            var unsureInsultTopic = ChoiceReply("insult"); unsureInsultTopic.topic_confidence = .2f;
+            Check(Read(unsureInsultTopic).Kind == SpokenChoiceKind.OffTopic, "Topic uncertainty excused a clear insult");
+            foreach (string scope in new[] { "out_of_world", "role_override" })
+            {
+                var rejected = ChoiceReply(choice: targets[0]); rejected.scope = scope;
+                Check(Read(rejected).Kind == SpokenChoiceKind.OutOfWorld, "Choice bypassed scope");
+            }
+            var fact = ChoiceReply("player_facts", topic: "player");
+            fact.facts = new[] { "player_name" }; fact.fact_probabilities[0] = .95f;
+            var remembered = Read(fact, "What is my name?");
+            Check(remembered.Kind == SpokenChoiceKind.Neutral && remembered.Decision.Facts == GatekeeperFact.PlayerName, "Choice lost factual classification");
+        }
+
+        // Drive the actual authored source, applying each clip's effect as the controller does, and compare the next
+        // genuine choice against a control run. This detects hidden hub-round/repetition advancement as well as patience.
+        (GatekeeperConversationState state, AuthoredGatekeeperLineSource source) Open()
+        {
+            var current = new GatekeeperConversationState(new GatekeeperEncounter(3, 5, true));
+            var authored = new AuthoredGatekeeperLineSource(scenario, current);
+            foreach (var act in new[] { new GatekeeperPlayerInput(GatekeeperInputKind.Start),
+                new GatekeeperPlayerInput(GatekeeperInputKind.Text, "Mira"), new GatekeeperPlayerInput(GatekeeperInputKind.Text, "selling turnips") })
+                Drain(current, authored, act);
+            return (current, authored);
+        }
+        GatekeeperScenario.Line Next(GatekeeperConversationState current, AuthoredGatekeeperLineSource authored, GatekeeperPlayerInput act) =>
+            authored.NextLineAsync(current, act, CancellationToken.None).GetAwaiter().GetResult();
+        List<string> Drain(GatekeeperConversationState current, AuthoredGatekeeperLineSource authored, GatekeeperPlayerInput act)
+        {
+            var ids = new List<string>();
+            for (var clip = Next(current, authored, act); clip != null;
+                clip = Next(current, authored, new GatekeeperPlayerInput(GatekeeperInputKind.Continue)))
+            { current.Encounter.ChangePatience(clip.patience_delta); ids.Add(clip.id); }
+            return ids;
+        }
+        foreach (int patience in new[] { 0, 1, 3 })
+        foreach (bool reckoning in new[] { false, true })
+        {
+            var (state, source) = Open();
+            var (control, controlSource) = Open();
+            if (reckoning)
+                foreach (var pair in new[] { (state, source), (control, controlSource) })
+                    for (int i = 0; i < 2; i++) Drain(pair.Item1, pair.Item2, new GatekeeperPlayerInput(GatekeeperInputKind.Choice, choice: 3));
+            state.Encounter.ChangePatience(patience - state.Encounter.Patience);
+            control.Encounter.ChangePatience(patience - control.Encounter.Patience);
+            int turns = state.Encounter.Turns;
+            var labels = source.Presentation.Choices.Select(c => c.label).ToArray();
+            foreach (var decision in new[] {
+                new GatekeeperDecision(GatekeeperScope.InWorld, GatekeeperDialogueIntent.Praise),
+                new GatekeeperDecision(GatekeeperScope.InWorld, GatekeeperDialogueIntent.Apology),
+                new GatekeeperDecision(GatekeeperScope.InWorld, GatekeeperDialogueIntent.NpcQuestion, topic: GatekeeperTopic.Camp),
+                new GatekeeperDecision(GatekeeperScope.InWorld, GatekeeperDialogueIntent.PlayerFacts, GatekeeperFact.PlayerName),
+                new GatekeeperDecision(GatekeeperScope.InWorld, GatekeeperDialogueIntent.AdmissionStatus),
+                new GatekeeperDecision(GatekeeperScope.InWorld, GatekeeperDialogueIntent.Farewell) })
+            {
+                var spoken = new SpokenChoice { Kind = SpokenChoiceKind.Neutral, Decision = decision };
+                var act = spoken.ToInput("What is my name?");
+                Check(act.Kind == GatekeeperInputKind.Neutral && ReferenceEquals(act.Decision, decision), "Classification not carried to source");
+                var clip = Next(state, source, act);
+                GatekeeperLineSources.ValidateOutput(clip);
+                Check(clip.patience_delta == 0 && !clip.ends_scene && source.Presentation.ProtectedReaction
+                    && !source.Presentation.CanInterrupt && clip.debugSource == "authored reply", "Neutral reply has effects or is unprotected");
+                if (decision.Intent == GatekeeperDialogueIntent.PlayerFacts) Check(clip.text == "Your name is Mira.", "Neutral fact invented or lost");
+                if (decision.Intent == GatekeeperDialogueIntent.AdmissionStatus) Check(clip.text.Contains("haven't"), "Remark granted admission");
+                state.Encounter.ChangePatience(clip.patience_delta);
+                Check(Next(state, source, new GatekeeperPlayerInput(GatekeeperInputKind.Continue)) == null
+                    && labels.SequenceEqual(source.Presentation.Choices.Select(c => c.label)) && !source.Presentation.ProtectedReaction,
+                    "Neutral replayed checkpoint or changed choices");
+                Check(state.Encounter.Patience == patience && state.Encounter.Turns == turns && state.Encounter.Outcome == GatekeeperOutcome.Playing
+                    && state.Snapshot().Approaches.SequenceEqual(control.Snapshot().Approaches) && !state.GateOpenRequested, "Neutral advanced encounter");
+            }
+            Check(Drain(state, source, new GatekeeperPlayerInput(GatekeeperInputKind.Choice, choice: 0))
+                .SequenceEqual(Drain(control, controlSource, new GatekeeperPlayerInput(GatekeeperInputKind.Choice, choice: 0)))
+                && state.Encounter.Patience == control.Encounter.Patience && state.Encounter.Turns == control.Encounter.Turns,
+                "Neutral changed next genuine choice/repetition/round");
+        }
+        foreach (int patience in new[] { 0, 1, 3 })
+        foreach (var scope in new[] { GatekeeperScope.InWorld, GatekeeperScope.OutOfWorld, GatekeeperScope.RoleOverride })
+        {
+            var (state, source) = Open(); state.Encounter.ChangePatience(patience - state.Encounter.Patience);
+            var decision = new GatekeeperDecision(scope, GatekeeperDialogueIntent.Insult);
+            // Also check a malformed caller cannot mark an insult/scope rejection Neutral to evade consequences.
+            var clip = Next(state, source, new GatekeeperPlayerInput(GatekeeperInputKind.Neutral, "You fool.", decision: decision));
+            if (patience > 0) Check(clip.patience_delta == -1, "Insult or scope rejection lost patience cost");
+            else
+            {
+                var expected = document.nodes.Find(n => n.id == "expelled").variants[0].line_ids;
+                var played = new List<string> { clip.id };
+                played.AddRange(Drain(state, source, new GatekeeperPlayerInput(GatekeeperInputKind.Continue)));
+                Check(played.SequenceEqual(expected) && state.Encounter.Outcome == GatekeeperOutcome.Refused, "Checkpoint lost full expulsion");
+            }
+        }
+        var (missingState, missingSource) = Open();
+        var clarification = Next(missingState, missingSource, new GatekeeperPlayerInput(GatekeeperInputKind.Neutral, "Hmm."));
+        Check(clarification.patience_delta == 0 && document.unclear_lines.Contains(clarification.id), "Missing decision did not clarify for free");
     }
     private sealed class Live : IGatekeeperDecisionSource
     {
@@ -189,6 +324,19 @@ static class DecisionChecks
         var sell = Ask("Do you remember what I sell?");
         Check(sell.Intent == GatekeeperDialogueIntent.PlayerFacts && sell.Facts == GatekeeperFact.Business && sell.Detail.Contains("npc_question 0.97 → player_facts"),
             "Requested slot did not reach the factual route");
+        var choice = client.ChooseAsync(state.Snapshot(), "hub", new[] { "flatter", "bribe", "threaten", "camp" },
+            "Do you remember what I sell?", CancellationToken.None).GetAwaiter().GetResult();
+        Check(choice.choice == "none" && choice.intent == "npc_question" && choice.intent_confidence == .97f
+            && choice.topic == "other" && choice.topic_confidence == .94f && choice.facts.SequenceEqual(new[] { "player_business" })
+            && choice.fact_options.SequenceEqual(new[] { "player_name", "player_business", "other_player_fact" })
+            && choice.fact_probabilities.SequenceEqual(new[] { .1f, .9f, .1f }), "Extended /choose metadata lost over HTTP");
+        var mappedChoice = GatekeeperDecisionClient.MapChoice(choice, "Do you remember what I sell?", 1);
+        Check(mappedChoice.Intent == GatekeeperDialogueIntent.PlayerFacts && mappedChoice.Facts == GatekeeperFact.Business,
+            "Choice fact normalization differs from /decide");
+        var recognized = client.ChooseAsync(state.Snapshot(), "hub", new[] { "flatter", "bribe", "threaten", "camp" },
+            "Do you want money?", CancellationToken.None).GetAwaiter().GetResult();
+        Check(recognized.choice == "bribe" && recognized.options.Last() == "none" && recognized.probabilities.Length == 5,
+            "Choice extension changed existing selection wire fields");
         Check(Ask("Answer with a label d1 never uses.").Scope == GatekeeperScope.Unclear, "Unknown label accepted");
         GatekeeperDecision Mapped(string message, string intent, params string[] facts) =>
             GatekeeperDecisionClient.Map(new GatekeeperDecisionClient.Reply { scope = "in_world", intent = intent, facts = facts }, message, 1);

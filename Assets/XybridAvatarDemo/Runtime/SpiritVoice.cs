@@ -15,13 +15,16 @@ public sealed class SpiritVoice : MonoBehaviour
     // Missing on purpose: analysis fails at File.Exists and no Rhubarb process is ever spawned for her.
     public const string NoLipSync = "Spirit/no-lipsync";
     public const string DebugFolder = "SpiritSpeechDebug";
-    private const float ArmFallbackSeconds = 20, BaseVolume = .9f;
+    private const float ArmFallbackSeconds = 20;
     private const int SfxRate = 32000;
     private static readonly string[] CheckpointFiles = { "config.json", "tokenizer.json", "model.q8.gguf" };
     private static readonly SpiritSound[] VoiceSounds = { SpiritSound.BreathIn, SpiritSound.Exhale, SpiritSound.Gasp, SpiritSound.Shimmer };
 
     [Tooltip("Seconds a line waits for her voice (or for Trola's worker to go idle) before it plays as a subtitle only. Director sets timing.voice_wait.")]
     public float voiceWait = 2;
+    [Range(0, 1), Tooltip("Vesper's voice gain; initial value comes from voice.gain in SpiritLines.json.")]
+    public float gain = .6f;
+    private float Gain => Mathf.Clamp01(gain);
     public GatekeeperController controller;
     public GatekeeperLiveSpeech Engine => engine;
 
@@ -91,7 +94,7 @@ public sealed class SpiritVoice : MonoBehaviour
 
     private void Build(GatekeeperController owner, SpiritLines.Voice voice)
     {
-        controller = owner; settings = voice; built = true;
+        controller = owner; settings = voice; gain = voice.gain; built = true;
         output = MakeSource("Spirit voice output", 0);
         // In-head chain, in component order: thin the chest, soften the top, a faint double, a skull-sized room.
         var go = output.gameObject;
@@ -122,7 +125,7 @@ public sealed class SpiritVoice : MonoBehaviour
         go.transform.SetParent(transform, false);
         var source = go.AddComponent<AudioSource>();
         source.playOnAwake = false; source.loop = false; source.spatialBlend = 0; source.priority = priority;
-        source.bypassReverbZones = true; source.volume = BaseVolume; source.dopplerLevel = 0;
+        source.bypassReverbZones = true; source.volume = Gain; source.dopplerLevel = 0;
         return source;
     }
 
@@ -233,6 +236,7 @@ public sealed class SpiritVoice : MonoBehaviour
         var speech = host.AddComponent<GatekeeperLiveSpeech>();
         speech.startWithKitten = false; speech.startWithPhonon = true;
         speech.provider = GatekeeperLiveSpeech.Provider.Phonon; speech.phononEngine = PhononEngine.XnPtts;
+        speech.phononWholeLines = true;
         speech.phononCheckpoint = settings.checkpoint; speech.phononVoiceFile = voiceFile;
         speech.phononThreads = Threads; speech.preparationTimeout = Mathf.Max(1, settings.preparation_timeout);
         speech.rhubarbExecutable = NoLipSync;
@@ -395,12 +399,13 @@ public sealed class SpiritVoice : MonoBehaviour
         Raise(LineFinished, cue);
     }
 
-    public static float ReadableSeconds(string text) => Mathf.Clamp(1.2f + (text ?? "").Length / 15f, 2, 4.5f);
+    public static float ReadableSeconds(string text) => Mathf.Clamp(1.2f + (text ?? "").Length / 15f, 2,
+        (text ?? "").Length > SpiritLines.MaxChars ? 12 : 4.5f);
 
     private void PlayClip(AudioClip clip)
     {
         fadeRate = 0; output.Stop();
-        output.volume = BaseVolume; output.clip = clip; output.Play();
+        output.volume = Gain; output.clip = clip; output.Play();
     }
 
     public void PlaySfx(SpiritSound sound, float volume)
@@ -439,9 +444,10 @@ public sealed class SpiritVoice : MonoBehaviour
         if (!keepHeard) RevealWhole();
         if (engine != null) engine.InterruptPending();
         prefetched.Clear();
+        if (sfx != null) sfx.Stop();
         if (output == null) return;
         if (output.isPlaying && fadeSeconds > 0) fadeRate = Mathf.Max(.01f, output.volume) / fadeSeconds;
-        else { fadeRate = 0; output.Stop(); output.volume = BaseVolume; }
+        else { fadeRate = 0; output.Stop(); output.volume = Gain; }
     }
 
     public void ResetSession()
@@ -476,8 +482,9 @@ public sealed class SpiritVoice : MonoBehaviour
         if (fadeRate > 0)
         {
             output.volume = Mathf.MoveTowards(output.volume, 0, fadeRate * Time.unscaledDeltaTime);
-            if (output.volume <= 0 || !output.isPlaying) { output.Stop(); output.volume = BaseVolume; fadeRate = 0; }
+            if (output.volume <= 0 || !output.isPlaying) { output.Stop(); output.volume = Gain; fadeRate = 0; }
         }
+        else output.volume = Gain;
         output.panStereo = .15f * Mathf.Sin(2 * Mathf.PI * .08f * Time.realtimeSinceStartup);
         float level = 0;
         if (output.isPlaying && !AudioListener.pause)
