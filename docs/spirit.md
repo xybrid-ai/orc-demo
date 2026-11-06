@@ -9,6 +9,13 @@ The first choice checkpoint in a Play session uses the complete explanation:
 
 > He's proud, and he's bored. A little flattery, some coin, or asking about camp might help. Those are suggestions—use your own words.
 
+Before that, on the [road approach](approach.md), she gives one authored
+warning as the traveller walks up (`approach.first` on the session's first
+approach, the shorter `approach.again` on replays). It is prefetched before the
+walk, uses a lighter look that leaves the camera's focus alone, and fades out
+before Trola speaks; skipping the opening cancels it. Her voice may be heard
+while Trola waits, has ended, or has not started yet.
+
 Restarting the encounter does not repeat that explanation; starting a new Play
 session resets it, including with domain reload disabled. Scheduling consumes it
 even if the player interrupts. Later checkpoints use short remarks selected by
@@ -134,7 +141,9 @@ speech-test flags skip both. Enter and Esc have no Vesper-specific input routing
 torches, campfire, wind, crickets, camp life (clanks, hammering, thuds), orc
 laughter and the gate creak, plus tension music, a drone and a war drum whose
 tempo rises as Trola's patience falls. Her advice muffles the world in proportion to `visual.effects_strength` and
-stops new drum hits while the halo is present. Apart from the laughter, every layer is
+stops new drum hits while the halo is present. During the road approach the drone and drum wait for Trola's
+challenge, the whole camp follows the opening's fades, and a restart resets tension, crickets and any ringing drum.
+The approach's footfalls are not ambience: F8 leaves them. Apart from the laughter, every layer is
 rendered in code at startup. It only reads the gatekeeper and never touches
 Trola's AudioSource, `AudioListener.pause` or mixers. F8 mutes it;
 `-xybridNoAmbience` skips it.

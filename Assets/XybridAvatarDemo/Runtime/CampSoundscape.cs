@@ -48,11 +48,14 @@ public sealed class CampSoundscape : MonoBehaviour
     private readonly float[] drumVelocity = new float[DrumVoices];
     private readonly double[] drumEnd = new double[DrumVoices]; // dspTime each drum voice falls silent
     private volatile bool cancelled;
-    private bool userLaughs, spiritVoice, success, drumStopped, campStopped, gateWasOpen;
+    private bool userLaughs, spiritVoice, success, drumStopped, campStopped, gateWasOpen, resyncGate;
     private int patience = 3, errors, drumStep;
     private double nextStepAt;
     private float tension = CampMix.Tension(3), fire = 1, moment, duck, master = 1, cricketLevel, resolveLevel, musicEnd = 1, laughGate = 1;
     private float drumLevel, eventLevel, laughLevel, worldLevel = 1;
+    // The road approach (docs/approach.md): music waits for Trola's challenge, and the whole camp follows the director's
+    // fades (from black, and the dip that hides a skip's cut), read-only like SpiritSignals.
+    private float musicHold, faded = 1;
     private float nextEventAt, campPausedUntil, startledUntil, trolaHeardAt = -10, nextInertCheck, musicFadeAt = -1, musicFadeSeconds = 8, bigLaughAt = -1;
     private GatekeeperOutcome outcome;
 
@@ -75,6 +78,7 @@ public sealed class CampSoundscape : MonoBehaviour
         barrier = FindAnyObjectByType<GatekeeperBarrier>();
         gateWasOpen = barrier != null && barrier.IsOpen;
         outcome = controller.Outcome;
+        patience = controller.Patience; tension = CampMix.Tension(patience); // An approach may have started the encounter first.
         controller.PatienceChanged += OnPatience;
         controller.Restarted += OnRestarted;
         Subscribe();
@@ -249,6 +253,9 @@ public sealed class CampSoundscape : MonoBehaviour
         float speaking = controller.State == GatekeeperController.Phase.Speaking || spiritVoice ? 1 : 0;
         duck = Mathf.MoveTowards(duck, speaking, dt / (speaking > duck ? .08f : .6f));
         master = Mathf.MoveTowards(master, Muted ? 0 : 1, dt / .25f);
+        var director = ExperienceDirector.Instance;
+        faded = 1 - (director != null ? Mathf.Clamp01(director.FadeAlpha) : 0);
+        musicHold = Mathf.MoveTowards(musicHold, controller.IsOpening ? 0 : 1, dt / (controller.IsOpening ? .5f : 1.5f));
         tension = CampMix.SmoothTension(tension, patience, dt);   // about 2 s to settle
         fire = atmosphere != null ? atmosphere.PatienceFireScale : Mathf.MoveTowards(fire, CampMix.FireScale(patience), dt * 2);
         float crickets = campStopped || now < startledUntil ? 0 : CampMix.CricketLevel(patience, success);
@@ -263,6 +270,13 @@ public sealed class CampSoundscape : MonoBehaviour
         outcome = GatekeeperOutcome.Playing; success = drumStopped = campStopped = false;
         musicFadeAt = bigLaughAt = -1; startledUntil = campPausedUntil = 0;
         nextEventAt = Time.realtimeSinceStartup + dice.Range(3.5f, 9);
+        // A new encounter starts from its own state, not the last ending's: Restarted follows PatienceChanged, so
+        // patience is already the new encounter's. Scheduled ending hits and ringing one-shots stop.
+        tension = CampMix.Tension(patience); cricketLevel = CampMix.CricketLevel(patience, false); resolveLevel = 0;
+        Array.Clear(drumEnd, 0, drumEnd.Length); Array.Clear(drumVelocity, 0, drumVelocity.Length);
+        foreach (var pool in new[] { drums, events, laughVoices }) if (pool != null) foreach (var v in pool) v.source.Stop();
+        if (gate != null) gate.source.Stop();
+        resyncGate = true; // Doors snapped shut by a new approach must not creak (Gate, next Update, after Changed).
     }
     private void OnFlinch(bool aggressive)
     {
@@ -299,6 +313,7 @@ public sealed class CampSoundscape : MonoBehaviour
     {
         if (barrier == null) return;
         bool open = barrier.IsOpen;
+        if (resyncGate) { resyncGate = false; if (barrier.AtRest) { gateWasOpen = open; return; } }
         if (open == gateWasOpen) return;
         gateWasOpen = open;
         if (!shots.TryGetValue(SpiritSound.GateCreak, out var clips) || clips.Count == 0) return;
@@ -309,7 +324,8 @@ public sealed class CampSoundscape : MonoBehaviour
 
     private void Mix(float dt)
     {
-        float world = CampMix.WorldGain(moment), cutoff = CampMix.WorldCutoff(moment), music = CampMix.MusicGain(moment) * musicEnd;
+        float world = CampMix.WorldGain(moment), cutoff = CampMix.WorldCutoff(moment), music = CampMix.MusicGain(moment) * musicEnd * musicHold;
+        float output = master * faded;
         float ambience = Mathf.Lerp(1, CampMix.SpeakingAmbience, duck), fireDuck = Mathf.Lerp(1, CampMix.SpeakingFire, duck);
         float musicDuck = Mathf.Lerp(1, CampMix.SpeakingMusic, duck), roar = CampMix.RoarMix(fire), droneCutoff = CampMix.DroneCutoff(tension, moment);
         foreach (var loop in loops)
@@ -327,13 +343,13 @@ public sealed class CampSoundscape : MonoBehaviour
                 case Bus.Resolve: gain = CampMix.Resolve * resolveLevel * musicDuck * music; cut = droneCutoff; break;
                 default: gain = CampMix.Shimmer * moment; break;            // her presence, even when her voice fails
             }
-            Play(loop, gain * master, cut, dt);
+            Play(loop, gain * output, cut, dt);
         }
-        drumLevel = CampMix.Drum * musicDuck * music * master;
+        drumLevel = CampMix.Drum * musicDuck * music * output;
         float drumCutoff = CampMix.MusicCutoff(moment);
         for (int i = 0; i < drums.Length; i++) { drums[i].source.volume = drumVelocity[i] * drumLevel; Cutoff(drums[i].filter, drumCutoff); }
-        eventLevel = ambience * world * master;
-        worldLevel = world * master;
+        eventLevel = ambience * world * output;
+        worldLevel = world * output;
         laughLevel = laughGate * worldLevel;
         foreach (var v in events) { v.source.volume = v.gain * eventLevel; Cutoff(v.filter, cutoff); }
         foreach (var v in laughVoices) { v.source.volume = v.gain * laughLevel; Cutoff(v.filter, Mathf.Min(1400, cutoff)); }
@@ -364,7 +380,7 @@ public sealed class CampSoundscape : MonoBehaviour
         // First use or a hitch: re-grid instead of firing late. An output device change restarts the audio system and
         // dspTime with it, leaving the grid far ahead (normally it is at most DrumLead + one step, .4 s): re-grid too.
         if (nextStepAt < now || nextStepAt > now + 1) nextStepAt = now + .05;
-        bool allowed = !drumStopped && moment < .05f;
+        bool allowed = !drumStopped && moment < .05f && !controller.IsOpening; // The heartbeat starts with Trola's challenge.
         for (int guard = 0; nextStepAt <= now + DrumLead && guard < 8; guard++)
         {
             float hit = allowed ? CampMix.DrumStep(tension, drumStep) : 0;

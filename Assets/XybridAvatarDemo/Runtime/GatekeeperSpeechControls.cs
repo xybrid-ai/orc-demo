@@ -25,6 +25,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
             .AppendLine("NPC: ready=" + npc?.IsReady + "; error=" + npc?.LastError)
             .AppendLine(controller.TryGetComponent(out GatekeeperDecisionService decisions) ? decisions.Describe() : "Decisions: not prepared")
             .AppendLine(SpiritSignals.Describe())
+            .AppendLine(ExperienceDirector.Describe())
             .AppendLine("Player: " + controller.PlayerName + " (" + controller.NameReading + "); business=" + controller.Business)
             .AppendLine("Speech text: " + GatekeeperLiveSpeech.StyleName(GatekeeperLiveSpeech.Style))
             .AppendLine("History:");
@@ -118,6 +119,7 @@ public sealed class GatekeeperSpeechControls : MonoBehaviour
         if (voiceInput != null) GUILayout.Label(voiceInput.Describe());
         // Always one label (IMGUI layout); "Spirit: not installed" when the spirit is absent or bailed out.
         GUILayout.Label(SpiritSignals.Describe());
+        GUILayout.Label(ExperienceDirector.Describe());
         // Vesper's staged voices (tools/setup_spirit_voice.py --voice all): picking one plays her hub line in it; F9 cycles.
         var spirit = SpiritDirector.Instance;
         if (spirit != null && spirit.Voice != null && spirit.Voice.Voices.Count > 1)

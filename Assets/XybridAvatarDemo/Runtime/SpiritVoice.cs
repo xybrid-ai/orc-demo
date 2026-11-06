@@ -8,7 +8,7 @@ using UnityEngine;
 // Vesper's voice: a second GatekeeperLiveSpeech (xn-ptts: its own handle and worker; liborc_phonon is shared with Trola
 // whenever he runs xn-ptts, so she opens it at his thread count) on an active child object, each line played as one
 // trimmed clip (GatekeeperSpeechTrim) on her own 2D source through an in-head filter chain. Trola's AudioSource, AudioListener.pause and mixers are never written.
-// Her engine opens and synthesizes only while Trola waits (or has ended) and his worker is idle. Missing files or a
+// Her engine opens and synthesizes only while Trola waits (or has ended, or has not started) and his worker is idle. Missing files or a
 // provider error make every line subtitle-only plus a breath; Trola is unaffected. See docs/spirit.md.
 public sealed class SpiritVoice : MonoBehaviour
 {
@@ -214,7 +214,8 @@ public sealed class SpiritVoice : MonoBehaviour
     }
 
     private GatekeeperLiveSpeech Trola => controller != null ? controller.liveSpeech : null;
-    private bool TrolaWaitingOrEnded => controller != null && (controller.IsWaitingForPlayer || controller.State == GatekeeperController.Phase.Ended);
+    // Trola waits, has ended, or has not started yet (the road approach, docs/approach.md): the only times she may be heard.
+    private bool TrolaWaitingOrEnded => controller != null && (controller.IsWaitingForPlayer || controller.State == GatekeeperController.Phase.Ended || controller.IsOpening);
     private bool TrolaWorkerIdle => Trola == null || !Trola.NativeCallRunning;
     // xn's worker pool is process-wide and sized once, at first use; it outlives Play sessions in the Editor. Whichever
     // voice builds it, it must be Trola's width, in case he runs (or is later switched to) xn-ptts in this process.
@@ -244,6 +245,8 @@ public sealed class SpiritVoice : MonoBehaviour
         engine = speech; // Start -> Warm opens the provider on its worker next frame.
     }
 
+    // Her prefetched audio for this text has finished (ready or failed); false when nothing was prefetched for it.
+    public bool PrefetchSettled(string text) => !string.IsNullOrWhiteSpace(text) && prefetched.TryGetValue(text.Trim(), out var task) && task.IsCompleted;
     public void Prefetch(SpiritCue cue)
     {
         TryCreateEngine(); // A checkpoint's Changed can arrive before this frame's Update.
@@ -474,7 +477,7 @@ public sealed class SpiritVoice : MonoBehaviour
     private void Tick()
     {
         TryCreateEngine();
-        // The golden rule, enforced here too: she is never heard unless Trola waits or has ended.
+        // The golden rule, enforced here too: she is never heard unless Trola waits, has ended or has not started.
         if (IsSpeaking && (!SpiritSignals.Enabled || !TrolaWaitingOrEnded)) Stop(.12f);
         Reveal();
         // Her sounds never cover his voice (the flinch gasp is cut the moment he speaks).

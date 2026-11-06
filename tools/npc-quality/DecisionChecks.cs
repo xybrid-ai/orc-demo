@@ -32,6 +32,13 @@ static class DecisionChecks
     }
     public static object Run(GatekeeperScenario scenario)
     {
+        // The road approach voices the opening challenge before the encounter starts (GatekeeperController.PrepareOpening);
+        // the prepared voice is used only if this text is exactly what the authored source then says.
+        if (scenario.authoredConversation && !scenario.debugStartInFreeForm)
+        {
+            string opening = GatekeeperLineSources.OpeningText(scenario, new GatekeeperEncounter(3, 5, true));
+            Check(opening != null && opening == scenario.FindLine("name-ask")?.text, "Opening text is not the authored challenge: " + opening);
+        }
         ChoiceChecks(scenario);
         var state = State();
         var source = new FreeFormGatekeeperLineSource(scenario, null, true);

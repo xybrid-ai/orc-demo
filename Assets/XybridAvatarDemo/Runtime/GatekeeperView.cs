@@ -94,7 +94,8 @@ public sealed class GatekeeperView : MonoBehaviour
         send.interactable = gatekeeper.CanSubmitText;
         RefreshSubmissionStatus();
         bool ended = gatekeeper.State == GatekeeperController.Phase.Ended || gatekeeper.State == GatekeeperController.Phase.VoiceFailed;
-        action.gameObject.SetActive(gatekeeper.State == GatekeeperController.Phase.Speaking && prompt.ShowInterruptButton && !gatekeeper.IsInterruptionReaction || ended);
+        action.gameObject.SetActive(gatekeeper.State == GatekeeperController.Phase.Speaking && prompt.ShowInterruptButton && !gatekeeper.IsInterruptionReaction
+            && !gatekeeper.IsSettling || ended);
         actionText.text = ended ? "Try again" : prompt.InterruptLabel;
         // The player's line stays up while Trola answers it and clears when the turn is theirs again.
         if (playerLine != null && (gatekeeper.IsWaitingForPlayer || gatekeeper.IsWaitingForGate || gatekeeper.IsSuspended || ended)) playerLine.text = "";
@@ -166,7 +167,12 @@ public sealed class GatekeeperView : MonoBehaviour
 
     private void Advance()
     {
-        if (gatekeeper.State == GatekeeperController.Phase.Ended || gatekeeper.State == GatekeeperController.Phase.VoiceFailed) gatekeeper.Restart();
+        // Try again replays the road approach when the experience director runs it (docs/approach.md).
+        if (gatekeeper.State == GatekeeperController.Phase.Ended || gatekeeper.State == GatekeeperController.Phase.VoiceFailed)
+        {
+            var director = ExperienceDirector.Instance;
+            if (director == null || !director.Replay()) gatekeeper.Restart();
+        }
         // The button appears where the choices were: the second click of a double-click is not an interruption.
         else if (gatekeeper.PhaseElapsed >= .5f) gatekeeper.Skip();
     }
@@ -262,6 +268,7 @@ public sealed class GatekeeperView : MonoBehaviour
     private void ResetChoices()
     {
         ClearPlayerLine(); ClearSpokenChoice(); InterruptChoicePresentation();
+        if (input != null) input.SetTextWithoutNotify(""); // A draft from the last encounter must not reach the new name prompt.
         choiceInputBusy = false; choiceCheckpoint = null; previewedCheckpoints.Clear();
     }
     private void SelectHint(int index)
