@@ -428,7 +428,7 @@
     },
     {
       "id": "unclear-1",
-      "text": "Hm? Speak up, and make some sense this time.",
+      "text": "Hm? What are you getting at? Tell me plainly.",
       "emotion": "suspicion",
       "intensity": 0.4,
       "patience_delta": 0,
@@ -437,7 +437,7 @@
     },
     {
       "id": "unclear-2",
-      "text": "Mumbling won't open my gate, so say it again, plainly.",
+      "text": "What do you want from me? Put it another way, traveller.",
       "emotion": "impatience",
       "intensity": 0.45,
       "patience_delta": 0,

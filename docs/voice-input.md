@@ -34,6 +34,10 @@ speak and while the words are transcribed.
 
 Say what you would click, in your own words ("That's a fine wall you built",
 "I'll pay you a fair toll"). The buttons stay on screen as hints.
+Personal compliments such as "I like your tusks" count as Flatter, and offers
+phrased as questions, such as "Do you want money?", count as Bribe. The choice
+prompt distinguishes those from neutral questions about his features or money,
+refusals and references to past actions; history only helps resolve references.
 
 - **A button:** it lights up for 0.45 s and is pressed exactly like a click,
   so Trola answers it, Vesper reacts to it and patience moves as usual. The
@@ -47,7 +51,8 @@ Say what you would click, in your own words ("That's a fine wall you built",
 - **An unrelated task or a role override** (scope out_of_world or
   role_override at 0.5): the same authored rebuke and cost.
 - **Anything unsure** (a low score, a near tie, a garbled transcript): Trola
-  asks you to say it again, at no cost.
+  asks what you mean, at no cost. This is uncertainty about the intended choice,
+  so his clarification does not assume you spoke too quietly or mumbled.
 
 With `-xybridWriter gemma`, an in-world off-topic answer is worded by the
 planned Gemma writer (reaction `off-topic`, the cost stays one patience). The
