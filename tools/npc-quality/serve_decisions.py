@@ -8,6 +8,8 @@ POST /spirit classifies a thought to Vesper, the mind voice, with its own questi
 same resident model; SpiritPolicy picks her authored answer.
 POST /choose reads words spoken at Trola's choice buttons: which on-screen choice they carry out,
 or none, plus Trola's intent, topic and fact slots in the same pass. The game owns remark effects.
+/decide also asks enter_camp (free talk after admission: are the words going into the camp?); the game
+decides whether that may end the encounter (docs/entry.md).
 """
 import argparse
 import hashlib
@@ -35,6 +37,13 @@ def questions():
     asked = json.loads((ROOT / 'decision-questions.json').read_text())
     asked.update(json.loads((ROOT / 'decision-fact-slots.json').read_text()))
     asked.update(json.loads((ROOT / 'decision-topics.json').read_text()))
+    return asked
+
+
+def decide_questions():
+    """questions() plus enter_camp, for /decide only: /choose and the spirit keep their own sets."""
+    asked = questions()
+    asked.update(json.loads((ROOT / 'decision-entry.json').read_text()))
     return asked
 
 
@@ -116,10 +125,13 @@ def summarize(answers):
     """Choice labels with their confidence; a slot is requested at P(yes) >= 0.5, d1's own reading of a noul."""
     scope, intent, topic = answers['scope'], answers['intent'], answers['topic']
     slots = {slot: answers[slot]['noul'] for slot in SLOTS}
-    return dict(scope=scope['choice'], scope_confidence=scope['confidence'],
-                intent=intent['choice'], intent_confidence=intent['confidence'],
-                topic=topic['choice'], topic_confidence=topic['confidence'],
-                facts=[slot for slot, p in slots.items() if p >= 0.5], fact_probabilities=slots)
+    summary = dict(scope=scope['choice'], scope_confidence=scope['confidence'],
+                   intent=intent['choice'], intent_confidence=intent['confidence'],
+                   topic=topic['choice'], topic_confidence=topic['confidence'],
+                   facts=[slot for slot, p in slots.items() if p >= 0.5], fact_probabilities=slots)
+    if 'enter_camp' in answers:  # /decide only; the game applies its own bar.
+        summary['enter_camp'] = float(answers['enter_camp']['noul'])
+    return summary
 
 
 def spirit_state_for(request):
@@ -231,7 +243,7 @@ class D1:
         from transformers import AutoModel
         if not torch.backends.mps.is_available():
             raise RuntimeError('MPS unavailable; refusing to serve CPU decisions to Play Mode')
-        self.torch, self.questions = torch, questions()
+        self.torch, self.questions = torch, decide_questions()
         started = time.perf_counter()
         self.model = AutoModel.from_pretrained(str(model), trust_remote_code=True, dtype=torch.bfloat16).to('mps').eval()
         torch.mps.synchronize()

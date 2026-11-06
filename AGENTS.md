@@ -24,5 +24,7 @@ choice buttons go through d1 POST /choose (restart serve_decisions.py after upda
 Subtitles reveal phrase by phrase (display only, speech unchanged); see docs/subtitles.md.
 Each encounter opens with a road approach run by ExperienceDirector; TrolaAtmosphere stays the single
 camera writer. -xybridNoOpening skips it; see docs/approach.md.
+After admission the player enters the camp explicitly (Enter camp, or clear words; d1 /decide asks enter_camp,
+restart serve_decisions.py after updating); endings carry a reason beside the outcome. See docs/entry.md.
 Default validation: one Editor confirmation; no builds or measurement suites
 unless explicitly requested. See README.md for external dependency limits.

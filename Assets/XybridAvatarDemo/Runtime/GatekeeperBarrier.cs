@@ -39,6 +39,6 @@ public sealed class GatekeeperBarrier : MonoBehaviour
             Quaternion secondTarget = secondClosed * Quaternion.Euler(0, open ? -openingAngle : 0, 0);
             secondHinge.localRotation = Quaternion.RotateTowards(secondHinge.localRotation, secondTarget, Time.unscaledDeltaTime * 150);
         }
-        if (IsFullyOpen && gatekeeper.IsWaitingForGate) gatekeeper.NotifyGateOpened();
+        if (IsFullyOpen) gatekeeper.NotifyGateOpened(); // Ends a wait for the gate; entering the camp needs it open too.
     }
 }

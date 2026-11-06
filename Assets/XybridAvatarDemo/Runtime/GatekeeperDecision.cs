@@ -15,14 +15,17 @@ public sealed class GatekeeperDecision
     public readonly GatekeeperDialogueIntent Intent;
     public readonly GatekeeperFact Facts;
     public readonly GatekeeperTopic Topic;
+    // d1's enter_camp answer passed its bar: the words say the player is going into the camp now. Only free talk after
+    // admission acts on it, and GatekeeperEntry.MayEnter still vetoes a question, a hedge or a refusal (docs/entry.md).
+    public readonly bool EntersCamp;
     public readonly string Detail; // Debug text only, such as labels, confidences and latency.
     public GatekeeperDecision(GatekeeperScope scope, GatekeeperDialogueIntent intent, GatekeeperFact facts = GatekeeperFact.None, string detail = null,
-        GatekeeperTopic topic = GatekeeperTopic.Other)
+        GatekeeperTopic topic = GatekeeperTopic.Other, bool entersCamp = false)
     {
         if (!Enum.IsDefined(typeof(GatekeeperScope), scope) || !Enum.IsDefined(typeof(GatekeeperDialogueIntent), intent)
             || !Enum.IsDefined(typeof(GatekeeperTopic), topic) || (facts & ~(GatekeeperFact.PlayerName | GatekeeperFact.Business | GatekeeperFact.Unknown)) != 0)
             throw new ArgumentOutOfRangeException(nameof(scope), "Unknown decision label.");
-        Scope = scope; Intent = intent; Facts = facts; Detail = detail; Topic = topic;
+        Scope = scope; Intent = intent; Facts = facts; Detail = detail; Topic = topic; EntersCamp = entersCamp;
     }
 }
 
@@ -106,7 +109,7 @@ public static class GatekeeperResponsePolicy
                     : "You offered " + state.Offer.TrimEnd('.', '!', '?') + ".");
             case GatekeeperDialogueIntent.AdmissionStatus:
                 string admission = state.Outcome == GatekeeperOutcome.Passed || state.Outcome == GatekeeperOutcome.Liked
-                    ? "I already allowed you through. Mind the gate."
+                    ? "I already let you through. Go in when you're ready."
                     : state.Outcome == GatekeeperOutcome.Refused ? "I refused you passage. That decision stands."
                     : "I haven't allowed you through yet. State your business.";
                 return new GatekeeperResponsePlan("admission", text: admission);
@@ -122,7 +125,10 @@ public static class GatekeeperResponsePolicy
                 return new GatekeeperResponsePlan("reassure", "amusement", .3f,
                     direction: "The player is afraid; Trola is confident. Reassure the player gruffly.");
             case GatekeeperDialogueIntent.Farewell:
-                return new GatekeeperResponsePlan("farewell", "reluctance", .3f, ends: true, text: "Go on, then. Mind yourself beyond my wall.");
+                // After admission a goodbye is answered and the conversation stays: only entering the camp finishes it.
+                return state.Outcome == GatekeeperOutcome.Passed || state.Outcome == GatekeeperOutcome.Liked
+                    ? new GatekeeperResponsePlan("farewell", "reluctance", .3f, text: "Leaving? The gate's open behind me, go in when you're ready.")
+                    : new GatekeeperResponsePlan("farewell", "reluctance", .3f, ends: true, text: "Go on, then. Mind yourself beyond my wall.");
             case GatekeeperDialogueIntent.NpcQuestion:
                 return new GatekeeperResponsePlan("answer", "pride", .5f);
             default: return new GatekeeperResponsePlan("answer");

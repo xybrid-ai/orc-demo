@@ -4,6 +4,13 @@ using System.Text.RegularExpressions;
 
 public enum GatekeeperMood { Bored, Irritated, Furious, Amused }
 public enum GatekeeperOutcome { Playing, Passed, Refused, Liked }
+// How the encounter ended, alongside the outcome (docs/entry.md): Refused alone cannot tell a calm refusal from a provoked
+// expulsion. None while it is still going, including the free talk after admission.
+//   Entered   the admitted player walked into the camp (an explicit entry, never a remark or a goodbye);
+//   Refused   an ordinary refusal at the reckoning (a toll or a joke that fell flat): calm;
+//   Expelled  thrown out: demanding the gate, or patience exhausted by provocation, at a checkpoint or in free talk;
+//   Departed  the player left of their own accord (the earlier intent demo, or a goodbye in free talk without admission).
+public enum GatekeeperEnding { None, Entered, Refused, Expelled, Departed }
 public enum GatekeeperIntent { Other, AskPass, Question, PoliteRequest, Flattery, GoodBribe, PoorBribe, ConfirmOffer, Apology, Insult, Threat, Withdraw }
 
 // The encounter owns outcomes. Text interpretation cannot set patience or grant entry.
@@ -20,6 +27,8 @@ public sealed class GatekeeperEncounter
     public int Turns { get; private set; }
     public GatekeeperMood Mood { get; private set; }
     public GatekeeperOutcome Outcome { get; private set; }
+    public GatekeeperEnding Ending { get; private set; }
+    public bool Admitted => Outcome == GatekeeperOutcome.Passed || Outcome == GatekeeperOutcome.Liked;
     public bool HasPendingOffer { get; private set; }
     public string PlayerName { get; private set; } = "";
     public string MangledName { get; private set; } = "";
@@ -54,7 +63,7 @@ public sealed class GatekeeperEncounter
         BusinessWasAssigned = false;
         NameWasAssigned = false;
         NameReading = GatekeeperNameReading.Empty;
-        Outcome = GatekeeperOutcome.Playing;
+        Outcome = GatekeeperOutcome.Playing; Ending = GatekeeperEnding.None;
         Mood = Patience >= 65 ? GatekeeperMood.Bored : Patience >= 30 ? GatekeeperMood.Irritated : GatekeeperMood.Furious;
         if (authored) Mood = StoryMood;
         if (previous != Patience) PatienceChanged?.Invoke(previous, Patience);
@@ -82,7 +91,15 @@ public sealed class GatekeeperEncounter
     }
 
     public GatekeeperMood StoryMood => Patience <= 1 ? GatekeeperMood.Furious : Patience <= 3 ? GatekeeperMood.Irritated : GatekeeperMood.Amused;
-    public void FinishStory(GatekeeperOutcome outcome) { Outcome = outcome; }
+    public void FinishStory(GatekeeperOutcome outcome, GatekeeperEnding ending = GatekeeperEnding.None) { Outcome = outcome; Ending = ending; }
+    // The admitted player walks in: the only way to Entered. False (and nothing changes) without admission or once ended.
+    public bool EnterCamp()
+    {
+        if (!Admitted || Ending != GatekeeperEnding.None) return false;
+        Ending = GatekeeperEnding.Entered; return true;
+    }
+    // A free-talk ending that keeps the outcome: an expulsion or a goodbye. The first ending stands.
+    public void End(GatekeeperEnding ending) { if (Ending == GatekeeperEnding.None) Ending = ending; }
     public void CountStoryTurn() { Turns++; }
     public void ChangePatience(int delta)
     {
@@ -147,6 +164,7 @@ public sealed class GatekeeperEncounter
             Outcome = GatekeeperOutcome.Refused;
             line = "lose";
         }
+        if (Outcome == GatekeeperOutcome.Refused) Ending = line == "withdraw" ? GatekeeperEnding.Departed : GatekeeperEnding.Refused;
         Mood = Outcome == GatekeeperOutcome.Refused && line != "withdraw" ? GatekeeperMood.Furious
             : amused && Patience >= 35 ? GatekeeperMood.Amused
             : Patience >= 65 ? GatekeeperMood.Bored

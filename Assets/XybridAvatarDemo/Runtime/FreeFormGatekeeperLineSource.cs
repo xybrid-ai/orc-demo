@@ -12,7 +12,7 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
     private readonly string[] expulsion;
     private int fallbackIndex, idleIndex, expulsionIndex;
     private readonly bool debugImmediate;
-    private bool greetingDelivered, ended, expelling;
+    private bool greetingDelivered, ended, expelling, entering;
     public GatekeeperPresentation Presentation { get; private set; } = Prompt();
     public IEnumerable<GatekeeperScenario.Line> AnticipatedLines => Array.Empty<GatekeeperScenario.Line>();
     public FreeFormGatekeeperLineSource() : this(UnityEngine.Object.FindFirstObjectByType<GatekeeperController>().scenario) { }
@@ -33,23 +33,48 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
     {
         cancellation.ThrowIfCancellationRequested();
         Presentation = Prompt(debugImmediate ? 0 : 8);
+        // The send-off has been said: the player walks in (docs/entry.md).
+        if (entering)
+        {
+            state.Encounter.EnterCamp();
+            Presentation.InputSlot = GatekeeperInputSlot.None; Presentation.PersistentText = false;
+            Presentation.Entering = Presentation.Ended = true;
+            return null;
+        }
         // Check the patience applied by the performer, including the last model
         // reply, before accepting another input. Play the complete authored ending.
         if (expelling || state.Encounter.Patience <= 0)
         {
             return ExpulsionLine(state);
         }
-        if (ended) { Presentation.Ended = true; Presentation.InputSlot = GatekeeperInputSlot.None; return null; }
+        if (ended)
+        {
+            state.Encounter.End(GatekeeperEnding.Departed);
+            Presentation.Ended = true; Presentation.InputSlot = GatekeeperInputSlot.None; return null;
+        }
+        Presentation.CanEnter = state.Encounter.Admitted;
         if (!greetingDelivered && input.Kind == GatekeeperInputKind.Start)
         {
             greetingDelivered = true;
-            return Line("free-welcome", "Gate's open. Now, what else do you want?", "interest", .5f);
+            // After admission the greeting says how to finish: go in, or talk on.
+            return state.Encounter.Outcome == GatekeeperOutcome.Liked
+                ? Line("free-welcome-liked", "Go in when you like. Or stay and talk, I've had worse company.", "fondness", .5f)
+                : state.Encounter.Outcome == GatekeeperOutcome.Passed
+                ? Line("free-welcome", "Gate's open. Go in when you're ready, or talk, if you must.", "interest", .5f)
+                : Line("free-welcome", "Gate's open. Now, what else do you want?", "interest", .5f);
+        }
+        if (input.Kind == GatekeeperInputKind.Enter)
+        {
+            if (!CanEnter(state)) throw new InvalidOperationException("Entry needs admission and an open gate.");
+            return SendOff(state, "Enter camp");
         }
         if (input.Kind == GatekeeperInputKind.Text)
         {
             state.Encounter.CountStoryTurn();
             var snapshot = state.Snapshot(); // Existing exchanges, excluding this new message.
             state.Record("Player", input.Text);
+            // A clear "go in" needs no classifier; d1's enter_camp widens the phrasing below.
+            if (CanEnter(state) && GatekeeperEntry.Clear(input.Text)) return SendOff(state, "entry: keywords");
             // Facts remain authoritative. Without d1, the default path uses neutral authored topic fallbacks.
             var source = decisions != null && decisions.IsAvailable ? decisions : null;
             GatekeeperDecision decision = GatekeeperFactQuestions.Interpret(input.Text);
@@ -64,6 +89,9 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
             var plan = source != null || decision != null ? GatekeeperResponsePolicy.Create(snapshot, decision) : null;
             string decided = source != null ? (decision == null ? "decision failed" : decision.Detail ?? "decision source")
                 : (decisions != null ? "d1 offline; " : "") + (decision != null ? "built-in route" : "model line");
+            if (CanEnter(state) && decision != null && decision.EntersCamp && decision.Scope == GatekeeperScope.InWorld
+                && GatekeeperEntry.MayEnter(input.Text))
+                return SendOff(state, "entry: " + decided);
             if (plan != null) decided += " → " + plan.Reaction;
             if (plan != null && plan.Expel)
             {
@@ -82,6 +110,8 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
             reply.debugRaw = authored ? "" : model.LastRawReply ?? "";
             reply.debugModelSeconds = authored ? 0 : model.LastReplySeconds;
             reply.patience_delta = Math.Max(-1, Math.Min(1, reply.patience_delta));
+            // After admission a goodbye gets its reply and the conversation stays: only entering the camp finishes it.
+            if (state.Encounter.Admitted) reply.ends_scene = false;
             GatekeeperLineSources.ValidateOutput(reply);
             // Expulsion takes priority on the next Continue after patience is applied.
             if (reply.ends_scene && state.Encounter.Patience + reply.patience_delta > 0) ended = true;
@@ -100,16 +130,31 @@ public sealed class FreeFormGatekeeperLineSource : IGatekeeperLineSource
         }
         return null;
     }
+    private bool CanEnter(GatekeeperConversationState state) => state.Encounter.Admitted && state.GateOpen && !expelling && !ended && !entering;
+    // Trola's one-line send-off; once it has been said the encounter ends Entered. Nothing is answered meanwhile, and it
+    // is never interrupted.
+    private GatekeeperScenario.Line SendOff(GatekeeperConversationState state, string decided)
+    {
+        entering = true;
+        Presentation.InputSlot = GatekeeperInputSlot.None; Presentation.PersistentText = false; Presentation.IdleSeconds = 0;
+        Presentation.CanEnter = false; Presentation.Entering = true;
+        Presentation.CanInterrupt = false; Presentation.LineGapSeconds = 0;
+        var line = state.Encounter.Outcome == GatekeeperOutcome.Liked
+            ? Line("free-enter-liked", "Go on in, then. Keep my seat by the fire warm.", "fondness", .5f)
+            : Line("free-enter", "In you go, then. Mind the stew.", "reluctance", .4f);
+        line.debugSource = "authored send-off"; line.debugDecision = decided;
+        return line;
+    }
     private GatekeeperScenario.Line ExpulsionLine(GatekeeperConversationState state, int delta = 0)
     {
-        expelling = true; Presentation.InputSlot = GatekeeperInputSlot.None; Presentation.PersistentText = false;
+        expelling = true; Presentation.InputSlot = GatekeeperInputSlot.None; Presentation.PersistentText = false; Presentation.CanEnter = false;
         if (expulsionIndex < expulsion.Length)
         {
             var line = GatekeeperLineSources.Resolve(scenario.FindLine(expulsion[expulsionIndex++]), state.Encounter);
             line.patience_delta = delta;
             return line;
         }
-        state.Encounter.FinishStory(GatekeeperOutcome.Refused);
+        state.Encounter.FinishStory(GatekeeperOutcome.Refused, GatekeeperEnding.Expelled);
         state.GateOpenRequested = false;
         ended = Presentation.Ended = true;
         return null;

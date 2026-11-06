@@ -14,10 +14,10 @@ using UnityEngine.UI;
 // and writes a JSON report. Inert unless started: by XybridStabilityChecks in the editor, or in a
 // built player with "-xybridSelfTest <stage> -xybridReport <file.json>", plus
 // "-xybridVoiceFault <fault>" to force a voice failure. Stages:
-//   live        passage route into free-form; every live line must be voiced and lip-synced by Rhubarb.
+//   live        passage route into free-form, then Enter camp; every live line must be voiced and lip-synced by Rhubarb.
 //   fallback    the same route with the voice failing; checks each line's fallback, the subtitle hold,
 //               the performer, the log, and that every checkpoint takes input.
-//   friendship  the friendship route: the gate, the settle pose and Try again.
+//   friendship  the friendship route: the gate, free talk with the settle pose, Enter camp and Try again.
 //   timing      warm live lines: the name and business replies of a real run, then fixed short (5-word)
 //               and long (12-word) replies typed in free-form, each voiced on demand. Every line's
 //               GatekeeperLineTiming lands in "timings"; medians per length in "summary".
@@ -232,25 +232,28 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
         int endingFrom = Result.lines.Count;
         Click("Share the joke");
         bool openedEarly = false;
-        yield return Until(() => { openedEarly |= gate.IsOpen && c.State != GatekeeperController.Phase.Ended; return c.State == GatekeeperController.Phase.Ended; }, 90, "the friendship ending");
+        // Friendship admits, as passage does: the gate opens after his last line, and he talks on until the player enters.
+        yield return Until(() => { openedEarly |= gate.IsOpen && c.Outcome != GatekeeperOutcome.Liked; return c.State == GatekeeperController.Phase.AwaitingInput && c.Prompt.PersistentText; },
+            120, "free talk after the friendship ending");
         var ending = Result.lines.Skip(endingFrom).ToList();
         Check(c.Outcome == GatekeeperOutcome.Liked, "sharing the joke at high patience wins his friendship", c.Outcome + ", patience " + c.Patience);
-        Check(ending.Count == 2 && ending.All(l => l.family == "Warm" && l.audible && l.fallback == "None"), "the two friendship lines play warm, voiced and lip-synced",
-            string.Join(" | ", ending.Select(l => l.text + " [" + l.family + "]")));
+        Check(ending.Count == 3 && ending.Take(2).All(l => l.family == "Warm" && l.audible && l.fallback == "None") && ending[2].id == "free-welcome-liked",
+            "the two friendship lines play warm, voiced and lip-synced, then he offers the gate", string.Join(" | ", ending.Select(l => l.text + " [" + l.family + "]")));
         Check(!openedEarly, "the gate stays shut until his last line ends");
-        yield return Until(() => gate.IsFullyOpen, 3, "both gate doors to open");
         Check(gate.IsFullyOpen, "both gate doors open after the last line");
-        InputReady("the friendship ending");
-        Check(view.actionText.text == "Try again" && !view.inputRow.activeSelf && (view.choiceRow == null || !view.choiceRow.gameObject.activeSelf),
-            "the ending offers Try again and nothing else", "button '" + view.actionText.text + "'");
+        InputReady("free talk after the friendship ending");
+        Check(c.CanEnter && view.enterButton != null && view.enterButton.gameObject.activeSelf && view.enterButton.interactable, "Enter camp is offered once the gate is open");
         var s = performer.settings;
         float settle = s.settleSeconds + s.moodHoldSeconds + s.moodReleaseSeconds + .5f;
         for (float t = 0; t < settle; t += Time.unscaledDeltaTime) yield return null;
         float cheekWeight = face.GetBlendShapeWeight(cheek), browWeight = face.GetBlendShapeWeight(brow);
         Check(performer.MoodSource.EndsWith("Liked", StringComparison.Ordinal) && cheekWeight > 8 && browWeight < 10 && performer.ShakeOffset.magnitude < 1e-5f,
             "he settles into the warm friendship pose", performer.MoodSource + ", cheek squint " + F(cheekWeight) + ", inner brow down " + F(browWeight));
-        Check(gate.IsFullyOpen && c.State == GatekeeperController.Phase.Ended && view.action.gameObject.activeSelf, "the gate and Try again hold while he settles");
+        Check(gate.IsFullyOpen && c.State == GatekeeperController.Phase.AwaitingInput && view.enterButton.gameObject.activeSelf, "the gate and Enter camp hold while he settles");
         Shot("friendship-settled");
+        yield return EnterCamp("free-enter-liked");
+        Check(view.actionText.text == "Try again" && !view.inputRow.activeSelf && (view.choiceRow == null || !view.choiceRow.gameObject.activeSelf),
+            "the entered ending offers Try again and nothing else", "button '" + view.actionText.text + "'");
         yield return new WaitForSecondsRealtime(.3f);
         view.action.onClick.Invoke();
         Check(c.Outcome == GatekeeperOutcome.Playing && c.Patience == 3 && c.PlayerName == "" && c.Business == "" && !gate.IsOpen,
@@ -400,6 +403,21 @@ public sealed class GatekeeperSelfTest : MonoBehaviour
             yield return Until(() => Result.lines.Count > before && c.State == GatekeeperController.Phase.AwaitingInput, 60, "a free-form reply");
             InputReady("free-form text after a reply");
         }
+        yield return EnterCamp("free-enter");
+    }
+
+    // Enter camp (docs/entry.md): the answers lock, he gives his send-off, and the encounter ends Entered with Try again
+    // (no experience director runs under the self-test, so there is no walk or end card).
+    private IEnumerator EnterCamp(string sendOff)
+    {
+        Check(c.CanEnter && view.enterButton != null && view.enterButton.gameObject.activeSelf, "Enter camp is offered in free talk");
+        view.enterButton.onClick.Invoke();
+        Check(c.IsEntering && !c.AcceptsText && !c.CanSubmitText && !view.inputRow.activeSelf && !view.enterButton.gameObject.activeSelf,
+            "Enter camp locks the answers");
+        yield return Until(() => c.State == GatekeeperController.Phase.Ended, 60, "his send-off");
+        Check(c.Ending == GatekeeperEnding.Entered && Result.lines.Count > 0 && Result.lines[Result.lines.Count - 1].id == sendOff,
+            "his send-off ends the encounter Entered", c.Ending + ", last line " + (Result.lines.Count > 0 ? Result.lines[Result.lines.Count - 1].id : "none"));
+        InputReady("the entered ending");
     }
 
     private void Common()

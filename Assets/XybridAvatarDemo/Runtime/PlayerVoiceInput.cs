@@ -419,7 +419,8 @@ public sealed class PlayerVoiceInput : MonoBehaviour
         if (label != null) label.text = text;
     }
 
-    private string Hint() => controller.AcceptsChoice ? "Hold Option to answer Trola · Tab for hints" : "Hold Option to speak";
+    private string Hint() => controller.AcceptsChoice ? "Hold Option to answer Trola · Tab for hints"
+        : controller.CanEnter ? "Hold Option to speak · say \"go in\" to enter the camp" : "Hold Option to speak";
 
     // A small line at the bottom left of the dialogue canvas, built the first time it has something to say.
     private Text StatusText()

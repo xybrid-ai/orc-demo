@@ -4,11 +4,13 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// The experience around Trola's encounter (docs/approach.md). Milestone 2: the road approach. It decides when the
-// encounter starts and hands TrolaAtmosphere the camera poses it blends; dialogue, patience and endings stay with
-// GatekeeperController and its line sources, and Vesper's line with SpiritDirector. Installs on its own, like
-// SpiritDirector. -xybridNoOpening, -xybridSelfTest, -xybridSpeechTest, a self-test or speech validation in the scene,
-// a scene without TrolaAtmosphere, or a controller that does not auto-start keep the original immediate start.
+// The experience around Trola's encounter: the road approach (docs/approach.md) and entering the camp (docs/entry.md).
+// It decides when the encounter starts, walks the player in once it ends Entered, and hands TrolaAtmosphere the camera
+// poses it blends; dialogue, patience and endings stay with GatekeeperController and its line sources, and Vesper's
+// line with SpiritDirector. Installs on its own, like SpiritDirector, in a scene with TrolaAtmosphere; never with
+// -xybridSelfTest, -xybridSpeechTest, or a self-test or speech validation in the scene. -xybridNoOpening, or a
+// controller that does not auto-start an authored encounter, keeps the original immediate start (no approach); the
+// walk into the camp still runs.
 public sealed class ExperienceDirector : MonoBehaviour
 {
     public const string NoOpeningFlag = "-xybridNoOpening";
@@ -29,9 +31,35 @@ public sealed class ExperienceDirector : MonoBehaviour
     public float fadeInSeconds = 1, skipFadeSeconds = .35f;
     [Range(0, 1)] public float footstepVolume = .32f;
 
+    [Header("Entering the camp (docs/entry.md)")]
+    public CampEntry.Settings entryTiming = new CampEntry.Settings();
+    [Tooltip("Which side of Trola the walk passes: 1 his right (screen left in the close-up), -1 his left; and the gap left between his body and the path, in metres.")]
+    public float passSide = 1, passClearance = .8f;
+    [Tooltip("Eye height of the walk above Trola's feet, and how far before and after the gate's centre the path runs straight through it, in metres.")]
+    public float entryEyeHeight = 1.45f, beforeGate = 1.6f, throughGate = 1f;
+    [Tooltip("Where the gaze settles: this far past the gate, at this height.")]
+    public float campLookDistance = 7, campLookHeight = 1.3f;
+    [Tooltip("Vertical field of view of the walk in; 0 keeps the close-up's lens.")]
+    public float entryFieldOfView;
+    [Tooltip("A beat after his send-off before the walk starts, and the dialogue's fade as it starts, in seconds.")]
+    public float entryDelay = .2f, interfaceFadeSeconds = .4f;
+    [TextArea] public string cardTitle = "Inside the camp";
+    [TextArea] public string cardPassed = "You paid Trola's toll and walked through his gate.";
+    [TextArea] public string cardLiked = "Trola laughed you through his gate. His fire is waiting.";
+
     public GatekeeperController Controller { get; private set; }
     public RoadApproach Approach { get; private set; }
     public bool IsApproaching => Approach != null;
+    // Plays the road approach at the start and on Try again; false with -xybridNoOpening (the walk in still runs).
+    public bool Opens { get; private set; }
+    public CampEntry Entry { get; private set; }
+    public bool IsEntering => Entry != null;
+    // The encounter ended Entered and this director walks the player in and shows the end card with its own Try again
+    // (GatekeeperView then hides its own). False once the director has failed: the view's Try again stands.
+    public bool OwnsEnding => !broken && Controller != null && Controller.State == GatekeeperController.Phase.Ended
+        && Controller.Ending == GatekeeperEnding.Entered;
+    public bool CardShown => card != null && card.activeSelf;
+    public Button TryAgainButton => cardButton;
     // Space or Skip opening, until Trola's challenge starts; the settle that follows is never cut while he speaks.
     public bool CanSkip => Approach != null && !Approach.Raised(RoadApproach.Cue.Challenge);
     public int Approaches { get; private set; }
@@ -43,6 +71,11 @@ public sealed class ExperienceDirector : MonoBehaviour
         var director = Instance;
         if (director == null) return "Opening: off (immediate start)";
         if (director.broken) return "Opening: off for this session after an error";
+        var entry = director.Entry;
+        if (entry != null)
+            return "Entering the camp: " + entry.Current + " " + entry.StageSeconds.ToString("0.0") + " s; " + entry.Length.ToString("0.0") + " m at "
+                + entry.CruiseSpeed.ToString("0.0") + " m/s";
+        if (!director.Opens) return "Opening: off (-xybridNoOpening or no authored auto-start); entering the camp on";
         var approach = director.Approach;
         if (approach == null) return "Opening: done (" + director.Approaches + " this session; Try again replays it)";
         var spirit = SpiritDirector.Instance;
@@ -56,7 +89,15 @@ public sealed class ExperienceDirector : MonoBehaviour
     private GatekeeperBarrier barrier;
     private Canvas fadeCanvas;
     private Image fade;
-    private float fadeAlpha, fadeSeconds = 1;
+    private float fadeAlpha, fadeTarget, fadeSeconds = 1;
+    private CanvasGroup dialogue; // On the view's canvas: the dialogue fades out as the walk in starts.
+    private float dialogueAlpha = 1, dialogueTarget = 1;
+    private GameObject card;
+    private CanvasGroup cardGroup;
+    private Text cardHeading, cardLine;
+    private Button cardButton;
+    private bool entryRan;
+    private float entryWait;
     private Button skipButton;
     private AudioSource steps;
     private AudioClip[] stepClips;
@@ -71,15 +112,16 @@ public sealed class ExperienceDirector : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
-        if (HasArgument(NoOpeningFlag) || HasArgument("-xybridSelfTest") || HasArgument("-xybridSpeechTest")) return;
+        if (HasArgument("-xybridSelfTest") || HasArgument("-xybridSpeechTest")) return;
         var controller = FindAnyObjectByType<GatekeeperController>();
         var atmosphere = FindAnyObjectByType<TrolaAtmosphere>();
-        if (controller == null || !controller.autoStart || controller.scenario == null || !controller.scenario.authoredConversation) return;
+        if (controller == null || controller.scenario == null) return;
         if (atmosphere == null || atmosphere.portraitCamera == null || atmosphere.actor == null || UnderTest()) return;
         // After every Awake, before the controller's Start: the encounter now begins at the gate, not 0.5 s into Play.
-        controller.autoStart = false;
+        bool opens = !HasArgument(NoOpeningFlag) && controller.autoStart && controller.scenario.authoredConversation;
+        if (opens) controller.autoStart = false;
         var director = new GameObject("Experience director (runtime)").AddComponent<ExperienceDirector>();
-        director.Controller = controller; director.atmosphere = atmosphere;
+        director.Controller = controller; director.atmosphere = atmosphere; director.Opens = opens;
     }
     private static bool HasArgument(string name) => Array.IndexOf(Environment.GetCommandLineArgs(), name) >= 0;
     private static bool UnderTest() => FindAnyObjectByType<GatekeeperSelfTest>() != null || FindAnyObjectByType<GatekeeperSpeechValidation>() != null;
@@ -90,19 +132,20 @@ public sealed class ExperienceDirector : MonoBehaviour
     {
         view = FindAnyObjectByType<GatekeeperView>();
         barrier = FindAnyObjectByType<GatekeeperBarrier>();
+        if (Controller != null) Controller.Restarted += OnRestarted;
         try
         {
             BuildFade(); BuildFootsteps();
-            if (!BeginApproach()) throw new InvalidOperationException("the encounter could not be prepared");
+            if (Opens && !BeginApproach()) throw new InvalidOperationException("the encounter could not be prepared");
         }
         catch (Exception error) { Fallback(error); }
     }
 
     // Plays (or replays) the approach: a new encounter is prepared and waits at the gate. False when it cannot run
-    // (suspended, broken, or the scene is invalid); GatekeeperView's Try again then restarts the encounter directly.
+    // (no opening, suspended, broken, or the scene is invalid); Try again then restarts the encounter directly.
     public bool BeginApproach()
     {
-        if (broken || Controller == null || Controller.IsSuspended) return false;
+        if (!Opens || broken || Controller == null || Controller.IsSuspended) return false;
         EndApproach();
         if (!Controller.PrepareOpening()) return false; // Raises Restarted: input, Vesper, choices and timers reset.
         begun = true;
@@ -139,8 +182,21 @@ public sealed class ExperienceDirector : MonoBehaviour
             try { Tick(); }
             catch (Exception error) { Fallback(error); }
         }
+        try
+        {
+            // His send-off has been said and the encounter ended Entered: after a beat, walk in.
+            if (Entry == null && !entryRan && OwnsEnding)
+            {
+                entryWait += Time.unscaledDeltaTime;
+                if (entryWait >= entryDelay) BeginEntry();
+            }
+            if (Entry != null) TickEntry();
+        }
+        catch (Exception error) { Fallback(error); }
         RefreshSkip();
         AnimateFade();
+        AnimateDialogue();
+        AnimateCard();
     }
 
     private void Tick()
@@ -188,6 +244,176 @@ public sealed class ExperienceDirector : MonoBehaviour
         SpiritDirector.Instance?.EndApproach(true);
         if (Controller != null) Controller.FinishOpening(); // No-op unless the challenge started and the settle was cut short.
     }
+
+    // ---------------------------------------------------------------- Entering the camp (docs/entry.md)
+    // From the close-up as it stands (no cut): around Trola on his passSide, straight through the open gate, the dialogue
+    // fading as the walk starts and the picture going black as the gate is crossed; then the end card.
+    private void BeginEntry()
+    {
+        entryRan = true;
+        SpiritDirector.Instance?.InterruptAdvice();
+        Deselect(); // The Enter camp button must not take a Submit meanwhile.
+        Entry = new CampEntry(entryTiming, BuildEntryRoute());
+        dialogueTarget = 0;
+        ApplyEntryPose();
+    }
+
+    private void TickEntry()
+    {
+        var cues = Entry.Advance(Mathf.Min(Time.unscaledDeltaTime, MaxStep));
+        if ((cues & CampEntry.Cue.Footstep) != 0) Step(Entry.Pace);
+        if ((cues & CampEntry.Cue.FadeOut) != 0) FadeToBlack(Entry.FadeSeconds);
+        if ((cues & CampEntry.Cue.Card) != 0) ShowCard();
+        ApplyEntryPose(); // Renewed under the card too: the camera stays inside until Try again.
+    }
+
+    private void ApplyEntryPose()
+    {
+        var pose = Entry.Evaluate();
+        atmosphere.SetCinematicPose(pose.position, pose.rotation, pose.fieldOfView, 1, pose.focusDistance);
+    }
+
+    // The end card's Try again: replays the approach, or restarts at the gate without one (the doors snap shut under the
+    // black, as for an approach).
+    public void TryAgain()
+    {
+        if (!BeginApproach() && Controller != null && Controller.Restart() && barrier != null) barrier.Settle();
+    }
+
+    // A new encounter (Try again, a debug restart or jump) drops the walk, the card and the black.
+    private void OnRestarted()
+    {
+        bool black = fadeTarget >= 1 || Entry != null;
+        EndEntry();
+        entryRan = false; entryWait = 0;
+        if (black) FadeFromBlack(fadeInSeconds);
+    }
+
+    private void EndEntry()
+    {
+        if (Entry != null && atmosphere != null) atmosphere.ClearCinematicPose();
+        Entry = null;
+        StopSteps();
+        if (card != null) card.SetActive(false);
+        RestoreDialogue();
+    }
+
+    private CampEntry.Route BuildEntryRoute()
+    {
+        var lens = atmosphere.portraitCamera.transform;
+        Vector3 start = lens.position, feet = atmosphere.actor.position, face = feet + atmosphere.lookOffset;
+        Vector3 inward = face - start; inward.y = 0; // Fallback: on through Trola, away from the road.
+        inward = inward.sqrMagnitude > 1e-4f ? inward.normalized : Vector3.forward;
+        Vector3 gate = feet + inward * 6;
+        if (barrier != null && barrier.hinge != null && barrier.secondHinge != null)
+        {
+            gate = (barrier.hinge.position + barrier.secondHinge.position) / 2; // The doors hinge at either side of the opening.
+            var through = gate - feet; through.y = 0;
+            if (through.sqrMagnitude > 1e-4f) inward = through.normalized;
+        }
+        gate.y = feet.y;
+        Vector3 side = Vector3.Cross(inward, Vector3.up).normalized * (passSide < 0 ? -1 : 1);
+        // Trola's half-width towards that side, from his renderers, within reason (a bad bound must not send the walk away).
+        var body = ActorBounds(feet);
+        float half = Mathf.Clamp(Mathf.Abs(side.x) * body.extents.x + Mathf.Abs(side.z) * body.extents.z, .35f, 1.6f);
+        Vector3 centre = new Vector3(body.center.x, feet.y, body.center.z);
+        float eye = feet.y + entryEyeHeight;
+        Vector3 beside = centre + side * (half + passClearance); beside.y = Mathf.Lerp(start.y, eye, .6f);
+        Vector3 before = gate - inward * beforeGate; before.y = eye;
+        Vector3 inside = gate + inward * throughGate; inside.y = eye;
+        Vector3 settle = gate + inward * campLookDistance; settle.y = feet.y + campLookHeight;
+        return new CampEntry.Route
+        {
+            points = new[] { start, beside, before, inside },
+            lookFrom = start + lens.forward * Mathf.Max(.5f, Vector3.Distance(start, face)), lookTo = settle,
+            fieldOfView = entryFieldOfView > 0 ? entryFieldOfView : atmosphere.HomeFieldOfView
+        };
+    }
+    public Bounds ActorBounds(Vector3 feet)
+    {
+        bool any = false; var bounds = new Bounds(feet + Vector3.up, new Vector3(1, 2, 1));
+        foreach (var part in atmosphere.actor.GetComponentsInChildren<Renderer>())
+        {
+            if (!part.enabled || !part.gameObject.activeInHierarchy || part is ParticleSystemRenderer) continue;
+            if (!any) { bounds = part.bounds; any = true; } else bounds.Encapsulate(part.bounds);
+        }
+        return bounds;
+    }
+
+    // The dialogue canvas (subtitle, reply field, buttons) fades out as the walk starts and comes back on restart.
+    private void AnimateDialogue()
+    {
+        if (dialogueAlpha == dialogueTarget) return;
+        if (dialogue == null && view != null && !view.TryGetComponent(out dialogue)) dialogue = view.gameObject.AddComponent<CanvasGroup>();
+        dialogueAlpha = Mathf.MoveTowards(dialogueAlpha, dialogueTarget, Time.unscaledDeltaTime / Mathf.Max(.01f, interfaceFadeSeconds));
+        if (dialogue != null) { dialogue.alpha = dialogueAlpha; dialogue.interactable = dialogue.blocksRaycasts = dialogueAlpha > .5f; }
+    }
+    private void RestoreDialogue()
+    {
+        dialogueAlpha = dialogueTarget = 1;
+        if (dialogue != null) { dialogue.alpha = 1; dialogue.interactable = dialogue.blocksRaycasts = true; }
+    }
+
+    // The end card, over the black: where the player ended up and Try again. Built once on the fade canvas, from the
+    // view's font and a copy of its Send button (like Skip opening).
+    private void ShowCard()
+    {
+        if (card == null) BuildCard();
+        cardHeading.text = cardTitle;
+        cardLine.text = Controller != null && Controller.Outcome == GatekeeperOutcome.Liked ? cardLiked : cardPassed;
+        cardGroup.alpha = 0;
+        card.SetActive(true);
+    }
+    private void AnimateCard()
+    {
+        if (card == null || !card.activeSelf || cardGroup.alpha >= 1) return;
+        cardGroup.alpha = Mathf.MoveTowards(cardGroup.alpha, 1, Time.unscaledDeltaTime / .5f);
+        cardGroup.interactable = cardGroup.blocksRaycasts = cardGroup.alpha > .5f;
+    }
+    private void BuildCard()
+    {
+        var host = fadeCanvas.gameObject;
+        if (host.GetComponent<GraphicRaycaster>() == null) host.AddComponent<GraphicRaycaster>(); // The card's button takes clicks.
+        if (host.GetComponent<CanvasScaler>() == null)
+        {
+            var scaler = host.AddComponent<CanvasScaler>(); // Sized like the dialogue canvas.
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = .5f;
+        }
+        card = new GameObject("End card", typeof(RectTransform)) { layer = 5 };
+        var rect = (RectTransform)card.transform;
+        rect.SetParent(host.transform, false);
+        rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.offsetMin = rect.offsetMax = Vector2.zero;
+        cardGroup = card.AddComponent<CanvasGroup>();
+        var font = view != null && view.sentence != null ? view.sentence.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        cardHeading = CardText("Heading", font, 52, new Color(.93f, .89f, .8f), .57f);
+        cardLine = CardText("Line", font, 26, new Color(.8f, .76f, .68f), .49f);
+        if (view != null && view.send != null) cardButton = Instantiate(view.send, card.transform);
+        else cardButton = new GameObject("Try again", typeof(RectTransform), typeof(Image), typeof(Button)).GetComponent<Button>();
+        cardButton.name = "Try again";
+        cardButton.transform.SetParent(card.transform, false);
+        cardButton.onClick.RemoveAllListeners(); cardButton.onClick.AddListener(TryAgain);
+        var button = cardButton.GetComponent<RectTransform>();
+        button.anchorMin = button.anchorMax = new Vector2(.5f, .38f); button.pivot = new Vector2(.5f, .5f);
+        button.anchoredPosition = Vector2.zero; button.sizeDelta = new Vector2(220, 48);
+        var label = cardButton.GetComponentInChildren<Text>(true);
+        if (label != null) { label.text = "Try again"; label.font = font; label.fontSize = 24; label.supportRichText = false; label.horizontalOverflow = HorizontalWrapMode.Overflow; }
+        cardButton.interactable = true; cardButton.gameObject.SetActive(true);
+        card.SetActive(false);
+    }
+    private Text CardText(string name, Font font, int size, Color color, float height)
+    {
+        var line = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text)) { layer = 5 };
+        var rect = (RectTransform)line.transform;
+        rect.SetParent(card.transform, false);
+        rect.anchorMin = new Vector2(.1f, height); rect.anchorMax = new Vector2(.9f, height); rect.pivot = new Vector2(.5f, .5f);
+        rect.sizeDelta = new Vector2(0, size * 1.6f);
+        var text = line.GetComponent<Text>();
+        text.font = font; text.fontSize = size; text.color = color; text.alignment = TextAnchor.MiddleCenter;
+        text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.supportRichText = false; text.raycastTarget = false;
+        return text;
+    }
+
     // Space typed into the reply field is text, not a skip (the field is hidden before the challenge; this keeps it so).
     private bool Typing() => view != null && view.input != null && view.input.isFocused;
 
@@ -222,11 +448,12 @@ public sealed class ExperienceDirector : MonoBehaviour
         fade = black.GetComponent<Image>(); fade.raycastTarget = false; // Skip stays clickable through the fade.
         Paint();
     }
-    private void FadeFromBlack(float seconds) { fadeAlpha = 1; fadeSeconds = Mathf.Max(.01f, seconds); Paint(); }
+    private void FadeFromBlack(float seconds) { fadeAlpha = 1; fadeTarget = 0; fadeSeconds = Mathf.Max(.01f, seconds); Paint(); }
+    private void FadeToBlack(float seconds) { fadeTarget = 1; fadeSeconds = Mathf.Max(.01f, seconds); }
     private void AnimateFade()
     {
-        if (fadeAlpha <= 0) return;
-        fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0, Mathf.Min(Time.unscaledDeltaTime, MaxStep) / fadeSeconds);
+        if (fadeAlpha == fadeTarget) return;
+        fadeAlpha = Mathf.MoveTowards(fadeAlpha, fadeTarget, Mathf.Min(Time.unscaledDeltaTime, MaxStep) / fadeSeconds);
         Paint();
     }
     private void Paint()
@@ -291,17 +518,20 @@ public sealed class ExperienceDirector : MonoBehaviour
     private void Fallback(Exception error)
     {
         Debug.LogException(error, this);
-        Debug.LogWarning("[Experience] The road approach is off for this session; Trola's encounter starts at the gate.", this);
+        Debug.LogWarning("[Experience] The road approach and the walk into the camp are off for this session; Trola's encounter starts at the gate.", this);
         broken = true;
-        try { EndApproach(); } catch (Exception cleanup) { Debug.LogException(cleanup, this); }
+        try { EndApproach(); EndEntry(); } catch (Exception cleanup) { Debug.LogException(cleanup, this); }
         if (atmosphere != null) atmosphere.ClearCinematicPose();
-        fadeAlpha = 0; Paint();
+        fadeAlpha = fadeTarget = 0; Paint();
         if (skipButton != null) skipButton.gameObject.SetActive(false);
-        if (Controller != null && !Controller.IsSuspended && (Controller.IsOpening || !begun)) Controller.Restart();
+        if (Opens && Controller != null && !Controller.IsSuspended && (Controller.IsOpening || !begun)) Controller.Restart();
+        else if (view != null) view.Refresh(); // An entered ending gets the view's own Try again.
     }
 
     private void OnDestroy()
     {
+        if (Controller != null) Controller.Restarted -= OnRestarted;
+        RestoreDialogue();
         if (atmosphere != null) atmosphere.ClearCinematicPose();
         if (stepClips != null) foreach (var clip in stepClips) if (clip != null) Destroy(clip);
         if (Instance == this) Instance = null;

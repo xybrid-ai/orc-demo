@@ -15,7 +15,8 @@ audio leaves the machine.
   This works during Vesper's advice, while hints fade, and after they disappear.
   Pressing Left Option fades Vesper out immediately; all answers address Trola.
 - **Free talk after the gate:** the words fill the reply field and are sent
-  after a second, or queued while Trola is still speaking.
+  after a second, or queued while Trola is still speaking. Clear words such as
+  "Go in" or "Enter camp" go into the camp ([docs/entry.md](entry.md)).
 - **Anywhere else** (while Trola speaks an authored line) nothing is sent; a
   note at the bottom left says so.
 

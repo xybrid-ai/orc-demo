@@ -32,7 +32,7 @@ STUB = {'What do you call me?': ('in_world', 'player_facts', ['player_name']),
 
 class StubEngine:
     """The server's real HTTP, validation and state code with canned d1 answers; no model."""
-    health = dict(model='stub', revision='stub-revision', device='none', questions=list(serve_decisions.questions()))
+    health = dict(model='stub', revision='stub-revision', device='none', questions=list(serve_decisions.decide_questions()))
 
     def __init__(self):
         self.states, self.asked, self.broken = [], [], False
@@ -49,6 +49,8 @@ class StubEngine:
         answers = {slot: dict(type='noul', noul=0.9 if slot in facts else 0.1) for slot in serve_decisions.SLOTS}
         answers.update(scope=dict(choice=scope, confidence=0.91), intent=dict(choice=intent, confidence=0.97),
                        topic=dict(choice='wall_motive' if message == 'Why do you care so much about a wall?' else 'other', confidence=0.94))
+        if asked is None:  # /decide asks enter_camp too
+            answers['enter_camp'] = dict(type='noul', noul=0.93 if message == 'Lead the way.' else 0.04)
         if asked is not None and 'choice' in asked:
             choice = 'bribe' if message == 'Do you want money?' else 'flatter' if message == 'I like your tusks.' else 'none'
             criteria = asked['choice']['criteria']
@@ -177,7 +179,9 @@ try:
         assert plan['PatienceDelta'] == case['expected_delta'], (case['id'], result)
         if not plan['Expel']:
             assert plan['Emotion'] == case['expected_emotion'], (case['id'], result)
-            assert line['ends_scene'] == (case['intent'] == 'farewell'), (case['id'], result)
+            # A goodbye ends free talk only without admission; after it, only entering the camp does (docs/entry.md).
+            admitted = case.get('outcome', 'Passed') in ('Passed', 'Liked')
+            assert line['ends_scene'] == (case['intent'] == 'farewell' and not admitted), (case['id'], result)
             raw = json.dumps({key: line[key] for key in ('text', 'emotion', 'intensity', 'patience_delta', 'ends_scene')})
             assert adapter.ask(dict(command='parse', raw=raw))['valid'], (case['id'], raw)
         else:

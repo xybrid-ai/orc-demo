@@ -16,7 +16,9 @@ public interface IGatekeeperLineSource
 // left Trola throws the player out. Unclear (a mumble, a near tie) asks again for free. Only OffTopic may be worded
 // by the optional writer; the others are always authored. Neutral carries a trusted classification and reuses the
 // authored reply bank at the same checkpoint with zero patience/progress, including incidental praise or apology.
-public enum GatekeeperInputKind { Start, Continue, Text, Choice, Idle, Interrupt, GateOpened, Skip, OffTopic, OutOfWorld, Unclear, Neutral }
+// Enter asks to go into the camp (the Enter camp button, or an entry requested while Trola was speaking): only where the
+// presentation offers CanEnter, after admission with the gate open (docs/entry.md). Words that ask to go in arrive as Text.
+public enum GatekeeperInputKind { Start, Continue, Text, Choice, Idle, Interrupt, GateOpened, Skip, OffTopic, OutOfWorld, Unclear, Neutral, Enter }
 public enum GatekeeperInputSlot { None, Name, Business, Reply }
 public readonly struct GatekeeperPlayerInput
 {
@@ -43,6 +45,9 @@ public sealed class GatekeeperPresentation
     public bool IsReaction, ProtectedReaction, WaitForPrefetch;
     // An idle taunt at this checkpoint keeps its choices on screen and clickable; a click during it is the choice.
     public bool TauntKeepsChoices;
+    // CanEnter: the source accepts an entry here (free talk after admission). Entering: its send-off is under way; nothing
+    // more is answered, and the encounter ends Entered once it has been said.
+    public bool CanEnter, Entering;
     public string InterruptLabel = "Interrupt";
     public float IdleSeconds = 8, LineGapSeconds = .28f;
 }
@@ -50,6 +55,8 @@ public sealed class GatekeeperConversationState
 {
     public GatekeeperEncounter Encounter { get; }
     public bool GateOpenRequested { get; internal set; }
+    // Both gate doors have finished opening for this encounter (GatekeeperController.NotifyGateOpened). Entry needs it.
+    public bool GateOpen { get; internal set; }
     public int AssignedNameIndex { get; internal set; }
     private readonly List<string> approaches = new List<string>();
     public void RecordApproach(string approach) { if (!approaches.Contains(approach)) approaches.Add(approach); }

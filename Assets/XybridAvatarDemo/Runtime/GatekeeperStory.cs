@@ -101,10 +101,14 @@ public sealed class GatekeeperStory
         if (string.IsNullOrEmpty(next)) return false;
         Enter(next); return true;
     }
+    // Passage and friendship admit (the encounter goes on into free talk); a refusal at "expelled" (demanding the gate, or
+    // patience spent on provocation) is an expulsion, any other refusal is calm.
     public void Finish()
     {
-        if (!string.IsNullOrEmpty(CurrentVariant.outcome))
-            Encounter.FinishStory((GatekeeperOutcome)Enum.Parse(typeof(GatekeeperOutcome), CurrentVariant.outcome));
+        if (string.IsNullOrEmpty(CurrentVariant.outcome)) return;
+        var outcome = (GatekeeperOutcome)Enum.Parse(typeof(GatekeeperOutcome), CurrentVariant.outcome);
+        Encounter.FinishStory(outcome, outcome != GatekeeperOutcome.Refused ? GatekeeperEnding.None
+            : CurrentNode.id == "expelled" ? GatekeeperEnding.Expelled : GatekeeperEnding.Refused);
     }
     // Round-robin guarantees no adjacent repeat, including after interruptions.
     public string NextIdleLine() { idleIndex = (idleIndex + 1) % Data.idle_lines.Length; return Data.idle_lines[idleIndex]; }

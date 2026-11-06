@@ -181,8 +181,8 @@ public sealed class AuthoredGatekeeperLineSource : IGatekeeperLineSource
         {
             story.Finish();
             state.GateOpenRequested = state.Encounter.Outcome == GatekeeperOutcome.Passed || state.Encounter.Outcome == GatekeeperOutcome.Liked;
-            // Passage is the win. Friendship retains its original gate animation and restart.
-            Presentation.AwaitGate = state.Encounter.Outcome == GatekeeperOutcome.Passed;
+            // Both admissions wait for the gate, then talk on until the player enters the camp (docs/entry.md).
+            Presentation.AwaitGate = state.Encounter.Admitted;
             Presentation.Ended = !Presentation.AwaitGate;
         }
         else if (story.CurrentNode.input_slot == "name")
