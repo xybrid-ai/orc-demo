@@ -5,7 +5,9 @@ using UnityEngine;
 // Everything the troll does besides moving his mouth. Runs after XybridAvatarPlayer has sampled
 // the idle and written the mouth, then adds procedural offsets in character space.
 // Owns: brow, lid, eyeLook (lid follow), noseSneer and cheekSquint shapes; eye, head, neck,
-// upper-chest, clavicle and ear bones; the camera-shake request; the snarl request.
+// upper-chest, clavicle and ear bones; the camera-shake request; the snarl request; and, while he strikes
+// (Strike, docs/defeat.md), the right arm and the torso turn, applied last so neither the idle nor the other
+// offsets overwrite them.
 // Never writes jaw, mouth, tongue, cheekPuff or cheekHollow. Reads only resolved line metadata
 // and controller state, so authored and free-form sources perform identically.
 [DefaultExecutionOrder(100)]
@@ -13,6 +15,8 @@ using UnityEngine;
 public sealed class GatekeeperPerformer : MonoBehaviour
 {
     public GatekeeperPerformanceSettings settings;
+    [Tooltip("Trola's strike on a provoked expulsion (docs/defeat.md).")]
+    public TrolaStrike.Settings strike = new TrolaStrike.Settings();
     public XybridAvatarPlayer character;
     public GatekeeperController gatekeeper;
     public TrolaAtmosphere atmosphere;
@@ -42,7 +46,7 @@ public sealed class GatekeeperPerformer : MonoBehaviour
     private readonly List<Shape>[] lookShapes = new List<Shape>[8];
     private readonly List<string> owned = new List<string>();
     private readonly List<Driven> driven = new List<Driven>();
-    private Driven spine, chest, upperChest, neck, head, eyeL, eyeR, clavL, clavR, earL, earR;
+    private Driven spine, chest, upperChest, neck, head, eyeL, eyeR, clavL, clavR, earL, earR, armUpper, armLower, armHand;
     private Transform root;
     private Vector3 eyeFwdL, eyeFwdR, headFwd, headUp;
     // The flag must reset with its nonserializable bone, shape and RNG caches.
@@ -92,6 +96,13 @@ public sealed class GatekeeperPerformer : MonoBehaviour
     public int GlanceCount { get; private set; }
     public int ExhaleCount { get; private set; }
     public string MoodSource => current.kind + ":" + current.outcome;
+    // The strike in progress, null when none; StrikeImpact is raised the frame the blow lands, after the pose is written.
+    public TrolaStrike CurrentStrike { get; private set; }
+    public bool Striking => CurrentStrike != null;
+    public Transform StrikeHand => armHand?.t;
+    public event Action StrikeImpact;
+    public float StrikeImpactSeconds => new TrolaStrike(strike).ImpactSeconds;
+    private Vector3 strikeTarget;
 
     // Debug preview: drives the same evaluation without a conversation.
     public bool Previewing { get; private set; }
@@ -147,6 +158,10 @@ public sealed class GatekeeperPerformer : MonoBehaviour
         eyeL = Drive(Bone(HumanBodyBones.LeftEye, "eye_l"));
         eyeR = Drive(Bone(HumanBodyBones.RightEye, "eye_r"));
         foreach (var d in driven) d.idleDamped = true;
+        // The striking arm: the idle keeps all of its motion; only a strike moves it.
+        armUpper = Drive(Bone(HumanBodyBones.RightUpperArm, "upperarm_r"));
+        armLower = Drive(Bone(HumanBodyBones.RightLowerArm, "lowerarm_r"));
+        armHand = Drive(Bone(HumanBodyBones.RightHand, "hand_r"));
         earL = Drive(Find(settings.leftEarBone));
         earR = Drive(Find(settings.rightEarBone));
         if (head == null) return false;
@@ -305,6 +320,7 @@ public sealed class GatekeeperPerformer : MonoBehaviour
         Aim(eyeL, eyeFwdL, cameraPosition, out lookYawL, out lookPitchL);
         Aim(eyeR, eyeFwdR, cameraPosition, out lookYawR, out lookPitchR);
         Ears(work[EarsBack], work[EarsDroop], dt);
+        var landed = StrikePose(dt);
         foreach (var d in driven) { d.written = d.t.localRotation; d.hasWritten = true; }
 
         // Face: mood + patience already in work; add beats, delivery, blinks, then caps.
@@ -316,6 +332,8 @@ public sealed class GatekeeperPerformer : MonoBehaviour
         float lidLower = (quietProfile != null ? quietProfile.lidLower * quietEnv : 0) + s.exhaleLidLower * exhale;
         AddPair(BlinkUpper, lidLower); ScalePair(WideUpper, 1 - Mathf.Clamp01(quietEnv + exhale));
         AddPair(OuterUp, s.accentBrowRaise * Mathf.Clamp01(accentAmount));
+        float fury = CurrentStrike != null ? CurrentStrike.ArmWeight : 0;
+        AddPair(InnerDown, strike.browDown * fury); AddPair(WideUpper, strike.eyeWide * fury);
 
         float blink = BlinkValue(ctx, work[BlinkRate] * Mathf.Lerp(1, quietProfile != null ? quietProfile.blinkRateScale : 1, quietEnv));
         BlinkAmount = blink;
@@ -336,11 +354,57 @@ public sealed class GatekeeperPerformer : MonoBehaviour
 
         // Requests to the owners of the mouth and the camera.
         character.snarlCapSpeaking = s.snarlSpeakingCap; character.snarlCapSilent = s.snarlSilentCap;
-        character.SnarlRequest = Mathf.Clamp01(work[SnarlCh] + roar.snarl * roarEnv);
+        character.SnarlRequest = Mathf.Clamp01(work[SnarlCh] + roar.snarl * roarEnv + strike.snarl * fury);
         float shake = roarEnv * (.35f + .65f * loudSlow);
         ShakeOffset = new Vector3(Noise(11, clock * roar.shakeHz), Noise(13, clock * roar.shakeHz), Noise(17, clock * roar.shakeHz) * .5f) * roar.shakeMeters * shake;
         var shakeEuler = new Vector3(Noise(19, clock * roar.shakeHz), Noise(23, clock * roar.shakeHz), Noise(29, clock * roar.shakeHz)) * roar.shakeDegrees * shake;
         if (atmosphere != null) atmosphere.SetShake(ShakeOffset, shakeEuler);
+        if (landed) StrikeImpact?.Invoke(); // After the pose is written, so the camera's recoil meets the fist.
+    }
+
+    // Starts the strike: at the viewer as they stand now (the camera moves once it lands). Gaze darts stop; he stares.
+    public bool Strike()
+    {
+        if ((!ready && !Initialize()) || armUpper == null || armLower == null || armHand == null) return false;
+        CurrentStrike = new TrolaStrike(strike);
+        strikeTarget = viewer != null ? viewer.transform.position : head.t.position + root.forward * 2;
+        EndDart(); stareUntil = clock + CurrentStrike.TotalSeconds;
+        return true;
+    }
+
+    // Torso turn and lean, then the arm aimed bone by bone (upper arm, then forearm) from wherever the idle and the
+    // other offsets left it towards the strike's directions, in character axes so the rig's bone axes do not matter.
+    // True the frame the blow lands.
+    private bool StrikePose(float dt)
+    {
+        var blow = CurrentStrike;
+        if (blow == null) return false;
+        var cues = blow.Advance(dt);
+        Vector3 right = root.right, up = root.up, forward = root.forward;
+        Rotate(chest, up, blow.Twist * .4f); Rotate(upperChest, up, blow.Twist * .6f);
+        Rotate(chest, right, blow.Lean * .4f); Rotate(upperChest, right, blow.Lean * .6f);
+        float side = Vector3.Dot(armUpper.t.position - root.position, right) >= 0 ? 1 : -1;
+        Vector3 toViewer = (strikeTarget - armUpper.t.position).normalized;
+        // Cocked: elbow up and out, fist back by the head. Landed: the arm straight at the viewer, coming slightly across.
+        Vector3 cockedUpper = (up * .9f - forward * .35f + right * side * .45f).normalized;
+        Vector3 cockedLower = (up * .35f - forward * .8f + right * side * .1f).normalized;
+        Vector3 landedUpper = (toViewer - right * side * .12f).normalized, landedLower = toViewer;
+        Vector3 down = Vector3.Cross(up, landedUpper).normalized;
+        Vector3 throughUpper = Quaternion.AngleAxis(blow.Timing.followDrop, down) * landedUpper;
+        Vector3 throughLower = Quaternion.AngleAxis(blow.Timing.followDrop * 1.3f, down) * landedLower;
+        AimBone(armUpper, armLower.t, Vector3.Slerp(Vector3.Slerp(cockedUpper, landedUpper, blow.Swing), throughUpper, blow.Follow), blow.ArmWeight);
+        AimBone(armLower, armHand.t, Vector3.Slerp(Vector3.Slerp(cockedLower, landedLower, blow.Swing), throughLower, blow.Follow), blow.ArmWeight);
+        if (blow.Current == TrolaStrike.Stage.Done) CurrentStrike = null;
+        return (cues & TrolaStrike.Cue.Impact) != 0;
+    }
+    // Turns a bone so the direction to its child moves `weight` of the way from where it points now to `direction`.
+    private static void AimBone(Driven bone, Transform child, Vector3 direction, float weight)
+    {
+        if (bone == null || child == null || weight <= 0) return;
+        Vector3 now = child.position - bone.t.position;
+        if (now.sqrMagnitude < 1e-8f) return;
+        now.Normalize();
+        bone.t.rotation = Quaternion.FromToRotation(now, Vector3.Slerp(now, direction, Mathf.Clamp01(weight))) * bone.t.rotation;
     }
 
     private Context ReadContext()
@@ -624,7 +688,7 @@ public sealed class GatekeeperPerformer : MonoBehaviour
         if (index >= 0 && length > 0) repeatAt = clock + Mathf.Max(0, index / (float)line.text.Length * length - settings.repeatLeadSeconds);
     }
 
-    private void OnRestarted() { hasLastLine = false; lastLine = null; repeatAt = -99; restless = 0; }
+    private void OnRestarted() { hasLastLine = false; lastLine = null; repeatAt = -99; restless = 0; CurrentStrike = null; stareUntil = -99; }
 
     public void TriggerInterruption()
     {

@@ -26,5 +26,7 @@ Each encounter opens with a road approach run by ExperienceDirector; TrolaAtmosp
 camera writer. -xybridNoOpening skips it; see docs/approach.md.
 After admission the player enters the camp explicitly (Enter camp, or clear words; d1 /decide asks enter_camp,
 restart serve_decisions.py after updating); endings carry a reason beside the outcome. See docs/entry.md.
+Only an Expelled ending strikes: GatekeeperPerformer applies the strike last (after the idle and its offsets) and
+ExperienceDirector knocks the viewpoint down; calm refusals stay calm. See docs/defeat.md.
 Default validation: one Editor confirmation; no builds or measurement suites
 unless explicitly requested. See README.md for external dependency limits.

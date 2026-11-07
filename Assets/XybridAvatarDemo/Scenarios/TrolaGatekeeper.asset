@@ -413,7 +413,7 @@ MonoBehaviour:
     emotion: anger
     intensity: 1
     patience_delta: 0
-    ends_scene: 0
+    ends_scene: 1
     delivery: roar
     audio: {fileID: 0}
     mouthCues: {fileID: 0}

@@ -278,6 +278,17 @@ public sealed class CampSoundscape : MonoBehaviour
         if (gate != null) gate.source.Stop();
         resyncGate = true; // Doors snapped shut by a new approach must not creak (Gate, next Update, after Changed).
     }
+    // Trola's blow lands (ExperienceDirector, docs/defeat.md): one heavy drum hit, and the camp holds its breath.
+    public void Strike()
+    {
+        try
+        {
+            if (cancelled) return;
+            ScheduleHit(AudioSettings.dspTime + .01, 1.2f);
+            campPausedUntil = startledUntil = Time.realtimeSinceStartup + 30; campStopped = true;
+        }
+        catch (Exception error) { Debug.LogWarning("[Camp soundscape] " + error.Message, this); }
+    }
     private void OnFlinch(bool aggressive)
     {
         try
@@ -299,8 +310,11 @@ public sealed class CampSoundscape : MonoBehaviour
         drumStopped = true;
         if (current == GatekeeperOutcome.Refused)
         {
+            // A provoked expulsion ends on Trola's strike (docs/defeat.md): its one heavy hit replaces the three.
+            var director = ExperienceDirector.Instance;
+            bool struck = controller.Ending == GatekeeperEnding.Expelled && director != null && director.OwnsEnding;
             double at = AudioSettings.dspTime + .1;
-            for (int i = 0; i < 3; i++) ScheduleHit(at + i * .45, .8f + .1f * i);
+            if (!struck) for (int i = 0; i < 3; i++) ScheduleHit(at + i * .45, .8f + .1f * i);
             musicFadeAt = now + 1.3f; musicFadeSeconds = 2.5f; campStopped = true;   // then wind (and fire) only
         }
         else

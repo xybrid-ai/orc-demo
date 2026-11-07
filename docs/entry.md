@@ -62,7 +62,7 @@ ignored, so only entering finishes.
 | `None` | Still going, including free talk after admission. |
 | `Entered` | The admitted player went in: the send-off has been said. Only `EnterCamp()` sets it, and only with admission. |
 | `Refused` | A calm refusal at the reckoning: a toll or a joke that fell flat (`passage` or `friendship` below their patience). |
-| `Expelled` | Thrown out: "Demand the gate", patience spent on provocation at a checkpoint (off-topic or out-of-world answers), or an expulsion in free talk. |
+| `Expelled` | Thrown out: "Demand the gate", patience spent on provocation at a checkpoint (off-topic or out-of-world answers), or an expulsion in free talk. Trola strikes ([docs/defeat.md](defeat.md)). |
 | `Departed` | The player left of their own accord: a goodbye in non-admitted free talk, or a withdrawal in the old intent demo. |
 
 ## Ownership
