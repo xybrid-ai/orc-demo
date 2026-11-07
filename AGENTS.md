@@ -22,5 +22,7 @@ Speech input (hold Left Option) uses Whisper through the SDK: stage it with
 python3 tools/setup_asr.py; see docs/voice-input.md. Spoken answers at Trola's
 choice buttons go through d1 POST /choose (restart serve_decisions.py after updating).
 Subtitles reveal phrase by phrase (display only, speech unchanged); see docs/subtitles.md.
+Each encounter opens with a road approach run by ExperienceDirector; TrolaAtmosphere stays the single
+camera writer. -xybridNoOpening skips it; see docs/approach.md.
 Default validation: one Editor confirmation; no builds or measurement suites
 unless explicitly requested. See README.md for external dependency limits.

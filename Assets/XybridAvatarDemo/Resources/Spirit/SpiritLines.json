@@ -7,6 +7,8 @@
  "visual":{"effects_strength":0.5,"whisper_weight":0.55,"vignette":0.44,"smoothness":0.8,"chromatic":0.55,"aperture":1.6,"saturation":-28,"exposure":-0.12,"bloom":0.85,"slow_motion":0.6,"camera_push_mm":3},
  "lines":[
   {"id": "adviser-intro-1", "family": "adviser.intro", "key": "", "min_patience": 0, "max_patience": 5, "text": "He's proud, and he's bored. A little flattery, some coin, or asking about camp might help. Those are suggestions—use your own words."},
+  {"id": "approach-first-1", "family": "approach.first", "key": "", "min_patience": 0, "max_patience": 5, "text": "Careful. That troll hates strangers, so let him speak first."},
+  {"id": "approach-again-1", "family": "approach.again", "key": "", "min_patience": 0, "max_patience": 5, "text": "The gate again. Let him speak first."},
   {"id": "adviser-none-1", "family": "adviser.remark", "key": "none", "min_patience": 0, "max_patience": 2, "text": "He's bristling. Keep your words measured."},
   {"id": "adviser-none-2", "family": "adviser.remark", "key": "none", "min_patience": 3, "max_patience": 4, "text": "He's watching you. Take a breath before you answer."},
   {"id": "adviser-none-3", "family": "adviser.remark", "key": "none", "min_patience": 5, "max_patience": 5, "text": "He's warming to you. Keep it natural."},

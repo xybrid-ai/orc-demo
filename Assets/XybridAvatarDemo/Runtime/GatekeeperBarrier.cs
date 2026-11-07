@@ -20,6 +20,15 @@ public sealed class GatekeeperBarrier : MonoBehaviour
     private void OnEnable() { if (gatekeeper != null) gatekeeper.Changed += Refresh; }
     private void OnDisable() { if (gatekeeper != null) gatekeeper.Changed -= Refresh; }
     private void Refresh() => open = gatekeeper.GateOpenRequested;
+    // The doors are where the encounter wants them (not swinging).
+    public bool AtRest => hinge == null || Quaternion.Angle(hinge.localRotation, closed * Quaternion.Euler(0, open ? openingAngle : 0, 0)) < .1f;
+    // A new approach starts with the doors already where the new encounter wants them (closed), not swinging shut in view.
+    public void Settle()
+    {
+        if (gatekeeper != null) Refresh();
+        if (hinge != null) hinge.localRotation = closed * Quaternion.Euler(0, open ? openingAngle : 0, 0);
+        if (secondHinge != null) secondHinge.localRotation = secondClosed * Quaternion.Euler(0, open ? -openingAngle : 0, 0);
+    }
     private void Update()
     {
         if (hinge == null) return;

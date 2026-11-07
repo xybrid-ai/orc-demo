@@ -127,6 +127,19 @@ public static class SpiritAudioChecks
                     Check(s[0] == 0 && Math.Abs(s[s.Length - 1]) < 1e-6, sound + " @" + rate + ": does not start and end at 0");
                     Check(peak > .5f && peak <= .9001f, sound + " @" + rate + ": peak " + peak);
                 }
+            // The road approach's footfalls (ExperienceDirector): the same one-shot rules, deterministic per seed, 300 ms.
+            foreach (int rate in SoundRates)
+            {
+                var s = ProceduralAudio.RenderFootstep(4271, rate);
+                double mean = s.Average(x => (double)x);
+                float peak = s.Max(x => Math.Abs(x));
+                Check(InRange(s, out string why), "footstep @" + rate + ": " + why);
+                Check(Math.Abs(mean) < 1e-4, "footstep @" + rate + ": DC offset " + mean);
+                Check(s[0] == 0 && Math.Abs(s[s.Length - 1]) < 1e-6, "footstep @" + rate + ": does not start and end at 0");
+                Check(peak > .5f && peak <= .9001f, "footstep @" + rate + ": peak " + peak);
+                Check(Math.Abs(s.Length / (double)rate - .3) < .002, "footstep @" + rate + ": not 300 ms");
+                Check(Same(s, ProceduralAudio.RenderFootstep(4271, rate)) && !Same(s, ProceduralAudio.RenderFootstep(4272, rate)), "footstep @" + rate + ": not deterministic per seed");
+            }
             Check(Math.Abs(sounds[SpiritSound.Gasp].Length / (double)ProceduralAudio.CampOneShotRate - .18) < .002, "Gasp is not 180 ms");
             Check(Math.Abs(sounds[SpiritSound.GateCreak].Length / (double)ProceduralAudio.CampOneShotRate - 1.6) < .002, "GateCreak is not 1.6 s");
             foreach (var pair in loops)

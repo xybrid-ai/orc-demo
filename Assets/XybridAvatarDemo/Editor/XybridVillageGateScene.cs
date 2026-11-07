@@ -104,6 +104,48 @@ public static class XybridVillageGateScene
         if (GameObject.Find("Dusk Atmosphere") != null) XybridDuskScene.Apply();
     }
 
+    // The road approach's foreground (docs/approach.md). The walk starts 12 m behind the close-up on a 60 mm lens, so the
+    // ground from about 7.5 m ahead shows: the plank road continues towards the traveller and grass and rocks dress its
+    // verges. Only this group is rebuilt, so the rest of the set (and the dusk builder's changes) stays as it is.
+    // Nothing here can enter the close-up, whose frame first meets the ground 16 m beyond Trola.
+    [MenuItem("Xybrid/Avatar Demo/Build Road Approach")]
+    public static void BuildRoadApproach()
+    {
+        if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play Mode before building the road.");
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.path != Demo + "/GoblinSpeakingDemo.unity") throw new InvalidOperationException("Open GoblinSpeakingDemo first.");
+        var set = GameObject.Find("Village Gate Set");
+        if (set == null) throw new InvalidOperationException("Build the fortified village gate first.");
+        foreach (var path in new[] { "Environment/SM_Env_Road_Planks_Straight_01", "Environment/SM_Env_Grass_Preset_01", "Environment/SM_Env_Grass_Preset_02", "Environment/SM_Env_Rock_02" })
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(Pack + path + ".prefab") == null)
+                throw new InvalidOperationException("Finish importing Goblin War Camp: " + path);
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(Pack + "Props/SM_Prop_Camp_Fire_01.prefab") == null)
+            throw new InvalidOperationException("Finish importing Goblin War Camp: Props/SM_Prop_Camp_Fire_01");
+        converted.Clear();
+        Undo.IncrementCurrentGroup(); Undo.SetCurrentGroupName("Build road approach");
+        var old = set.transform.Find("Road approach");
+        if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
+        var road = Group("Road approach", set.transform);
+        // Continues the five-plank path (z = 1 ... -8.4, 2.35 m apart) towards the road, slightly uneven.
+        float[] sway = { .03f, -.05f, .06f, -.02f, .04f, -.06f }, turn = { 1.2f, -.8f, 1.6f, -1.4f, .6f, -1 };
+        for (int i = 0; i < sway.Length; i++)
+            Place("Environment/SM_Env_Road_Planks_Straight_01", "Road plank " + i, road, new Vector3(sway[i], .012f, 3.35f + i * 2.35f), .55f, turn[i]);
+        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 0", road, new Vector3(-2.3f, 0, 3.4f), .20f, 25);
+        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 1", road, new Vector3(2.6f, 0, 4.6f), .22f, -35);
+        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 2", road, new Vector3(-3, 0, 6.3f), .20f, 60);
+        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 3", road, new Vector3(2, 0, 7.6f), .18f, 15);
+        Place("Environment/SM_Env_Grass_Preset_02", "Verge grass 4", road, new Vector3(3.4f, 0, 2.6f), .22f);
+        Place("Environment/SM_Env_Grass_Preset_02", "Verge grass 5", road, new Vector3(-3.8f, 0, 8.8f), .24f, 10);
+        Place("Environment/SM_Env_Rock_02", "Verge rock 0", road, new Vector3(-2.9f, 0, 5), .30f, 30);
+        Place("Environment/SM_Env_Rock_02", "Verge rock 1", road, new Vector3(3.6f, 0, 7), .34f, -50);
+        // The face firelight's source, seen from the road (beside the close-up camera, never in its frame). Flames only:
+        // a lamp here would relight Trola's face.
+        Place("Props/SM_Prop_Camp_Fire_01", "Roadside hearth", road, new Vector3(-1.2f, 0, 2.6f), .45f);
+        Fire("Roadside hearth flame", road, new Vector3(-1.2f, .2f, 2.6f), 1.1f, false);
+        EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
+        Debug.Log("[Village Gate] Road approach saved: " + road.childCount + " pieces.");
+    }
+
     private static Transform Group(string name, Transform parent)
     {
         var group = new GameObject(name); Undo.RegisterCreatedObjectUndo(group, "Create village group");
@@ -195,7 +237,7 @@ public static class XybridVillageGateScene
         if (name == "Key") RenderSettings.sun = light;
     }
 
-    private static void Fire(string name, Transform parent, Vector3 position, float scale)
+    private static void Fire(string name, Transform parent, Vector3 position, float scale, bool lamp = true)
     {
         var go = new GameObject(name); Undo.RegisterCreatedObjectUndo(go, "Create torch flame");
         go.transform.SetParent(parent, false); go.transform.position = position; go.transform.localScale = Vector3.one * scale;
@@ -211,8 +253,11 @@ public static class XybridVillageGateScene
         var gradient = new Gradient(); gradient.SetKeys(new[] { new GradientColorKey(new Color(1, .90f, .40f), 0), new GradientColorKey(new Color(1, .30f, .04f), .6f), new GradientColorKey(new Color(.4f, .06f, .01f), 1) }, new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(.9f, .15f), new GradientAlphaKey(0, 1) }); color.color = gradient;
         var size = particles.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1, new AnimationCurve(new Keyframe(0, .4f), new Keyframe(.25f, 1), new Keyframe(1, 0)));
         var renderer = go.GetComponent<ParticleSystemRenderer>(); renderer.sharedMaterial = FlameMaterial(); renderer.renderMode = ParticleSystemRenderMode.Billboard;
-        var lamp = new GameObject("Warm torch light"); Undo.RegisterCreatedObjectUndo(lamp, "Create torch light"); lamp.transform.SetParent(go.transform, false);
-        var light = lamp.AddComponent<Light>(); light.type = LightType.Point; light.color = new Color(1, .40f, .10f); light.intensity = 2; light.range = 3.5f;
+        if (lamp)
+        {
+            var bulb = new GameObject("Warm torch light"); Undo.RegisterCreatedObjectUndo(bulb, "Create torch light"); bulb.transform.SetParent(go.transform, false);
+            var light = bulb.AddComponent<Light>(); light.type = LightType.Point; light.color = new Color(1, .40f, .10f); light.intensity = 2; light.range = 3.5f;
+        }
         particles.Play();
     }
 

@@ -156,6 +156,31 @@ public static class ProceduralAudio
         }
     }
 
+    // A footfall on the packed-dirt road (ExperienceDirector's walk, docs/approach.md): a soft heel thump, then a short
+    // crunch of grit at the heel and again at the toe. Like the one-shots it starts and ends at 0 and peaks at .9.
+    public static float[] RenderFootstep(int seed, int sampleRate)
+    {
+        CheckRate(sampleRate);
+        var rng = Rng(seed, "footstep", 7); var grit = Rng(seed, "footstep", 9);
+        var b = new float[Samples(.3, sampleRate)];
+        Thud(b, 0, rng.Range(95f, 120f), rng.Range(55f, 70f), .02, .045, .5f, sampleRate, rng);
+        var low = OnePole.At(rng.Range(2600f, 3600f), sampleRate); var dc = OnePole.At(300, sampleRate);
+        double toe = rng.Range(.05f, .075f);
+        foreach (var (start, length, gain) in new (double start, double length, double gain)[] { (.004, .07, 1), (toe, .09, .7) })
+        {
+            int at = (int)(start * sampleRate), n = (int)(length * sampleRate);
+            for (int j = 0; j < n && at + j < b.Length; j++)
+            {
+                double t = j / (double)sampleRate, env = Math.Min(1, t / .002) * Math.Exp(-t / (length / 3));
+                // Sparse grains: noise gated sample by sample reads as a crunch rather than a hiss.
+                float w = grit.Signed() * (grit.NextFloat() < .35f ? 1 : .15f);
+                float v = low.Low(w); v -= dc.Low(v);
+                b[at + j] += (float)(gain * .6 * env * v);
+            }
+        }
+        return Finish(b, sampleRate);
+    }
+
     public static int LoopLength(int sampleRate, float seconds)
     {
         CheckRate(sampleRate);

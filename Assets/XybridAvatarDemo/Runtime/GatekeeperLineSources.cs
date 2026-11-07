@@ -42,6 +42,20 @@ public static class GatekeeperLineSources
             : new IntentGatekeeperLineSource(scenario);
         return new Session(first, scenario, model);
     }
+    // The first line a new authored encounter speaks (its opening challenge), read from a throwaway source so the real one is
+    // untouched; null when the start is not an immediate authored line. Only used to voice it early (PrepareOpening).
+    public static string OpeningText(GatekeeperScenario scenario, GatekeeperEncounter encounter)
+    {
+        if (scenario == null || encounter == null || !scenario.authoredConversation || scenario.debugStartInFreeForm) return null;
+        try
+        {
+            var state = new GatekeeperConversationState(new GatekeeperEncounter(encounter.Patience, 5, true));
+            var first = new AuthoredGatekeeperLineSource(scenario, state).NextLineAsync(state, new GatekeeperPlayerInput(GatekeeperInputKind.Start), CancellationToken.None);
+            var line = first.Status == TaskStatus.RanToCompletion ? first.Result : null;
+            return line == null || GatekeeperNames.HasSlots(line.text) ? null : line.text;
+        }
+        catch (Exception) { return null; } // Voicing early is an optimisation; the line still prepares when spoken.
+    }
     private sealed class Session : IGatekeeperLineSource
     {
         private IGatekeeperLineSource active;

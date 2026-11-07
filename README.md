@@ -12,6 +12,9 @@ Hold Left Option to talk instead of typing (Whisper, on device; stage it with
 `python3 tools/setup_asr.py`, see [docs/voice-input.md](docs/voice-input.md)).
 Subtitles appear phrase by phrase as Trola and Vesper speak; see
 [docs/subtitles.md](docs/subtitles.md).
+Each encounter opens on the road: a short walk up to the gate, Vesper's warning
+and Trola's challenge, then the close-up (Space skips; Try again replays it).
+See [docs/approach.md](docs/approach.md).
 
 ## Open locally
 

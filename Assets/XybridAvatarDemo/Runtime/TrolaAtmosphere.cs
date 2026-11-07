@@ -24,6 +24,26 @@ public sealed class TrolaAtmosphere : MonoBehaviour
     public Vector3 ShakePosition { get; private set; }
     public Vector3 ShakeEuler { get; private set; }
     public void SetShake(Vector3 cameraSpacePosition, Vector3 euler) { ShakePosition = cameraSpacePosition; ShakeEuler = euler; }
+    // A cinematic pose from the experience director (ExperienceDirector, docs/approach.md), applied here so the camera keeps a
+    // single writer. Weight 1 is that pose, 0 the drifting close-up home; between, position, rotation and field of view blend.
+    // Shake still applies on top. The director renews it every frame; a pose not renewed since the previous frame lapses,
+    // so a director that stops (disabled, destroyed, failed) can never leave the camera on the road.
+    public float CinematicWeight => Time.frameCount - cinematicFrame <= 1 ? cinematicWeight : 0;
+    private float cinematicWeight;
+    private int cinematicFrame = int.MinValue / 2;
+    private Vector3 cinematicPosition;
+    private Quaternion cinematicRotation = Quaternion.identity;
+    private float cinematicFieldOfView, homeFieldOfView;
+    private bool fieldOfViewChanged;
+    public void SetCinematicPose(Vector3 position, Quaternion rotation, float fieldOfView, float weight)
+    {
+        cinematicPosition = position; cinematicRotation = rotation;
+        cinematicFieldOfView = fieldOfView > 0 ? fieldOfView : homeFieldOfView;
+        cinematicWeight = Mathf.Clamp01(weight); cinematicFrame = Time.frameCount;
+    }
+    public void ClearCinematicPose() { cinematicWeight = 0; }
+    public Vector3 HomePosition => cameraHome;
+    public float HomeFieldOfView => homeFieldOfView;
 
     private void OnEnable()
     {
@@ -43,7 +63,7 @@ public sealed class TrolaAtmosphere : MonoBehaviour
 
     private void Awake()
     {
-        if (portraitCamera != null) cameraHome = portraitCamera.transform.position;
+        if (portraitCamera != null) { cameraHome = portraitCamera.transform.position; homeFieldOfView = portraitCamera.fieldOfView; }
         intensities = new float[fireLights?.Length ?? 0];
         for (int i = 0; i < intensities.Length; i++) if (fireLights[i] != null) intensities[i] = fireLights[i].intensity;
         if (atmosphereVolume != null) atmosphereVolume.profile.TryGet(out focus);
@@ -68,12 +88,20 @@ public sealed class TrolaAtmosphere : MonoBehaviour
         if (portraitCamera == null || actor == null) return;
         Vector3 drifted = cameraHome + new Vector3(.022f * Mathf.Sin(elapsed * .18f), .009f * Mathf.Sin(elapsed * .13f), 0);
         Quaternion look = Quaternion.LookRotation(actor.position + lookOffset - drifted);
+        float weight = CinematicWeight;
+        if (weight > 0) { drifted = Vector3.Lerp(drifted, cinematicPosition, weight); look = Quaternion.Slerp(look, cinematicRotation, weight); }
         portraitCamera.transform.position = drifted + look * ShakePosition;
         portraitCamera.transform.rotation = look * Quaternion.Euler(ShakeEuler);
+        // Written only while a cinematic pose blends, and once more to restore the close-up's own field of view.
+        if (weight > 0 || fieldOfViewChanged)
+        {
+            portraitCamera.fieldOfView = Mathf.Lerp(homeFieldOfView, cinematicFieldOfView, weight);
+            fieldOfViewChanged = weight > 0;
+        }
         if (focus != null)
         {
             Vector3 face = actor.position + new Vector3(0, 1.55f, .12f);
-            focus.focusDistance.value = Vector3.Dot(face - portraitCamera.transform.position, portraitCamera.transform.forward);
+            focus.focusDistance.value = Mathf.Max(.5f, Vector3.Dot(face - portraitCamera.transform.position, portraitCamera.transform.forward));
         }
     }
 }

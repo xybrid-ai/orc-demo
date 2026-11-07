@@ -173,10 +173,12 @@ public sealed class SpiritPresence : MonoBehaviour
         _ => WarmTint
     };
 
-    public void Show(SpiritMomentKind kind, SpiritBand band)
+    // keepFocus: leave depth of field to the camera (the road approach's distant view must stay sharp).
+    public void Show(SpiritMomentKind kind, SpiritBand band, bool keepFocus = false)
     {
         if (!built) return;
         tint = BandTint(band); moment.vignette.color.value = tint;
+        moment.focus.active = !keepFocus;
         shown = true;
         Tween(kind == SpiritMomentKind.Counsel ? 1 : Mathf.Clamp01(visual.whisper_weight), haloIn, true);
     }

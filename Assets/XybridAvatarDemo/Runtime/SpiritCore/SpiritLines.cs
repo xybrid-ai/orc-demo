@@ -101,6 +101,7 @@ using System.Text.RegularExpressions;
             if (line.min_patience < 0 || line.max_patience > 5 || line.min_patience > line.max_patience) return "Invalid patience range: " + line.id;
             string stripped = line.text.Replace("{name}", "").Replace("{assigned}", "");
             if (stripped.Contains("{") || stripped.Contains("}")) return "Unknown slot: " + line.id;
+            if (line.family.StartsWith("approach.", StringComparison.Ordinal) && stripped != line.text) return "Approach lines are said before any name: " + line.id;
             if (!line.always_name && LeadingVocative.Replace(TrailingVocative.Replace(line.text, ""), "$1").Contains("{name}"))
                 return "{name} must be a vocative unless always_name: " + line.id;
             foreach (string name in TestNames)
@@ -138,6 +139,18 @@ using System.Text.RegularExpressions;
         yield return ("adviser.intro", "", 0, 5);
         foreach (string key in new[] { "none", "flatter", "bribe", "camp", "threaten", "repeat" })
             yield return ("adviser.remark", key, 0, 5);
+        yield return ("approach.first", "", 0, 5);
+        yield return ("approach.again", "", 0, 5);
+    }
+
+    // The road approach's warning (docs/approach.md): the full one on the Play session's first approach, a short one on
+    // replays. Said before Trola has heard a name, so these lines carry no slots (Check rejects them).
+    public SpiritCue ApproachCue(bool first)
+    {
+        string family = first ? "approach.first" : "approach.again";
+        var line = lines.Find(l => l != null && l.family == family && (l.key ?? "") == "");
+        if (line == null) return null;
+        return new SpiritCue { LineId = line.id, Family = family, Key = "", Text = Resolve(line.text, "", "", false), Rule = "authored approach warning" };
     }
 
     public SpiritCue AdviserCue(SpiritCheckpoint checkpoint, bool explain)
