@@ -5,6 +5,36 @@
   "xybrid_sdk": "0.16.0",
   "files": [
     {
+      "path": "Assets/Animations.meta",
+      "bytes": 172,
+      "sha256": "cb1f19441b2ff0ffd28905501d11bce62dabb14d9f51cc032882f90bea420a02"
+    },
+    {
+      "path": "Assets/Animations/Sitting Talking.fbx",
+      "bytes": 3775392,
+      "sha256": "55821c2abf0737dbed4568a0c6a1286210706264a05ae6259b9853daa90fc227"
+    },
+    {
+      "path": "Assets/Animations/Sitting Talking.fbx.meta",
+      "bytes": 31570,
+      "sha256": "e6f8d4c2aa7dfa16a37a36ff581cc99b5d7d93a3d7ef8ee5460febe174377eb2"
+    },
+    {
+      "path": "Assets/Animations/Sitting.meta",
+      "bytes": 172,
+      "sha256": "d7c4b538c9ce8be636c8abf7d68b9e5af4694266a4c2d588ad9b028297616611"
+    },
+    {
+      "path": "Assets/Animations/Sitting/Sitting Laughing.fbx",
+      "bytes": 977456,
+      "sha256": "28c5b6ae1d0364372f2293f77b72492751bc3279a7d53be75bc6a87584878eaf"
+    },
+    {
+      "path": "Assets/Animations/Sitting/Sitting Laughing.fbx.meta",
+      "bytes": 30447,
+      "sha256": "f5560d6f5912743ab77c79c679c1a84ea1a69320ff2022ba2181fa6d72bfae8d"
+    },
+    {
       "path": "Assets/Fonts.meta",
       "bytes": 172,
       "sha256": "0edd13613ea00b8320d132fabde16cdf8e0bafb79cbd1827280b0062729dc852"
@@ -382,6 +412,26 @@
       "sha256": "4b106bbaf4e535c65c5d7f78a947ee9af7d0076c4b6bfc57ee88dbcc2d903d47"
     },
     {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine/Locomotion.meta",
+      "bytes": 172,
+      "sha256": "875ace3539aa79e021fbd560e8beb1b5c7a453fd867fde8bfe51095fade9dea1"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine/Locomotion/Walk.meta",
+      "bytes": 172,
+      "sha256": "a525a2a50cbd2c6454b2b44e2aff11adf07a5edf8f15478d8d9ebf548ea7d400"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine/Locomotion/Walk/A_MOD_BL_Walk_F_Masc.fbx",
+      "bytes": 971936,
+      "sha256": "7d17eed2b5807c75efbd4f35fe99f4d2816becc6836b6517f39c52e13a6eb212"
+    },
+    {
+      "path": "Assets/Synty/AnimationBaseLocomotion/Animations/Sidekick/Masculine/Locomotion/Walk/A_MOD_BL_Walk_F_Masc.fbx.meta",
+      "bytes": 49409,
+      "sha256": "b692cdf42146ef21d7bf578e6133d81a7ca7123a7b67b0bdd180b355454b0fcf"
+    },
+    {
       "path": "Assets/Synty/AnimationBaseLocomotion/Meshes.meta",
       "bytes": 172,
       "sha256": "60291022d5b3d466fa5cea9d5c713c2719f90c6e25ef1b389f87d3fc7f527d4a"
@@ -430,6 +480,216 @@
       "path": "Assets/Synty/AnimationBaseLocomotion/Samples/Textures/T_Polygon_Dummy_01.png.meta",
       "bytes": 3672,
       "sha256": "351b1cb603f2fa29e8f02e664af39c20eaaeb69bbe294cab68db6f4a8ac2409b"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles.meta",
+      "bytes": 172,
+      "sha256": "29d819e8296f41be9b3e6396c571a0bb05e46ffae84c6d03c3aa8b078d54a143"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations.meta",
+      "bytes": 172,
+      "sha256": "dcabdce594d0ed8fd07cde9c62a94c7620de3d720dc6aab56f6a3e16b40960bd"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick.meta",
+      "bytes": 172,
+      "sha256": "cc241d237051a38850d908eb40b2a8c3208ab20a790bb65d607987d5959b67c1"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine.meta",
+      "bytes": 172,
+      "sha256": "5c2dd2ab6639dfef13f9cc883da472288f945282f921dc64f74d9d353bfdbecf"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded.meta",
+      "bytes": 172,
+      "sha256": "5bfa70c50dc9e2e8dda74b1d009cd22ab28a9505d582f7471bfb2f8b93ad90ec"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded/Stances.meta",
+      "bytes": 172,
+      "sha256": "238b8a2adbcef08f482fb5c3d75c8856e1708c6a436871c0e35872c1964415e9"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded/Stances/A_MOD_IDL_ArmsFolded_Grumpy_Enter_Masc.fbx",
+      "bytes": 834912,
+      "sha256": "7f24faa62fa1282fd1e6f21b534ffde6fee7a71635a3c0290ff7fe26c2c41f50"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded/Stances/A_MOD_IDL_ArmsFolded_Grumpy_Enter_Masc.fbx.meta",
+      "bytes": 58242,
+      "sha256": "d8d53b241d743e66228d21fd125c4ecb93d4d5884d2ae0f48bc3165a52646da5"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded/Stances/A_MOD_IDL_ArmsFolded_Grumpy_Exit_Masc.fbx",
+      "bytes": 835552,
+      "sha256": "2885f8efe1215da5093c1d61155ce56bd011946f0b8b1d445a4b4a0126553c37"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded/Stances/A_MOD_IDL_ArmsFolded_Grumpy_Exit_Masc.fbx.meta",
+      "bytes": 58244,
+      "sha256": "b5dfc625b799b48ce015c2760b20635200bd8925c6235d49eee7d45df84b230c"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded/Stances/A_MOD_IDL_ArmsFolded_Grumpy_Loop_Masc.fbx",
+      "bytes": 829920,
+      "sha256": "bf2ce802718797428ab24b9089f5fece357083d040f1683fc7a2bc87bf797b44"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/ArmsFolded/Stances/A_MOD_IDL_ArmsFolded_Grumpy_Loop_Masc.fbx.meta",
+      "bytes": 58244,
+      "sha256": "76ccaa56e4a7b5dfdd97e6ac91398c2ade346538a39ba7d57a6f22c2c926a859"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink.meta",
+      "bytes": 172,
+      "sha256": "0bd157ca3d660219591af14e6029b9ef343662aca1677777f2b07ec147732137"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Actions.meta",
+      "bytes": 172,
+      "sha256": "a39870a2ce6311daae2c82c76496fb7ba45518c74a933cb21ed973367953cf0b"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Actions/A_MOD_IDL_Drink_Sip_Masc.fbx",
+      "bytes": 1169136,
+      "sha256": "8d04583558f223069826e48e0a2e339d4e3788df3812ffd4c6a5168cc291f16d"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Actions/A_MOD_IDL_Drink_Sip_Masc.fbx.meta",
+      "bytes": 58216,
+      "sha256": "0bcb854d31212657fe31626e8947668855a592c039295a49105b897552f71da5"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Actions/A_MOD_IDL_Drink_Swig_Masc.fbx",
+      "bytes": 958576,
+      "sha256": "d6be6bcac3460b0f715f38c2bf743ab9751369ceb63e0e6322685fd7789af911"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Actions/A_MOD_IDL_Drink_Swig_Masc.fbx.meta",
+      "bytes": 58217,
+      "sha256": "10c1d15eb9a2858f7fa6742a716af83de5faa441375b623cc4f9a102cef9ee04"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Stances.meta",
+      "bytes": 172,
+      "sha256": "1536b9911de5ef945f274dee8fe8fe2ad7c15c4b6788042083f65072a0892363"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Stances/A_MOD_IDL_Drink_Hold_Loop_Masc.fbx",
+      "bytes": 840128,
+      "sha256": "cae7a382fd9a1e038ab2ca406752d1b8e58e0c285861d4d53b3a8987b0a2b4cf"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Drink/Stances/A_MOD_IDL_Drink_Hold_Loop_Masc.fbx.meta",
+      "bytes": 58231,
+      "sha256": "48b3d7822d3d6e6742bf4ea83a55e1d99abac2edd3674be073e5fb0bc9980af6"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look.meta",
+      "bytes": 172,
+      "sha256": "8ec61787786fa42d5e2eed20e922828b7e351336d122ffc1a03f345134e2d697"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look/Actions.meta",
+      "bytes": 172,
+      "sha256": "8c2917992a13386569b3233f243723ad6327518aaf486712e27a1b908d221f20"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look/Actions/A_MOD_IDL_Look_L_Behind_Masc.fbx",
+      "bytes": 1084320,
+      "sha256": "5aac34e062593b32a88643fd354cc35878fc6bbc7f129701b269d7eee3adbb1a"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look/Actions/A_MOD_IDL_Look_L_Behind_Masc.fbx.meta",
+      "bytes": 58225,
+      "sha256": "9c906cb1a19c25f480095b694367bdcb8b1d55e2fbe79a88d1ebcdcb833e9804"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look/Actions/A_MOD_IDL_Look_L_Masc.fbx",
+      "bytes": 885360,
+      "sha256": "0b744a221fc09485168a12b446a5b66a001b06135bf7226130b3dbc3386f962a"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look/Actions/A_MOD_IDL_Look_L_Masc.fbx.meta",
+      "bytes": 58210,
+      "sha256": "ba686e5e85da8451b25c306fefa056d11fda3faff2b4d62e2168e495434646de"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look/Actions/A_MOD_IDL_Look_R_Masc.fbx",
+      "bytes": 885664,
+      "sha256": "b4cd07130e576848e86fc34921bf2ed4ff1c55cc06da7409eb0e46dbcf25d6ea"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Look/Actions/A_MOD_IDL_Look_R_Masc.fbx.meta",
+      "bytes": 58210,
+      "sha256": "6ae650e920ba493b067f6be8ce6afc05d70e5d7138a303b2735918ca88da862f"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Stretch.meta",
+      "bytes": 172,
+      "sha256": "0adff4ab27b1896636044f3dee21f717a41ab2aea01ea387d9b286a6c4edc4c1"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Stretch/Actions.meta",
+      "bytes": 172,
+      "sha256": "bf05432fc8896e5e60515e22ba55de19e984bb7c15b829e74c3c3173ee9cd5c0"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Stretch/Actions/A_MOD_IDL_Stretch_Arms_Masc.fbx",
+      "bytes": 1079856,
+      "sha256": "47fe530dc59a4a1b38c4d25b515f04fd83fd641fb0c045a6a5e4708fc8580103"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Stretch/Actions/A_MOD_IDL_Stretch_Arms_Masc.fbx.meta",
+      "bytes": 58222,
+      "sha256": "6734731ef69c79fe0287861bafa11b03ec6ee34f3066dd59a47fe26712b0d41d"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Yawn.meta",
+      "bytes": 172,
+      "sha256": "189ad3c9a76015ec991834ed6f00255dcadda13e03e741bd5510ec1a613128c1"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Yawn/Actions.meta",
+      "bytes": 172,
+      "sha256": "8161900ade4b604f38c20d9c4c53e61e03c550b83266681f988b7aafdd2977cc"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Yawn/Actions/A_MOD_IDL_Yawn_Masc.fbx",
+      "bytes": 1059680,
+      "sha256": "967ada64b0317b2d66654aacd00a3f526b6c6bdaad7aa6c66e7ba6bed5b87fae"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Animations/Sidekick/Masculine/Yawn/Actions/A_MOD_IDL_Yawn_Masc.fbx.meta",
+      "bytes": 58207,
+      "sha256": "43542267f542236d48eb606e7a056f3d5262c5ce9323f2dc41ffe15cbdf61093"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Samples.meta",
+      "bytes": 172,
+      "sha256": "549e687839c73e303320cafd6f84ffcacf111206d31beb22bc69d96b94eb8bf0"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Samples/Meshes.meta",
+      "bytes": 172,
+      "sha256": "b0141b5ed71222d45e3cc3f2137fef0dcf33e741ca6d8c51faf53ab67398b69b"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Samples/Meshes/Characters.meta",
+      "bytes": 172,
+      "sha256": "889627978ce5713ed96e0c2c0dd9d19d9fe7cb13234ce0457498e98a94117945"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Samples/Meshes/Characters/Mask_SidekickSyntyCharacter.mask",
+      "bytes": 8757,
+      "sha256": "b45c4dbb2e3bd4d94a71f13dbb10fc1d7c1fb4a809196b03bbc54b29a483a2e8"
+    },
+    {
+      "path": "Assets/Synty/AnimationIdles/Samples/Meshes/Characters/Mask_SidekickSyntyCharacter.mask.meta",
+      "bytes": 189,
+      "sha256": "b397af3758698462675f863725f84b07c28dde63b88adcd57cf9ebc6972447ee"
     },
     {
       "path": "Assets/Synty/PolygonGeneric.meta",
@@ -622,6 +882,16 @@
       "sha256": "d1862ea989ff429fee391a707aa00f6eb98f4fb29da93a89b8be2c3b0739e7b4"
     },
     {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Bedroll_01_Convex.asset",
+      "bytes": 3926,
+      "sha256": "9f321dc5752b18f30438f2eb721dd6b4cadb123d555f43c48b1bc81540237e8e"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Bedroll_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "b351b9f092dbffd1df421dfffd6c1477808bfe0deddc10a6c231cb7d45cf442c"
+    },
+    {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Camp_Fire_01_Convex.asset",
       "bytes": 3925,
       "sha256": "6441f0d96cdd1cc8765ba1ffa781f283adbd68473378d23ce35adba173051b1c"
@@ -652,6 +922,66 @@
       "sha256": "0f76fe9c1ccffb7d8005c4d4c01565314d1dc9af9612659c08df13c5652a5ef2"
     },
     {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Food_01_Convex.asset",
+      "bytes": 3930,
+      "sha256": "7a228773a00781acd0437db93f971e5d938612074153d3f8fd260b258c76a1c0"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Food_01_Convex.asset.meta",
+      "bytes": 201,
+      "sha256": "3de43978c713d53e1546215097d54f59a94d5e9569122a950ec9387989fe60d8"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Mug_01_Convex.asset",
+      "bytes": 3930,
+      "sha256": "98171ecf8e7f56328fa9d0302b569f0f1f97d48d3c73c12474c7600e791c31d6"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Mug_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "eee959ed92655ab4de3c77f694104c470aefbb4bbf47d62aabcf102e1e2ac104"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Pot_01_Convex.asset",
+      "bytes": 3922,
+      "sha256": "cdedd7e78a9bd59f055d631a9d962f0f145f7118e4ba28eacd7abb7df82888f9"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Pot_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "0c5d31f1c93e89c21357a469a91eb638d23b81a696a57160663931fed903bf8d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Rack_Weapon_01_Convex.asset",
+      "bytes": 3928,
+      "sha256": "57048f9123eb7d30316c16f46cb91f6c4c905c375d052008a1885169f9be9019"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Rack_Weapon_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "5b844a447110e84ee75b988675f6a0006feb0b77cbb76cbb844f7930c4b16a07"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Seat_01_Convex.asset",
+      "bytes": 3917,
+      "sha256": "d435bb779007e699d5e851f96e281f2dc9058dd200ad3a1c337ec9423e490c59"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Seat_01_Convex.asset.meta",
+      "bytes": 200,
+      "sha256": "808cf2e6cbe8a279463f3620d899849885801c6657d8822d07415077bf4f1132"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Spit_01_Convex 1.asset",
+      "bytes": 7411,
+      "sha256": "4b8b2a8ded7086d91b6512b3d878fcd93c35c441a7a968b050b7aeafe14c48a3"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/Convex/SM_Prop_Spit_01_Convex 1.asset.meta",
+      "bytes": 200,
+      "sha256": "adf8027f6a360f1b37b1667869fc926ca6ef40696f8499a6f0556aeacf4f2a48"
+    },
+    {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Collision.fbx",
       "bytes": 24912,
       "sha256": "f6c427ea1827de2aec7502e683aaf8c82168ad2f895627723f2156834530f943"
@@ -680,6 +1010,16 @@
       "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Gate_01_Door_02_Collision.fbx.meta",
       "bytes": 2735,
       "sha256": "2139ab5dd5efe82284278dcd4903c8ea539a7f6aee1faad0980b67e72ec70f4c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Tent_Leader_01_Collision.fbx",
+      "bytes": 25200,
+      "sha256": "4db8ad56cad849ae967b77f920278c591a3fa9edd09635d8e3703682e59adc80"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Tent_Leader_01_Collision.fbx.meta",
+      "bytes": 2735,
+      "sha256": "3907b71c68746eca6ba41c499fee4967245e91b785b328defe4b1dc043f0be50"
     },
     {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Models/Collision/SM_Bld_Tent_Medium_01_Collision.fbx",
@@ -772,6 +1112,16 @@
       "sha256": "7a99eb3529a89e39277823798c4467ff587dec1829f1058e7194b4ffb3fe0741"
     },
     {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Tent_Leader_01.fbx",
+      "bytes": 501152,
+      "sha256": "db833d67fe7afe977e809b626fbf588b79fe955605b006667f351c5051aeabfb"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Tent_Leader_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "27f00b6c07115817c9a45458d81f3286cce35b76f73da62ed49f43d7b66ed8bb"
+    },
+    {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Bld_Tent_Medium_01.fbx",
       "bytes": 121408,
       "sha256": "7811a9650dac57cc2a1504b9ab94563349252095cb889f489b12cfaf8fff904b"
@@ -862,6 +1212,16 @@
       "sha256": "7d9b2e4faf282ca5ef85f94a92e3609db9a43b88045522b06dee4e3418c5a8f0"
     },
     {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Bedroll_01.fbx",
+      "bytes": 74560,
+      "sha256": "4298e70566c18e1215eacea593902dba53514c8268ec957ae7e2d6f4aed9b043"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Bedroll_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "ec7287c887f85375e2cb9695a42e9e36640f0eb85e8c8237fad09b63640dc376"
+    },
+    {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Camp_Fire_01.fbx",
       "bytes": 153392,
       "sha256": "a2ab4253d4cc3c1d7d9df8a0e7a215845264e0da042dd3cec0e32a1729c84b03"
@@ -890,6 +1250,66 @@
       "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Defence_Spikes_01.fbx.meta",
       "bytes": 2735,
       "sha256": "fce6e132f38a57cefb0feeceaa9c6d8e52f77b8fd6e12cc1846ce8091a1ef753"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Food_01.fbx",
+      "bytes": 82864,
+      "sha256": "d83126a99235e53052c19e9d3f7f4797849f4de5078774d24c84c0059e751973"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Food_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "3ad40420c7805309994b38b972d9fd6bfcb87197edbb62cae9da398065c41369"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Mug_01.fbx",
+      "bytes": 57360,
+      "sha256": "3f1142295f540d839d064f464de4ae1bd961d29fcf49088224da552d7bd52020"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Mug_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "34cfee6f5a84f6f45fd97d370fe0cb76ccdb00c88720b4ae85b1657c506dc7c5"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Pot_01.fbx",
+      "bytes": 77120,
+      "sha256": "09a9d3c92cbc92e08ed7d048c0ffa764a74fdc111cd33c4b8a7843375348b196"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Pot_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "46549f6e7125de27cfc59e66cfa4c40c99135a3b9d6bc6526dcf21c07b8cf0c3"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Rack_Weapon_01.fbx",
+      "bytes": 123840,
+      "sha256": "a513c8794bf404f7e2a88bbab38ef3095846c99552a7b6f593b3cb033c0eab8c"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Rack_Weapon_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "d43ea824b18fc9c82702cce5febf0f3e2596be456c3f647ce4ca116dcc510138"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Seat_01.fbx",
+      "bytes": 61088,
+      "sha256": "938f0f312a9b63ee1fa2a639e54cec7b9a760afde8ed398de0de3618d0291a0e"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Seat_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "4f248db5c7846d3aebd69355a48a1cf18dbf295504cbe781024a21cffc200f62"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Spit_01.fbx",
+      "bytes": 118128,
+      "sha256": "67e9a5e135708e71338a6c5c2e9d2b3a70cd9a49ad3e0d0253cb57a8f6fdf674"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Models/SM_Prop_Spit_01.fbx.meta",
+      "bytes": 2735,
+      "sha256": "28c2970b9b424f8d6086f76d804f491293f3726d5141d79560a693b8d4282158"
     },
     {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs.meta",
@@ -955,6 +1375,16 @@
       "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Log_Wall_02.prefab.meta",
       "bytes": 154,
       "sha256": "71d908ce75689fdedde93a5376afa9ba66f594447164fef61478cd93a2e9c64a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Tent_Leader_01.prefab",
+      "bytes": 5367,
+      "sha256": "41888511c65c37703c60ccb5da689bd812459d6a01741abfc768596347f9cd9a"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Tent_Leader_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "80604110aba40687f3abbfff35d092fb03416070894e33ffa2fe0a98d4c9130c"
     },
     {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Buildings/SM_Bld_Tent_Medium_01.prefab",
@@ -1057,6 +1487,16 @@
       "sha256": "71cb74ffbfaeef953da0c5789efb3b8705d70738b1b75facd9d85a2a31f64129"
     },
     {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Bedroll_01.prefab",
+      "bytes": 2887,
+      "sha256": "05df074ca0d115334a4f2f00c10ccd27c0bdccf365a5ef000bb9275b3e2bf114"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Bedroll_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "e983514f6b5ef862bc3750ee7a99c535c7939d49582e63dcd1633528f556af51"
+    },
+    {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Camp_Fire_01.prefab",
       "bytes": 2880,
       "sha256": "6ca3d1ca1f3438ccbdda8bf25318bdcaf848dc0ef36333764e6d5a1c216a6337"
@@ -1085,6 +1525,66 @@
       "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Defence_Spikes_01.prefab.meta",
       "bytes": 154,
       "sha256": "04bea2fc1049623ebb3375f61404420149a66f6a7baadd7a63ff8004861a2f9d"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Food_01.prefab",
+      "bytes": 2879,
+      "sha256": "de0a77887c28459602bb1735d726a0fc1a82c139a5d56303148e1cd985933c5f"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Food_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "7dfdc78e661ce62ca2461929592e36b04af7e3e831c2b02858b1f339063ab909"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Mug_01.prefab",
+      "bytes": 2882,
+      "sha256": "bdb39601963f0b803e29458a6473611e5e7b5d33eb988244097770b489d00bb7"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Mug_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "00c53061f7970697d0951abe4b4a4428e79e1dcb457f454ffa43968fa5bb30ff"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Pot_01.prefab",
+      "bytes": 2886,
+      "sha256": "05254d98894974c69797ea6cfd4d331c20b04140e69b966792d670ad04894978"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Pot_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "7f06a3812831afe320b729ea5952e3b53f7030c3bd2b0a0af215211c753f6915"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Rack_Weapon_01.prefab",
+      "bytes": 2891,
+      "sha256": "af16dea0de7c3a3bf4a79a6c749284d0a1b6c31c33bd9b267842e11de8648faa"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Rack_Weapon_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "e01cf1d6dd0ae39e050f080cce28683bacb1c713111d1b80e54ad69ff4375d23"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Seat_01.prefab",
+      "bytes": 2885,
+      "sha256": "f8f224f5ab73916af0e885ff8fbcc2a0ae9b52e54108a3117219f32cba866e77"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Seat_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "c30a1bb6ef5f682457aa10aba1941b6b8ae2f3f4b1fd742759a80fdbc724ffdb"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Spit_01.prefab",
+      "bytes": 5809,
+      "sha256": "f0251351a20b2c603576bf64ff50619e7040483801a6553e463652aa62878b22"
+    },
+    {
+      "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Spit_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "ace1df11899de6d89053c05460a187fe4ecc3cfa3d4ca45bc3a2d6d114bb1544"
     },
     {
       "path": "Assets/Synty/PolygonGoblinWarCamp/Prefabs/Props/SM_Prop_Torch_01.prefab",
@@ -1222,6 +1722,146 @@
       "sha256": "ce30c4800f751ea19b4849dab66f99ebda69a62bca2a6e80ff369f9aa6d1badc"
     },
     {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01.meta",
+      "bytes": 172,
+      "sha256": "10bc6d0c7db9427e87c3911fb691c2005d3ea2b2339810e82721ef3d8687de30"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/GoblinFighter_01.prefab",
+      "bytes": 216270,
+      "sha256": "717a9d774c928dc5eb24c80bcadb9632f5e5423aa29d398a05680b47df9ddebc"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/GoblinFighter_01.prefab.meta",
+      "bytes": 154,
+      "sha256": "0f867d2fc80b144b998d7536e1e61d280f0e9f332c40054f1803a4a0dd978b44"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Materials.meta",
+      "bytes": 172,
+      "sha256": "42217321c5cd1d8a399088b6a4ab649f3abc209dd3af2aba66a98586102fccd9"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Materials/GoblinFighter_01.mat",
+      "bytes": 6277,
+      "sha256": "130e1fa5b866e06cbb1bc1d2d0e6af62290661674ef0a2a7b956f94d502286de"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Materials/GoblinFighter_01.mat.meta",
+      "bytes": 188,
+      "sha256": "335e3cea93a1cf8c639ce3f5dd4e7748a2d2130fabaa2736db2afc68df46b5e9"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Meshes.meta",
+      "bytes": 172,
+      "sha256": "8d0be76450e1fb1ba92b232ea878388d68b3472baee22b9877e014fcab19463a"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Meshes/GoblinFighter_01-avatar.asset",
+      "bytes": 121356,
+      "sha256": "0f6933ee71eb0280866509a040212a7cd2df333a45f9bada08dd4547945eee9a"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Meshes/GoblinFighter_01-avatar.asset.meta",
+      "bytes": 188,
+      "sha256": "8e36ba754ea6974affbf67fee3ca58d00cf093894c0f6cfe5d80da989ea61b81"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Meshes/GoblinFighter_01.asset",
+      "bytes": 14911429,
+      "sha256": "d0f62af89ade9d3ee095be98293e3142d88cadb7b3851676e2860d2754d37f76"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Meshes/GoblinFighter_01.asset.meta",
+      "bytes": 188,
+      "sha256": "41b96532810af392cea780a22e7c6e6036cf6499b5666476dfbab5d042b33ae3"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Textures.meta",
+      "bytes": 172,
+      "sha256": "e2306fdce2cf8c53f23e06942c3ef45892657ad1241f6334e61edb6f504d42a5"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Textures/T_GoblinFighter_01ColorMap.png",
+      "bytes": 730,
+      "sha256": "9aefed87c88ba5f91437eeaae1dd1625a6cd09bc31d63732b195d57271f901e5"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_01/Textures/T_GoblinFighter_01ColorMap.png.meta",
+      "bytes": 2519,
+      "sha256": "39564190d493d366d263e4792bc6a17fca652664fbc53f191d6deb6a50e1166f"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02.meta",
+      "bytes": 172,
+      "sha256": "e250d6107250585584e630f0b7b7e62105fa11fc8faaf45400aa2b1e973e0adc"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/GoblinFighter_02.prefab",
+      "bytes": 213892,
+      "sha256": "2c74bdc2c7a9175357c943b2fd59466cb7ff1db5894f286a6b86305b0381f0c6"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/GoblinFighter_02.prefab.meta",
+      "bytes": 154,
+      "sha256": "742fe112c8c73729833feb16af9e11051877b43e9248992a34734e0f075ecb85"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Materials.meta",
+      "bytes": 172,
+      "sha256": "55f9dafc5862e2bbef8f20afd3f6e7108f533c92a2f6e6c9844fa95337baeebc"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Materials/GoblinFighter_02.mat",
+      "bytes": 6277,
+      "sha256": "64cc748d8706baf211dd9fe6f6c904941dbc5fed813c884958e3749ef2871364"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Materials/GoblinFighter_02.mat.meta",
+      "bytes": 188,
+      "sha256": "ac588b446496202001d45509703e2ea2d7e474e279a23c8a5a463c05e9f299b9"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Meshes.meta",
+      "bytes": 172,
+      "sha256": "f4adb24f1dc57fd69cd16ee7c9c76935ec3f3cf63a46e6523d24b4400e5d1bc8"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Meshes/GoblinFighter_02-avatar.asset",
+      "bytes": 121360,
+      "sha256": "b260a25033e733760ed7e965d145e59cc45fe62d5edac9df925c2396a7b51ba4"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Meshes/GoblinFighter_02-avatar.asset.meta",
+      "bytes": 188,
+      "sha256": "c1e7766ad96a07013a4bf222f2247dc9be3f7f36979d8c1e88e62be6e1789ff4"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Meshes/GoblinFighter_02.asset",
+      "bytes": 11045134,
+      "sha256": "3572d7c582aafbd369bb4411e028a66aa5d3de974e98985ee53c4da1115757ec"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Meshes/GoblinFighter_02.asset.meta",
+      "bytes": 188,
+      "sha256": "067245d613983e8506c688434a929cbfea101da4c7a051501657f7bf5dea079b"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Textures.meta",
+      "bytes": 172,
+      "sha256": "9c7e8cfb18a57a17b2bbf51f6f067271d2e02109f98d67815053bb67dd9825bf"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Textures/T_GoblinFighter_02ColorMap.png",
+      "bytes": 830,
+      "sha256": "5ce2f66e0383315ac6c27cf73e7428822db998a6d4368f8f2cce3a4b8ea1253e"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/Textures/T_GoblinFighter_02ColorMap.png.meta",
+      "bytes": 2519,
+      "sha256": "fc0b2e0d6d18f1a0bc8981459ef992bc372903e09337c349b720bed99126cf92"
+    },
+    {
       "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03.meta",
       "bytes": 172,
       "sha256": "443db92bf47400901b013f45a036cdc20f7020d892d9483e255a37ffefb3d846"
@@ -1290,6 +1930,146 @@
       "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_03/Textures/T_GoblinFighter_03ColorMap.png.meta",
       "bytes": 2519,
       "sha256": "be738f14fa27d66296fea373f4cfd082df49c156c4d44da18610b3fd6daae521"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04.meta",
+      "bytes": 172,
+      "sha256": "714b54097c438aa3decf8aa43b810a4cec3126bfd9b3b20a59ff34019e5f7114"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/GoblinFighter_04.prefab",
+      "bytes": 204041,
+      "sha256": "81972f3a97a6bdc30bc6cb4cfe748bbbc6098357615fd92553bc2995f3c5d5a2"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/GoblinFighter_04.prefab.meta",
+      "bytes": 154,
+      "sha256": "7dcb4f68e896be32b6bedb1cae2aa05dc04175f7fc35d60e4f36ace0db907347"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Materials.meta",
+      "bytes": 172,
+      "sha256": "eb53e7bbae87e8a43bcea338ef384efc83aec1c4e1397eacf278db49856af64a"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Materials/GoblinFighter_04.mat",
+      "bytes": 6276,
+      "sha256": "df2921d0342aa301c356e55c4ee1ad4abb6bfd0015e4d622355415229a2fd4f1"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Materials/GoblinFighter_04.mat.meta",
+      "bytes": 188,
+      "sha256": "27be595997a7e82054fa5a8a8522837fd68e07dec672614b0f7c6d8a91d4cae4"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Meshes.meta",
+      "bytes": 172,
+      "sha256": "6977cd94744fd62b67728e2dc6c810633223139d4019bc2e330575c785fa4c93"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Meshes/GoblinFighter_04-avatar.asset",
+      "bytes": 121384,
+      "sha256": "5d133e4e273617538be521355d6072f646efec6db5cdb8a1556d896a351f66b7"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Meshes/GoblinFighter_04-avatar.asset.meta",
+      "bytes": 188,
+      "sha256": "206fb72d1544d56939979d54dd70ab37e99bbcbdf75194ac7c60d53cf8fbbc45"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Meshes/GoblinFighter_04.asset",
+      "bytes": 8755830,
+      "sha256": "b27098f6daead69877fd39c01d9e368ead16a41adf3fa6d2c90293138a1a41b0"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Meshes/GoblinFighter_04.asset.meta",
+      "bytes": 188,
+      "sha256": "01dff3356d4444717f7d5cd507c619ece381bdef03f37dc0d4fbb6e557374a56"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Textures.meta",
+      "bytes": 172,
+      "sha256": "488e7179cfd24d5b26ce6f8a9fff347c9c5a6d1d5c3a4c23ead37ddfe7597439"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Textures/T_GoblinFighter_04ColorMap.png",
+      "bytes": 813,
+      "sha256": "b2bce4dc732b87afa4c49c1d5715958b2ed2c6767c11db3c530416a0ac3453ca"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_04/Textures/T_GoblinFighter_04ColorMap.png.meta",
+      "bytes": 2519,
+      "sha256": "921da3ed045573f660087f1f51f76934c470cf79667c48c8d724e4db7ade0c13"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05.meta",
+      "bytes": 172,
+      "sha256": "21898f997d928852a6e0c6c6109160544affba26b64a302bf5b504d1d3a7b251"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/GoblinFighter_05.prefab",
+      "bytes": 224268,
+      "sha256": "122f7bc8d191886983cdea88ca0dbdee5bcfb6f46739960f989832ec3f412c93"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/GoblinFighter_05.prefab.meta",
+      "bytes": 154,
+      "sha256": "09a41fd8a1c5d53b117a930ca4422ac11e0fa32d7c22a10954c89c0d6690eb4c"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Materials.meta",
+      "bytes": 172,
+      "sha256": "2aff8b23138cf9c33c0982f9c66a95ae099b7df2514815726065cb057f5b3b96"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Materials/GoblinFighter_05.mat",
+      "bytes": 6277,
+      "sha256": "6aa06471d3525d3075dae80bf91da7192fefcded4f6c2133071c1dfe85879e09"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Materials/GoblinFighter_05.mat.meta",
+      "bytes": 188,
+      "sha256": "6a1758337cd34f12413d0a012bec026c7054b180295bfabbe728290217550ebf"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Meshes.meta",
+      "bytes": 172,
+      "sha256": "0d8a639d810e43449932dbb264d3ffe01e7a133609d842c17379fa8bc44a28d5"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Meshes/GoblinFighter_05-avatar.asset",
+      "bytes": 121380,
+      "sha256": "e0358ababf002f06cd85cbe0664ad54bf744d1e47ba83e9c1da53495af756fa7"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Meshes/GoblinFighter_05-avatar.asset.meta",
+      "bytes": 188,
+      "sha256": "307cc2e3fbbc1029421dbadb6bb0a62ed7c4b2e62248119b671e4b162e2a4fde"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Meshes/GoblinFighter_05.asset",
+      "bytes": 16756190,
+      "sha256": "4d0b718ff1aab7d77d09607a72e5e64c867f37b4cb93bd7d6748866c9181d90f"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Meshes/GoblinFighter_05.asset.meta",
+      "bytes": 188,
+      "sha256": "df976ee27f086af3be680f90bb5d1ccca68b62a72477a8a11701649ce2c242bf"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Textures.meta",
+      "bytes": 172,
+      "sha256": "4a7f3344eb071c6ba3bd03e4ce8f40d0dbdfc6b9078e4a1e8c145ced59d50fd7"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Textures/T_GoblinFighter_05ColorMap.png",
+      "bytes": 762,
+      "sha256": "a3c13986b8e60155277728c9dbcab26e285a605722e45619d5e67ce22275cb9a"
+    },
+    {
+      "path": "Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_05/Textures/T_GoblinFighter_05ColorMap.png.meta",
+      "bytes": 2519,
+      "sha256": "d36f57b644b4c09fbcab7fdd59e363e10cf2591b847dd65364739a48c6e4ceb2"
     },
     {
       "path": "Assets/Synty/SidekickCharacters/Resources.meta",
