@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 // Builds only the demo set. Licensed prefabs/textures stay in the local project.
-public static class XybridVillageGateScene
+public static partial class XybridVillageGateScene
 {
     private const string Demo = "Assets/XybridAvatarDemo";
     private const string Pack = "Assets/Synty/PolygonGoblinWarCamp/Prefabs/";

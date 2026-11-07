@@ -15,6 +15,8 @@ Subtitles appear phrase by phrase as Trola and Vesper speak; see
 Each encounter opens on the road: a short walk up to the gate, Vesper's warning
 and Trola's challenge, then the close-up (Space skips; Try again replays it).
 See [docs/approach.md](docs/approach.md).
+The visible towers and hearth have background residents, watch lights and drifting smoke;
+see [docs/camp-activity.md](docs/camp-activity.md).
 Once admitted, the player talks on until they choose to go in ("Go in", or the Enter camp button): a short walk
 through the gate, then an end card. See [docs/entry.md](docs/entry.md).
 Push him too far (demand the gate, or spend his patience on provocation) and Trola strikes: the viewpoint falls, Vesper
