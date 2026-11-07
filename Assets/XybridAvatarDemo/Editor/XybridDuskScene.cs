@@ -55,6 +55,8 @@ public static class XybridDuskScene
         var fireLights = new List<Light>();
         foreach (var particles in GameObject.Find("Village Gate Set").GetComponentsInChildren<ParticleSystem>())
         {
+            // Camp activity also has smoke. Reapplying dusk must only restyle the actual flames.
+            if (particles.name.IndexOf("flame", StringComparison.OrdinalIgnoreCase) < 0) continue;
             WarmFlame(particles);
             var lamp = particles.GetComponentInChildren<Light>();
             if (lamp != null) { Undo.RecordObject(lamp, "Strengthen dusk torchlight"); lamp.intensity = 1.7f; lamp.range = 2.7f; lamp.color = new Color(1, .58f, .28f); fireLights.Add(lamp); }
