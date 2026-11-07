@@ -1,0 +1,6 @@
+{
+  "enter_camp": {
+    "type": "noul",
+    "instructions": "The gate already stands open for the player. Does player_message clearly say the player is going into the camp now, or tell Trola they are walking in through the gate (for example: go in, I'm heading inside, enter the camp, lead the way)? Asking whether they may enter, asking what or who is inside, hesitating, saying goodbye to leave, or talking about going in later is not."
+  }
+}

@@ -64,23 +64,40 @@ public sealed class GatekeeperController : MonoBehaviour
     public GatekeeperPresentation Prompt => source?.Presentation ?? EmptyPrompt;
     public bool IsReaction => Prompt.IsReaction;
     public bool IsInterruptionReaction => Prompt.ProtectedReaction;
-    public bool AcceptsText => IsWaiting && Prompt.InputSlot != GatekeeperInputSlot.None && !IsSettling;
+    public bool AcceptsText => IsWaiting && Prompt.InputSlot != GatekeeperInputSlot.None && !IsSettling && !EntryRequested;
     [NonSerialized] private string queuedReply;
     public bool HasQueuedReply => !string.IsNullOrWhiteSpace(queuedReply);
     public string QueuedReplyText => queuedReply ?? "";
     // A persistent free-form field remains editable during voice preparation/playback.
     // Accept one reply without interrupting any clause; the performer submits it after
     // the current line finishes, provided the encounter has not ended.
-    private bool CanQueueReply => !HasQueuedReply && Prompt.PersistentText && Prompt.InputSlot == GatekeeperInputSlot.Reply
+    private bool CanQueueReply => !HasQueuedReply && !EntryRequested && Prompt.PersistentText && Prompt.InputSlot == GatekeeperInputSlot.Reply
         && Patience > 0 && CurrentLine != null && !CurrentLine.ends_scene
         && (State == Phase.PreparingSpeech || State == Phase.Speaking);
     public bool CanSubmitText => !HasQueuedReply && !IsSettling && (AcceptsText || CanQueueReply);
     public bool GateOpenRequested => conversation?.GateOpenRequested ?? false;
     public bool IsWaitingForGate => State == Phase.GateOpening;
+    // Entering the camp (docs/entry.md). After admission, with both doors fully open, free talk offers an explicit entry:
+    // the Enter camp button (RequestEntry) or words that say so (read by the line source). A request while Trola is
+    // speaking lets him finish; either way answers lock, he gives his send-off, and the encounter ends Entered.
+    public bool GateOpen => conversation?.GateOpen ?? false;
+    public bool EntryRequested { get; private set; }
+    public bool IsEntering => EntryRequested || Prompt.Entering || Ending == GatekeeperEnding.Entered;
+    public bool CanEnter => source != null && !suspended && !IsSettling && !IsOpening && !IsEntering && Prompt.CanEnter && GateOpen
+        && (Encounter?.Admitted ?? false) && Patience > 0 && State != Phase.Ended && State != Phase.VoiceFailed && State != Phase.GateOpening;
+    public bool RequestEntry()
+    {
+        if (!CanEnter) return false;
+        EntryRequested = true; queuedReply = null;
+        RaisePlayerActed(GatekeeperInputKind.Enter, "");
+        if (IsWaiting) Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Enter));
+        else Changed?.Invoke(); // He finishes what he is saying; Perform takes the entry at the next wait.
+        return true;
+    }
     public IReadOnlyList<GatekeeperChoice> CurrentChoices => Prompt.Choices;
     // Choices are live while he waits, and through an idle taunt at a choice checkpoint (the source sets
     // TauntKeepsChoices): a click during the taunt is the choice, never an interruption and never lost.
-    public bool AcceptsChoice => source != null && !IsSettling && CurrentChoices.Count > 0 && (State == Phase.AwaitingInput
+    public bool AcceptsChoice => source != null && !IsSettling && !EntryRequested && CurrentChoices.Count > 0 && (State == Phase.AwaitingInput
         || performing == GatekeeperInputKind.Idle && Prompt.TauntKeepsChoices
            && (State == Phase.Inactive || State == Phase.PreparingLine || State == Phase.PreparingSpeech || State == Phase.Speaking));
     private GatekeeperInputKind performing = GatekeeperInputKind.Start; // The input the current performance answers; set before its first Changed.
@@ -116,6 +133,8 @@ public sealed class GatekeeperController : MonoBehaviour
     public bool IsSuspended => suspended;
     public GatekeeperMood Mood => Encounter?.Mood ?? GatekeeperMood.Bored;
     public GatekeeperOutcome Outcome => Encounter?.Outcome ?? GatekeeperOutcome.Playing;
+    // How it ended, alongside Outcome: Entered, a calm Refused, Expelled or Departed; None while it goes on.
+    public GatekeeperEnding Ending => Encounter?.Ending ?? GatekeeperEnding.None;
     public int Patience => Encounter?.Patience ?? 0;
     public int Turns => Encounter?.Turns ?? 0;
     public string PlayerName => Encounter?.PlayerName ?? "";
@@ -227,7 +246,7 @@ public sealed class GatekeeperController : MonoBehaviour
     private bool Reset()
     {
         if (suspended) return false;
-        Cancel(); EndOpening();
+        Cancel(); EndOpening(); EntryRequested = false;
         if (Encounter != null) Encounter.PatienceChanged -= ForwardPatience;
         if (scenario == null || character == null || liveSpeech == null)
         { Halt("Assign scenario, character and live speech."); return false; }
@@ -251,7 +270,7 @@ public sealed class GatekeeperController : MonoBehaviour
     public void Suspend()
     {
         if (suspended) return;
-        Cancel(); EndOpening(); suspended = true; CurrentText = ""; CurrentLine = null; RevealWhole();
+        Cancel(); EndOpening(); EntryRequested = false; suspended = true; CurrentText = ""; CurrentLine = null; RevealWhole();
         SetState(Phase.Inactive);
     }
     public void Resume() { if (!suspended) return; suspended = false; Restart(); }
@@ -259,7 +278,7 @@ public sealed class GatekeeperController : MonoBehaviour
     public void UseLineSource(IGatekeeperLineSource lineSource, GatekeeperConversationState state)
     {
         if (lineSource == null || state == null) throw new ArgumentNullException();
-        Cancel(); EndOpening(); if (Encounter != null) Encounter.PatienceChanged -= ForwardPatience;
+        Cancel(); EndOpening(); EntryRequested = false; if (Encounter != null) Encounter.PatienceChanged -= ForwardPatience;
         liveSpeech.ResetSession(); prefetch.Clear();
         source = lineSource; conversation = state; Encounter.PatienceChanged += ForwardPatience;
         PatienceChanged?.Invoke(Patience, Patience);
@@ -316,13 +335,19 @@ public sealed class GatekeeperController : MonoBehaviour
     }
     public void Interrupt()
     {
-        if (source == null || State != Phase.Speaking || !Prompt.CanInterrupt || Prompt.ProtectedReaction || IsSettling) return;
+        if (source == null || State != Phase.Speaking || !Prompt.CanInterrupt || Prompt.ProtectedReaction || IsSettling || IsEntering) return;
         Interrupted?.Invoke();
         RaisePlayerActed(GatekeeperInputKind.Interrupt, "");
         Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Interrupt));
     }
     public void NotifyActivity() { idleSince = IdleNow; }
-    public void NotifyGateOpened() { if (IsWaitingForGate) gateReady = true; }
+    // GatekeeperBarrier, every frame both doors stand fully open: the encounter's gate is open (entry needs it), and a
+    // wait for the gate ends.
+    public void NotifyGateOpened()
+    {
+        if (conversation != null && conversation.GateOpenRequested && !conversation.GateOpen) { conversation.GateOpen = true; Changed?.Invoke(); }
+        if (IsWaitingForGate) gateReady = true;
+    }
     private bool IsWaiting => State == Phase.AwaitingInput || State == Phase.AwaitingName || State == Phase.AwaitingBusiness;
     private void ForwardPatience(int previous, int current) { PatienceChanged?.Invoke(previous, current); }
     private void Update()
@@ -339,14 +364,14 @@ public sealed class GatekeeperController : MonoBehaviour
                 foreach (var owner in expired) ReleaseIdle(owner);
             }
         }
-        if (!suspended && source != null && IsWaiting && !IsSettling && Prompt.IdleSeconds > 0 && IdleNow - idleSince >= Prompt.IdleSeconds)
+        if (!suspended && source != null && IsWaiting && !IsSettling && !EntryRequested && Prompt.IdleSeconds > 0 && IdleNow - idleSince >= Prompt.IdleSeconds)
             Begin(new GatekeeperPlayerInput(GatekeeperInputKind.Idle));
     }
     private void Begin(GatekeeperPlayerInput input, bool interruptSpeech = true)
     {
         MarkTrigger(input.Kind == GatekeeperInputKind.Text ? "typed input" : input.Kind == GatekeeperInputKind.Choice ? "choice"
             : input.Kind == GatekeeperInputKind.Start ? "start" : input.Kind == GatekeeperInputKind.Idle ? "idle taunt"
-            : input.Kind == GatekeeperInputKind.Interrupt ? "interruption"
+            : input.Kind == GatekeeperInputKind.Interrupt ? "interruption" : input.Kind == GatekeeperInputKind.Enter ? "entry"
             : input.Kind == GatekeeperInputKind.OffTopic || input.Kind == GatekeeperInputKind.OutOfWorld || input.Kind == GatekeeperInputKind.Unclear || input.Kind == GatekeeperInputKind.Neutral ? "spoken answer"
             : input.Kind.ToString());
         performing = input.Kind;
@@ -404,6 +429,17 @@ public sealed class GatekeeperController : MonoBehaviour
                     if (version != revision) yield break;
                     MarkTrigger("gate opened");
                     input = new GatekeeperPlayerInput(GatekeeperInputKind.GateOpened); continue;
+                }
+                // Enter camp while he was speaking: he has finished, now the send-off (unless the turn ended the encounter).
+                if (EntryRequested && !Prompt.Ended && !Prompt.Entering)
+                {
+                    if (Prompt.CanEnter && GateOpen && Patience > 0)
+                    {
+                        input = new GatekeeperPlayerInput(GatekeeperInputKind.Enter);
+                        MarkTrigger("entry"); SetState(Phase.Inactive);
+                        continue;
+                    }
+                    EntryRequested = false; // No longer possible here: the turn is the player's again.
                 }
                 if (HasQueuedReply && !Prompt.Ended && Prompt.InputSlot == GatekeeperInputSlot.Reply)
                 {
@@ -707,7 +743,7 @@ public sealed class GatekeeperController : MonoBehaviour
     // Stops at a Try again state. Only for errors that leave no line to show; voice failures never get here.
     private void Halt(string error)
     {
-        EndOpening(); requestCancellation.Cancel();
+        EndOpening(); EntryRequested = false; requestCancellation.Cancel();
         if (character != null) character.StopSpeech();
         if (liveSpeech != null) liveSpeech.ResetSession();
         prefetch.Clear(); CurrentText = "Something went wrong at the gate. Try again."; RevealWhole(); ClearIdleHolds();

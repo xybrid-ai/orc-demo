@@ -94,8 +94,11 @@ checks `GET /health` every 3 s. While the server is ready, free-form messages
 approaches, last 12 turns) and the new message. The server builds the same state
 layout as the probe, asks the two spike questions unchanged, and adds one yes/no
 question per player-fact slot (`decision-fact-slots.json`: player name, business,
-other personal fact). It also asks the topic choice in `decision-topics.json`.
-All six questions share one packed `system_one` pass. A slot is requested at
+other personal fact). It also asks the topic choice in `decision-topics.json`, and one yes/no question,
+`enter_camp` (`decision-entry.json`): are the words going into the camp now? Only
+free talk after admission acts on it, at P(yes) >= 0.8 and never on a question,
+hedge or refusal ([entering the camp](entry.md)).
+All seven questions share one packed `system_one` pass. A slot is requested at
 P(yes) >= 0.5, d1's own reading.
 A single multiple-choice slot question was tried first and marked name and
 business for nearly every message, including "What's your name?".
@@ -117,7 +120,8 @@ wait over 3 s behind another. Its health reports not ready while a decision has
 run longer than 4 s, and after a failed decision until a prime decision succeeds.
 The server is optional: while it is off, every message uses built-in factual
 routes and neutral authored replies, and the service logs that once. Restart
-`serve_decisions.py` after updating: health must advertise `topic` in `questions`.
+`serve_decisions.py` after updating: health must advertise `topic` (and, for entry by
+d1, `enter_camp`) in `questions`.
 An older server uses that fallback and F4 says to restart it.
 
 The F4 panel shows the connection, a **Decisions: d1 / built-in routes** toggle

@@ -33,13 +33,15 @@ public sealed class TrolaAtmosphere : MonoBehaviour
     private int cinematicFrame = int.MinValue / 2;
     private Vector3 cinematicPosition;
     private Quaternion cinematicRotation = Quaternion.identity;
-    private float cinematicFieldOfView, homeFieldOfView;
+    private float cinematicFieldOfView, homeFieldOfView, cinematicFocus;
     private bool fieldOfViewChanged;
-    public void SetCinematicPose(Vector3 position, Quaternion rotation, float fieldOfView, float weight)
+    // focusDistance > 0: depth of field focuses there (blended by weight) instead of on Trola's face; the walk into the
+    // camp looks past him (docs/entry.md). 0 keeps his face in focus, as the road approach does.
+    public void SetCinematicPose(Vector3 position, Quaternion rotation, float fieldOfView, float weight, float focusDistance = 0)
     {
         cinematicPosition = position; cinematicRotation = rotation;
         cinematicFieldOfView = fieldOfView > 0 ? fieldOfView : homeFieldOfView;
-        cinematicWeight = Mathf.Clamp01(weight); cinematicFrame = Time.frameCount;
+        cinematicWeight = Mathf.Clamp01(weight); cinematicFrame = Time.frameCount; cinematicFocus = focusDistance;
     }
     public void ClearCinematicPose() { cinematicWeight = 0; }
     public Vector3 HomePosition => cameraHome;
@@ -101,7 +103,9 @@ public sealed class TrolaAtmosphere : MonoBehaviour
         if (focus != null)
         {
             Vector3 face = actor.position + new Vector3(0, 1.55f, .12f);
-            focus.focusDistance.value = Mathf.Max(.5f, Vector3.Dot(face - portraitCamera.transform.position, portraitCamera.transform.forward));
+            float distance = Mathf.Max(.5f, Vector3.Dot(face - portraitCamera.transform.position, portraitCamera.transform.forward));
+            if (weight > 0 && cinematicFocus > 0) distance = Mathf.Lerp(distance, cinematicFocus, weight);
+            focus.focusDistance.value = distance;
         }
     }
 }

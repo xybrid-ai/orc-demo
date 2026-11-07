@@ -27,7 +27,11 @@ public sealed class GatekeeperDecisionClient
         public string scope, intent, topic;
         public string[] facts;
         public float scope_confidence, intent_confidence, topic_confidence;
+        // P(yes) of /decide's enter_camp question (docs/entry.md); -1 from a server that predates it.
+        public float enter_camp = -1;
     }
+    // d1's enter_camp answer needed to treat words as going into the camp; keywords catch the plain forms without it.
+    public const float EntryBar = .8f;
     // POST /choose: words spoken at the buttons, the on-screen choices (story targets) and the last six Player/Trola turns.
     [Serializable] private sealed class ChoiceRequest
     {
@@ -49,6 +53,7 @@ public sealed class GatekeeperDecisionClient
         public string model, revision, device, error;
         public string[] questions;
         public bool SupportsTopics => questions != null && Array.IndexOf(questions, "topic") >= 0;
+        public bool SupportsEntry => questions != null && Array.IndexOf(questions, "enter_camp") >= 0;
     }
     private static readonly Dictionary<string, GatekeeperScope> Scopes = new Dictionary<string, GatekeeperScope>(StringComparer.Ordinal)
     {
@@ -218,12 +223,14 @@ public sealed class GatekeeperDecisionClient
         }
         bool knownTopic = Topics.TryGetValue(reply.topic ?? "", out var topic);
         if (!knownTopic) topic = GatekeeperTopic.Other; // An older or unknown topic only loses wording specificity.
+        bool enters = Probability(reply.enter_camp) && reply.enter_camp >= EntryBar;
         string detail = "d1 " + reply.scope + " " + reply.scope_confidence.ToString("0.00", CultureInfo.InvariantCulture)
             + " / " + reply.intent + " " + reply.intent_confidence.ToString("0.00", CultureInfo.InvariantCulture)
             + (promoted ? " → player_facts" : statement ? " → other (not a request)" : "")
             + (facts != GatekeeperFact.None ? " / " + facts : "") + " / topic " + (knownTopic ? reply.topic : "other (missing or unknown)")
-            + " " + reply.topic_confidence.ToString("0.00", CultureInfo.InvariantCulture) + timing;
-        return new GatekeeperDecision(scope, intent, facts, detail, topic);
+            + " " + reply.topic_confidence.ToString("0.00", CultureInfo.InvariantCulture)
+            + (reply.enter_camp >= 0 ? " / enter " + reply.enter_camp.ToString("0.00", CultureInfo.InvariantCulture) : "") + timing;
+        return new GatekeeperDecision(scope, intent, facts, detail, topic, enters);
     }
     // Only complete, known /choose metadata can authorize a checkpoint remark. Old servers still select supported
     // choices; they cannot turn a confident "none" into a penalty or invent a factual response.

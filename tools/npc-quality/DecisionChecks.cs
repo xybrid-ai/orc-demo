@@ -40,6 +40,7 @@ static class DecisionChecks
             Check(opening != null && opening == scenario.FindLine("name-ask")?.text, "Opening text is not the authored challenge: " + opening);
         }
         ChoiceChecks(scenario);
+        string entry = EntryChecks.Run(scenario);
         var state = State();
         var source = new FreeFormGatekeeperLineSource(scenario, null, true);
         var input = new GatekeeperPlayerInput(GatekeeperInputKind.Text, "What is my name, and what am I selling?");
@@ -71,7 +72,7 @@ static class DecisionChecks
             var s = State(outcome: outcome);
             var decision = new GatekeeperDecision(GatekeeperScope.InWorld, GatekeeperDialogueIntent.AdmissionStatus);
             string text = GatekeeperResponsePolicy.Create(s.Snapshot(), decision).AuthoredText;
-            Check(outcome == GatekeeperOutcome.Playing ? text.Contains("haven't") : outcome == GatekeeperOutcome.Refused ? text.Contains("refused") : text.Contains("already allowed"), "Admission changed");
+            Check(outcome == GatekeeperOutcome.Playing ? text.Contains("haven't") : outcome == GatekeeperOutcome.Refused ? text.Contains("refused") : text.Contains("already let you through"), "Admission changed");
         }
         Check(GatekeeperNpcModel.ParseWriter("{\"text\":\"I built the wall.\"}") == "I built the wall.", "Writer JSON rejected");
         foreach (string raw in new[] { "{\"text\":\"Go in.\",\"patience_delta\":5}", "{\"text\":\"Hi.\"} trailing", "{\"text\":\"!!!\"}" })
@@ -91,7 +92,8 @@ static class DecisionChecks
         {
             Check(line.patience_delta == 0, "Expulsion deducted patience twice"); played.Add(line.id);
         }
-        Check(played.SequenceEqual(expected) && source.Presentation.Ended && low.Encounter.Outcome == GatekeeperOutcome.Refused, "Incomplete or duplicated authored ending");
+        Check(played.SequenceEqual(expected) && source.Presentation.Ended && low.Encounter.Outcome == GatekeeperOutcome.Refused
+            && low.Encounter.Ending == GatekeeperEnding.Expelled, "Incomplete or duplicated authored ending");
         adapter.Fail = true;
         source = new FreeFormGatekeeperLineSource(scenario, null, true, adapter);
         line = source.NextLineAsync(state, input, CancellationToken.None).GetAwaiter().GetResult();
@@ -156,7 +158,7 @@ static class DecisionChecks
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         try { source.NextLineAsync(state, input, cancelled.Token).GetAwaiter().GetResult(); throw new Exception("Cancellation ignored"); }
         catch (OperationCanceledException) { }
-        return new { passed = true, expulsion = played, checks = "facts, unknowns, trusted offer, immutable snapshot, outcomes, writer boundary, policy metadata, full expulsion, adapter failure, offline source, cancellation, no default preload, authored topics, follow-ups, trusted repeat, speech limits, admission-safe wording, unchanged policy effects, checkpoint choice classification, neutral reactions without progress, insults and scope consequences, legacy server fallback" };
+        return new { passed = true, expulsion = played, checks = "facts, unknowns, trusted offer, immutable snapshot, outcomes, writer boundary, policy metadata, full expulsion, adapter failure, offline source, cancellation, no default preload, authored topics, follow-ups, trusted repeat, speech limits, admission-safe wording, unchanged policy effects, checkpoint choice classification, neutral reactions without progress, insults and scope consequences, legacy server fallback; " + entry };
     }
 
     private static GatekeeperDecisionClient.ChoiceReply ChoiceReply(string intent = "npc_question", string choice = "none", string topic = "wall") =>
@@ -310,6 +312,7 @@ static class DecisionChecks
         var health = client.HealthAsync(CancellationToken.None).GetAwaiter().GetResult();
         Check(health.ready && health.revision == "stub-revision" && health.SupportsTopics, "Health not read");
         Check(!new GatekeeperDecisionClient.Health { ready = true }.SupportsTopics, "Old server supports topics");
+        Check(health.SupportsEntry && !new GatekeeperDecisionClient.Health { ready = true, questions = new[] { "topic" } }.SupportsEntry, "enter_camp support misread");
         var state = State();
         state.RecordApproach("bribe");
         for (int i = 0; i < 8; i++) { state.Record("Player", "Wall section " + i + "?"); state.Record("Troll", "I built " + i + "."); }
@@ -319,6 +322,12 @@ static class DecisionChecks
             && name.Detail.StartsWith("d1 in_world 0.91 / player_facts 0.97"), "Labels or slots mapped incorrectly");
         Check(Ask("What is my name, and what am I selling?").Facts == (GatekeeperFact.PlayerName | GatekeeperFact.Business), "Built-in slots not merged");
         Check(Ask("Why do you care so much about a wall?").Topic == GatekeeperTopic.WallMotive, "Topic lost over HTTP");
+        var lead = Ask("Lead the way.");
+        Check(lead.EntersCamp && lead.Detail.Contains("/ enter 0.93") && !name.EntersCamp, "enter_camp lost over HTTP");
+        Check(!GatekeeperDecisionClient.Map(new GatekeeperDecisionClient.Reply { scope = "in_world", intent = "other" }, "Go in.", 1).EntersCamp
+            && !GatekeeperDecisionClient.Map(new GatekeeperDecisionClient.Reply { scope = "in_world", intent = "other", enter_camp = .79f }, "Go in.", 1).EntersCamp
+            && GatekeeperDecisionClient.Map(new GatekeeperDecisionClient.Reply { scope = "in_world", intent = "other", enter_camp = .8f }, "Go in.", 1).EntersCamp,
+            "enter_camp bar or an older server misread");
         foreach (string topic in new[] { null, "unknown_topic" })
         {
             var unknownTopic = GatekeeperDecisionClient.Map(new GatekeeperDecisionClient.Reply
@@ -362,12 +371,16 @@ static class DecisionChecks
         var line = source.NextLineAsync(state, new GatekeeperPlayerInput(GatekeeperInputKind.Text, "What do you call me?"), CancellationToken.None).GetAwaiter().GetResult();
         Check(line.text == "Your name is Mira." && line.debugDecision.StartsWith("d1 in_world") && line.debugDecision.EndsWith("→ player-facts"),
             "Live decision did not reach the factual route");
+        state.GateOpen = true; state.GateOpenRequested = true;
+        line = new FreeFormGatekeeperLineSource(scenario, null, true, new Live { Client = client }).NextLineAsync(state,
+            new GatekeeperPlayerInput(GatekeeperInputKind.Text, "Lead the way."), CancellationToken.None).GetAwaiter().GetResult();
+        Check(line.id == "free-enter" && line.debugDecision.StartsWith("entry: d1 in_world"), "Live enter_camp did not send the player in");
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         try { client.DecideAsync(state.Snapshot(), "What do you call me?", cancelled.Token).GetAwaiter().GetResult(); throw new Exception("Cancellation ignored"); }
         catch (OperationCanceledException) { }
         // Last: the stub holds the server's model lock while it sleeps.
         try { Ask("Take longer than the client allows."); throw new Exception("Timeout ignored"); }
         catch (TimeoutException) { }
-        return new { passed = true, checks = "loopback only, health, labels, fact slots, built-in slot merge, slot routing, statements, unknown labels and slots, server failure, live factual route, cancellation, timeout" };
+        return new { passed = true, checks = "loopback only, health, labels, fact slots, built-in slot merge, slot routing, statements, unknown labels and slots, server failure, live factual route, enter_camp (bar, older server, live entry), cancellation, timeout" };
     }
 }

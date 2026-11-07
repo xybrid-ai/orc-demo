@@ -16,6 +16,8 @@ public sealed class GatekeeperView : MonoBehaviour
     [Tooltip("Suggestion fade, stagger and time the complete row remains visible, in seconds.")]
     public float hintFadeSeconds = .2f, hintStaggerSeconds = .15f, hintHoldSeconds = 2;
     public Button hintsButton;
+    [Tooltip("Enter camp, bottom right, while free talk after admission offers it (docs/entry.md). Built at runtime when unset.")]
+    public Button enterButton;
     [Tooltip("What the player just said (a choice's words, or a typed name or business), above Trola's subtitle. Built at runtime when unset.")]
     public Text playerLine;
     private string shownChoices; // The label set the current buttons were built for; null while the row is hidden.
@@ -64,6 +66,7 @@ public sealed class GatekeeperView : MonoBehaviour
         if (send != null) send.onClick.AddListener(Submit);
         if (action != null) action.onClick.AddListener(Advance);
         if (hintsButton != null) hintsButton.onClick.AddListener(ToggleHints);
+        if (enterButton != null) enterButton.onClick.AddListener(Enter);
         if (input != null) { input.onEndEdit.AddListener(SubmitOnEnter); input.onValueChanged.AddListener(InputActivity); }
         Refresh();
     }
@@ -79,6 +82,7 @@ public sealed class GatekeeperView : MonoBehaviour
         if (send != null) send.onClick.RemoveListener(Submit);
         if (action != null) action.onClick.RemoveListener(Advance);
         if (hintsButton != null) hintsButton.onClick.RemoveListener(ToggleHints);
+        if (enterButton != null) enterButton.onClick.RemoveListener(Enter);
         if (input != null) { input.onEndEdit.RemoveListener(SubmitOnEnter); input.onValueChanged.RemoveListener(InputActivity); }
     }
 
@@ -88,14 +92,20 @@ public sealed class GatekeeperView : MonoBehaviour
         ShowSubtitle();
         var prompt = gatekeeper.Prompt;
         bool accepting = gatekeeper.AcceptsText;
-        inputRow.SetActive(prompt.PersistentText || accepting);
+        // Once the player asks to go in, nothing more is answered: the field goes as he finishes and gives his send-off.
+        bool typing = (prompt.PersistentText || accepting) && !gatekeeper.IsEntering;
+        inputRow.SetActive(typing);
         input.characterLimit = prompt.CharacterLimit;
-        input.interactable = prompt.PersistentText || accepting;
+        input.interactable = typing;
         send.interactable = gatekeeper.CanSubmitText;
         RefreshSubmissionStatus();
         bool ended = gatekeeper.State == GatekeeperController.Phase.Ended || gatekeeper.State == GatekeeperController.Phase.VoiceFailed;
+        // Entering the camp ends on the experience director's walk and end card, which has its own Try again.
+        var director = ExperienceDirector.Instance;
+        bool directed = ended && director != null && director.OwnsEnding;
         action.gameObject.SetActive(gatekeeper.State == GatekeeperController.Phase.Speaking && prompt.ShowInterruptButton && !gatekeeper.IsInterruptionReaction
-            && !gatekeeper.IsSettling || ended);
+            && !gatekeeper.IsSettling || ended && !directed);
+        RefreshEnter();
         actionText.text = ended ? "Try again" : prompt.InterruptLabel;
         // The player's line stays up while Trola answers it and clears when the turn is theirs again.
         if (playerLine != null && (gatekeeper.IsWaitingForPlayer || gatekeeper.IsWaitingForGate || gatekeeper.IsSuspended || ended)) playerLine.text = "";
@@ -138,6 +148,38 @@ public sealed class GatekeeperView : MonoBehaviour
     }
 
     private void InputActivity(string unused) { gatekeeper.NotifyActivity(); }
+
+    // Enter camp: built like Hints (a copy of Send) in the bottom-right corner, shown while the controller offers entry.
+    // The words "go in" or "enter camp" do the same through the line source.
+    private void Enter()
+    {
+        if (gatekeeper == null || !gatekeeper.CanEnter) return;
+        if (input != null) input.SetTextWithoutNotify(""); // A half-typed reply is not sent.
+        gatekeeper.RequestEntry();
+    }
+    private void RefreshEnter()
+    {
+        if (!Application.isPlaying || gatekeeper == null) return;
+        bool show = gatekeeper.CanEnter;
+        if (show && enterButton == null && send != null)
+        {
+            enterButton = Instantiate(send, transform);
+            enterButton.name = "Enter camp";
+            enterButton.onClick.RemoveAllListeners(); enterButton.onClick.AddListener(Enter);
+            var rect = enterButton.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = new Vector2(.985f, .035f); rect.pivot = new Vector2(1, 0);
+            rect.anchoredPosition = Vector2.zero; rect.sizeDelta = new Vector2(170, 36);
+            var label = enterButton.GetComponentInChildren<Text>(true);
+            if (label != null)
+            {
+                label.text = "Enter camp"; if (sentence != null) label.font = sentence.font;
+                label.fontSize = 18; label.supportRichText = false; label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            }
+        }
+        if (enterButton == null) return;
+        enterButton.interactable = show;
+        if (enterButton.gameObject.activeSelf != show) enterButton.gameObject.SetActive(show);
+    }
     private void Update()
     {
         ShowSubtitle();

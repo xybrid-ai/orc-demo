@@ -15,6 +15,8 @@ Subtitles appear phrase by phrase as Trola and Vesper speak; see
 Each encounter opens on the road: a short walk up to the gate, Vesper's warning
 and Trola's challenge, then the close-up (Space skips; Try again replays it).
 See [docs/approach.md](docs/approach.md).
+Once admitted, the player talks on until they choose to go in ("Go in", or the Enter camp button): a short walk
+through the gate, then an end card. See [docs/entry.md](docs/entry.md).
 
 ## Open locally
 

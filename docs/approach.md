@@ -63,8 +63,9 @@ directly for the rest of the session.
 ## Ownership
 
 - `ExperienceDirector` (runtime-installed, like Vesper) owns the approach: when the encounter starts, the cues, the
-  fade, the skip button and the footsteps. It turns off the controller's auto-start. Later milestones add entry and
-  endings here.
+  fade, the skip button and the footsteps. It turns off the controller's auto-start. It also owns the walk into the
+  camp and its end card ([docs/entry.md](entry.md)); with `-xybridNoOpening` it still installs for that, without
+  the approach.
 - `RoadApproach` is the pure timeline and camera path (stages, eased progress, walking motion, cues, skip).
 - `TrolaAtmosphere` stays the camera's single writer. `SetCinematicPose(position, rotation, fieldOfView, weight)`
   blends the director's pose with the drifting close-up; shake still applies on top, and the field of view is written
@@ -99,7 +100,7 @@ All on the runtime `ExperienceDirector` (Inspector in Play Mode) and its `timing
 | `fadeInSeconds`, `skipFadeSeconds` | 1, 0.35 s | Fades. |
 | `footstepVolume` | 0.32 | Footfall level. |
 
-`-xybridNoOpening` keeps the original immediate start. The self-test and speech validation never run the approach.
+`-xybridNoOpening` keeps the original immediate start (the walk into the camp still runs). The self-test and speech validation never run the approach.
 F4 shows the opening's stage and whether each voice is ready.
 
 ## Validation
