@@ -5,13 +5,14 @@ using UnityEngine.InputSystem;
 
 // Advice only. Choice visibility, player input and idle holds belong to GatekeeperView / PlayerVoiceInput.
 // No SpiritWindow, reply field, listening timer or /spirit request is installed in the encounter.
-// Before the encounter starts she also gives the road approach's one authored warning, on ExperienceDirector's cues.
+// Before the encounter starts she also gives the road approach's one authored warning, and after Trola's strike her
+// one authored reaction, both on ExperienceDirector's cues.
 public sealed class SpiritDirector : MonoBehaviour
 {
     public const string LinesResource = "Spirit/SpiritLines";
     private const int MaxErrors = 3, JournalSize = 40;
     private const float OpeningDelay = .35f, LineWatchdog = 30;
-    private static bool explanationUsed, approachWarned;
+    private static bool explanationUsed, approachWarned, defeatSeen;
 
     public static SpiritDirector Instance { get; private set; }
     public GatekeeperController Controller { get; private set; }
@@ -28,6 +29,10 @@ public sealed class SpiritDirector : MonoBehaviour
     // and ended before Trola speaks. Advice guards never cancel it while Trola has not started.
     public SpiritCue ApproachCue => approachCue;
     public bool IsWarning => approachSaying;
+    // Trola's strike (docs/defeat.md): her reaction is chosen and prefetched as he winds up, said once the player is down,
+    // and ended by a restart. While it is active nothing else she does may stop her voice.
+    public SpiritCue ReactionCue => reactionCue;
+    public bool IsReacting => reactionSaying;
     public int AdviceCount { get; private set; }
     public float EndedAt { get; private set; } = -1;
     public bool Active => built && !broken && SpiritSignals.Enabled && Controller != null && !Controller.IsSuspended;
@@ -37,15 +42,15 @@ public sealed class SpiritDirector : MonoBehaviour
     private readonly HashSet<string> checkpoints = new HashSet<string>(StringComparer.Ordinal);
     private readonly List<string> journal = new List<string>();
     private GatekeeperView view;
-    private bool built, broken, advicePending, started, nameShown, previousRepeated, approachActive, approachSaying;
-    private SpiritCue approachCue;
+    private bool built, broken, advicePending, started, nameShown, previousRepeated, approachActive, approachSaying, reactionActive, reactionSaying;
+    private SpiritCue approachCue, reactionCue;
     private int errors, token, arrivalFrame, previews;
     private float openingAt, deadline, nextTestCheck;
     private string lastError = "", lastChoice = "", lastApproach = "";
 
     // Encounter restart deliberately does not reset onboarding; a new Play session does, including without domain reload.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetPlaySession() { explanationUsed = approachWarned = false; Instance = null; }
+    private static void ResetPlaySession() { explanationUsed = approachWarned = defeatSeen = false; Instance = null; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -104,6 +109,7 @@ public sealed class SpiritDirector : MonoBehaviour
         {
             if (Controller.State == GatekeeperController.Phase.Ended && EndedAt < 0) EndedAt = Time.realtimeSinceStartup;
             if (Controller.IsOpening && Active) { Voice.Arm(); return; } // No checkpoint yet; the approach owns her line.
+            if (reactionActive) return; // The strike owns her line.
             if (!Controller.IsWaitingForPlayer || !Active)
             {
                 CancelAdvice(true);
@@ -188,6 +194,44 @@ public sealed class SpiritDirector : MonoBehaviour
         if (Presence != null && saying) Presence.Hide(snap);
     }
 
+    // Trola strikes: choose her reaction (the full one the first time in a Play session) and prefetch it while he swings.
+    public void PrepareReaction()
+    {
+        EndReaction(true);
+        if (!built || broken || !Active) return;
+        try
+        {
+            CancelAdvice(true);
+            reactionCue = Lines.DefeatCue(!defeatSeen);
+            if (reactionCue == null) return;
+            reactionActive = true;
+            Voice.Arm();
+            Voice.Prefetch(reactionCue);
+            Note("defeat reaction prepared → " + reactionCue.LineId);
+        }
+        catch (Exception error) { Fail(error); }
+    }
+    public void SayReaction()
+    {
+        if (!reactionActive || reactionSaying || !Active) return;
+        try
+        {
+            reactionSaying = true; defeatSeen = true;
+            Presence.Show(SpiritMomentKind.Whisper, SpiritAdvisor.Band(Controller.Patience), true);
+            Voice.Say(reactionCue, ++token);
+            Note("defeat reaction → " + reactionCue.LineId);
+        }
+        catch (Exception error) { Fail(error); }
+    }
+    public void EndReaction(bool snap)
+    {
+        if (!reactionActive) return;
+        bool saying = reactionSaying;
+        reactionActive = reactionSaying = false; reactionCue = null; token++;
+        if (Voice != null) Voice.Stop(snap ? .12f : .3f);
+        if (Presence != null && saying) Presence.Hide(snap);
+    }
+
     // Called by the root input owner on Option-down / suggestion click, before recording or acknowledging a choice.
     public void InterruptAdvice()
     {
@@ -217,7 +261,7 @@ public sealed class SpiritDirector : MonoBehaviour
 
     private void OnLineStarted(SpiritCue cue)
     {
-        if (approachSaying && ReferenceEquals(cue, approachCue) && Voice.Token == token)
+        if ((approachSaying && ReferenceEquals(cue, approachCue) || reactionSaying && ReferenceEquals(cue, reactionCue)) && Voice.Token == token)
         {
             Presence.ShowLine(cue.Text, !nameShown); nameShown = true;
             Note("Vesper: " + cue.Text + (Voice.IsSilentLine ? " [subtitle only]" : ""));
@@ -234,6 +278,12 @@ public sealed class SpiritDirector : MonoBehaviour
         {
             approachSaying = false; approachActive = false; approachCue = null;
             Presence.Hide(false); Note("approach warning complete");
+            return;
+        }
+        if (reactionSaying && ReferenceEquals(cue, reactionCue) && Voice.Token == token)
+        {
+            reactionSaying = false; reactionActive = false; reactionCue = null;
+            Presence.Hide(false); Note("defeat reaction complete");
             return;
         }
         if (!advicePending || !ReferenceEquals(cue, CurrentCue) || Voice.Token != token) return;
@@ -261,7 +311,7 @@ public sealed class SpiritDirector : MonoBehaviour
     private void OnRestarted()
     {
         if (!built) return;
-        CancelAdvice(true); EndApproach(true);
+        CancelAdvice(true); EndApproach(true); EndReaction(true);
         checkpoints.Clear(); Checkpoint = null; CurrentCue = null;
         lastChoice = lastApproach = ""; previousRepeated = false; EndedAt = -1;
         Note("encounter restarted; Play-session explanation remains consumed");
@@ -302,6 +352,22 @@ public sealed class SpiritDirector : MonoBehaviour
                     return;
                 }
             }
+            if (reactionActive)
+            {
+                // A new encounter (or Vesper switched off) ends her reaction; otherwise nothing else may stop her voice.
+                if (!Active || Controller.State != GatekeeperController.Phase.Ended) EndReaction(true);
+                else if (reactionSaying && !Voice.IsSpeaking) // Stopped without LineFinished: release the look.
+                {
+                    reactionSaying = reactionActive = false; reactionCue = null;
+                    Presence.Hide(false);
+                }
+                else
+                {
+                    if (!reactionSaying && Voice.CanSynthesize) Voice.Prefetch(reactionCue);
+                    Presence.SetVoiceEnvelope(Voice.Envelope);
+                    return;
+                }
+            }
             if (!Active || !Controller.IsWaitingForPlayer) { CancelAdvice(true); return; }
             Presence.SetVoiceEnvelope(Voice.Envelope);
             if (!advicePending) return;
@@ -320,7 +386,7 @@ public sealed class SpiritDirector : MonoBehaviour
         catch (Exception error) { Fail(error); }
     }
 
-    public bool CanPreviewVoice => Active && !advicePending && !approachActive && !Controller.IsOpening && Voice != null && !Voice.IsSpeaking && Voice.CanSynthesize;
+    public bool CanPreviewVoice => Active && !advicePending && !approachActive && !reactionActive && !Controller.IsOpening && Voice != null && !Voice.IsSpeaking && Voice.CanSynthesize;
     public bool PreviewVoice()
     {
         if (!CanPreviewVoice) return false;
@@ -336,7 +402,7 @@ public sealed class SpiritDirector : MonoBehaviour
         SpiritSignals.Enabled = !SpiritSignals.Enabled;
         if (!SpiritSignals.Enabled)
         {
-            CancelAdvice(false); EndApproach(false);
+            CancelAdvice(false); EndApproach(false); EndReaction(false);
             Presence.enabled = false; Voice.enabled = false;
         }
         else { Presence.enabled = true; Voice.enabled = true; }
@@ -347,14 +413,14 @@ public sealed class SpiritDirector : MonoBehaviour
         lastError = error.GetType().Name + ": " + error.Message;
         Debug.LogException(error, this);
         // Release the presentation immediately; one malformed callback must not strand the choice checkpoint.
-        CancelAdvice(true); EndApproach(true);
+        CancelAdvice(true); EndApproach(true); EndReaction(true);
         if (++errors >= MaxErrors) Shutdown(lastError);
     }
 
     private void Shutdown(string reason)
     {
         broken = true; lastError = reason;
-        CancelAdvice(false); EndApproach(false);
+        CancelAdvice(false); EndApproach(false); EndReaction(false);
         if (Presence != null) Presence.enabled = false;
         if (Voice != null) Voice.enabled = false;
         Debug.LogWarning("[Spirit] Vesper is off for this session (" + reason + ").", this);
@@ -369,7 +435,7 @@ public sealed class SpiritDirector : MonoBehaviour
         if (journal.Count > JournalSize) journal.RemoveRange(0, journal.Count - JournalSize);
     }
 
-    private void OnDisable() { if (built) { CancelAdvice(false); EndApproach(false); } }
+    private void OnDisable() { if (built) { CancelAdvice(false); EndApproach(false); EndReaction(false); } }
     private void OnDestroy()
     {
         if (Controller != null) { Controller.Changed -= OnChanged; Controller.PlayerActed -= OnPlayerActed; Controller.Restarted -= OnRestarted; }

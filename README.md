@@ -17,6 +17,8 @@ and Trola's challenge, then the close-up (Space skips; Try again replays it).
 See [docs/approach.md](docs/approach.md).
 Once admitted, the player talks on until they choose to go in ("Go in", or the Enter camp button): a short walk
 through the gate, then an end card. See [docs/entry.md](docs/entry.md).
+Push him too far (demand the gate, or spend his patience on provocation) and Trola strikes: the viewpoint falls, Vesper
+reacts, and Try again replays the encounter. A calm refusal never turns violent. See [docs/defeat.md](docs/defeat.md).
 
 ## Open locally
 

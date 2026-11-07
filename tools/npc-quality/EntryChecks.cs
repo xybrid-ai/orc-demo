@@ -63,6 +63,12 @@ static class EntryChecks
             Check(story.Encounter.Outcome == outcome && story.Encounter.Ending == ending,
                 "Ending reason for " + string.Join(",", plan) + ": " + story.Encounter.Outcome + "/" + story.Encounter.Ending + ", expected " + outcome + "/" + ending);
         }
+        // A provoked expulsion ends on Trola's threat, which his strike follows (docs/defeat.md); calm refusals keep
+        // "Walk away, while it's still your choice."
+        var data = scenario.ReadStory();
+        string[] Ending(string node, int patience) => data.nodes.Find(n => n.id == node).variants.Find(v => patience >= v.min_patience && patience <= v.max_patience).line_ids;
+        Check(Ending("expelled", 3).SequenceEqual(new[] { "refuse-out" }) && scenario.FindLine("refuse-out").ends_scene, "Expulsion does not end on his threat");
+        Check(Ending("passage", 1).Last() == "refuse-walk" && Ending("friendship", 1).Last() == "refuse-walk", "A calm refusal lost its closer");
         var playing = new GatekeeperEncounter(3, 5, true);
         Check(!playing.EnterCamp() && playing.Ending == GatekeeperEnding.None, "Entered without admission");
         playing.FinishStory(GatekeeperOutcome.Refused, GatekeeperEnding.Refused);
@@ -165,7 +171,7 @@ static class EntryChecks
             Check(source.Presentation.Ended && !source.Presentation.CanEnter && state.Encounter.Outcome == GatekeeperOutcome.Refused
                 && state.Encounter.Ending == GatekeeperEnding.Expelled, "Free-talk expulsion: " + state.Encounter.Ending);
         }
-        return "entry reader (clear entries; questions, hedges, refusals, goodbyes and remarks kept), d1 vetoes, ending reasons (Expelled, calm Refused, " +
+        return "expulsion ends on his threat, calm refusals walk away; entry reader (clear entries; questions, hedges, refusals, goodbyes and remarks kept), d1 vetoes, ending reasons (Expelled, calm Refused, " +
                "Entered only after admission), both admissions wait for the gate, greetings, send-off and Entered, Enter camp, shut gate, goodbye replies, free-talk expulsion";
     }
 }

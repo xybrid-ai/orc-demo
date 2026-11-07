@@ -333,7 +333,7 @@
       "emotion": "anger",
       "intensity": 1.0,
       "patience_delta": 0,
-      "ends_scene": false,
+      "ends_scene": true,
       "delivery": "roar"
     },
     {
@@ -903,8 +903,7 @@
           "min_patience": 0,
           "max_patience": 5,
           "line_ids": [
-            "refuse-out",
-            "refuse-walk"
+            "refuse-out"
           ],
           "revisit_line_ids": [],
           "outcome": "Refused"

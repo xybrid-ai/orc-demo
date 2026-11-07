@@ -4,8 +4,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// The experience around Trola's encounter: the road approach (docs/approach.md) and entering the camp (docs/entry.md).
-// It decides when the encounter starts, walks the player in once it ends Entered, and hands TrolaAtmosphere the camera
+// The experience around Trola's encounter: the road approach (docs/approach.md), entering the camp (docs/entry.md) and
+// the provoked defeat (docs/defeat.md). It decides when the encounter starts, walks the player in once it ends Entered,
+// has Trola strike and knocks the viewpoint down once it ends Expelled, and hands TrolaAtmosphere the camera
 // poses it blends; dialogue, patience and endings stay with GatekeeperController and its line sources, and Vesper's
 // line with SpiritDirector. Installs on its own, like SpiritDirector, in a scene with TrolaAtmosphere; never with
 // -xybridSelfTest, -xybridSpeechTest, or a self-test or speech validation in the scene. -xybridNoOpening, or a
@@ -47,6 +48,17 @@ public sealed class ExperienceDirector : MonoBehaviour
     [TextArea] public string cardPassed = "You paid Trola's toll and walked through his gate.";
     [TextArea] public string cardLiked = "Trola laughed you through his gate. His fire is waiting.";
 
+    [Header("Provoked defeat (docs/defeat.md)")]
+    public Knockdown.Settings defeatTiming = new Knockdown.Settings();
+    [Tooltip("A beat after his last line before he strikes, in seconds.")]
+    public float strikeDelay = .25f;
+    [Tooltip("The picture dips this far to black as the blow lands, recovering over impactRecover seconds to a dazed level.")]
+    [Range(0, 1)] public float impactDip = .55f, dazed = .18f;
+    public float impactRecover = .7f;
+    [Range(0, 1)] public float impactVolume = 1;
+    [TextArea] public string cardDefeatTitle = "Thrown out";
+    [TextArea] public string cardDefeat = "You pushed Trola too far.";
+
     public GatekeeperController Controller { get; private set; }
     public RoadApproach Approach { get; private set; }
     public bool IsApproaching => Approach != null;
@@ -54,10 +66,13 @@ public sealed class ExperienceDirector : MonoBehaviour
     public bool Opens { get; private set; }
     public CampEntry Entry { get; private set; }
     public bool IsEntering => Entry != null;
-    // The encounter ended Entered and this director walks the player in and shows the end card with its own Try again
-    // (GatekeeperView then hides its own). False once the director has failed: the view's Try again stands.
+    public Knockdown Defeat { get; private set; }
+    public bool IsDefeated => Defeat != null;
+    // The encounter ended Entered (the walk in) or Expelled (the strike and the fall), and this director plays it out and
+    // shows the end card with its own Try again (GatekeeperView then hides its own). A calm refusal is the view's, and
+    // so is everything once the director has failed.
     public bool OwnsEnding => !broken && Controller != null && Controller.State == GatekeeperController.Phase.Ended
-        && Controller.Ending == GatekeeperEnding.Entered;
+        && (Controller.Ending == GatekeeperEnding.Entered || Controller.Ending == GatekeeperEnding.Expelled);
     public bool CardShown => card != null && card.activeSelf;
     public Button TryAgainButton => cardButton;
     // Space or Skip opening, until Trola's challenge starts; the settle that follows is never cut while he speaks.
@@ -71,6 +86,8 @@ public sealed class ExperienceDirector : MonoBehaviour
         var director = Instance;
         if (director == null) return "Opening: off (immediate start)";
         if (director.broken) return "Opening: off for this session after an error";
+        var defeat = director.Defeat;
+        if (defeat != null) return "Knocked down: " + defeat.Current + " " + defeat.StageSeconds.ToString("0.0") + " s";
         var entry = director.Entry;
         if (entry != null)
             return "Entering the camp: " + entry.Current + " " + entry.StageSeconds.ToString("0.0") + " s; " + entry.Length.ToString("0.0") + " m at "
@@ -96,8 +113,10 @@ public sealed class ExperienceDirector : MonoBehaviour
     private CanvasGroup cardGroup;
     private Text cardHeading, cardLine;
     private Button cardButton;
-    private bool entryRan;
-    private float entryWait;
+    private bool endingRan, landed;
+    private float endingWait;
+    private GatekeeperPerformer performer;
+    private AudioClip thud;
     private Button skipButton;
     private AudioSource steps;
     private AudioClip[] stepClips;
@@ -184,13 +203,16 @@ public sealed class ExperienceDirector : MonoBehaviour
         }
         try
         {
-            // His send-off has been said and the encounter ended Entered: after a beat, walk in.
-            if (Entry == null && !entryRan && OwnsEnding)
+            // His send-off has been said and the encounter ended Entered: after a beat, walk in. Expelled: after a beat, he
+            // strikes.
+            if (Entry == null && Defeat == null && !endingRan && OwnsEnding)
             {
-                entryWait += Time.unscaledDeltaTime;
-                if (entryWait >= entryDelay) BeginEntry();
+                endingWait += Time.unscaledDeltaTime;
+                bool expelled = Controller.Ending == GatekeeperEnding.Expelled;
+                if (endingWait >= (expelled ? strikeDelay : entryDelay)) { if (expelled) BeginDefeat(); else BeginEntry(); }
             }
             if (Entry != null) TickEntry();
+            if (Defeat != null) TickDefeat();
         }
         catch (Exception error) { Fallback(error); }
         RefreshSkip();
@@ -250,7 +272,7 @@ public sealed class ExperienceDirector : MonoBehaviour
     // fading as the walk starts and the picture going black as the gate is crossed; then the end card.
     private void BeginEntry()
     {
-        entryRan = true;
+        endingRan = true;
         SpiritDirector.Instance?.InterruptAdvice();
         Deselect(); // The Enter camp button must not take a Submit meanwhile.
         Entry = new CampEntry(entryTiming, BuildEntryRoute());
@@ -263,7 +285,8 @@ public sealed class ExperienceDirector : MonoBehaviour
         var cues = Entry.Advance(Mathf.Min(Time.unscaledDeltaTime, MaxStep));
         if ((cues & CampEntry.Cue.Footstep) != 0) Step(Entry.Pace);
         if ((cues & CampEntry.Cue.FadeOut) != 0) FadeToBlack(Entry.FadeSeconds);
-        if ((cues & CampEntry.Cue.Card) != 0) ShowCard();
+        if ((cues & CampEntry.Cue.Card) != 0)
+            ShowCard(cardTitle, Controller != null && Controller.Outcome == GatekeeperOutcome.Liked ? cardLiked : cardPassed);
         ApplyEntryPose(); // Renewed under the card too: the camera stays inside until Try again.
     }
 
@@ -280,13 +303,86 @@ public sealed class ExperienceDirector : MonoBehaviour
         if (!BeginApproach() && Controller != null && Controller.Restart() && barrier != null) barrier.Settle();
     }
 
-    // A new encounter (Try again, a debug restart or jump) drops the walk, the card and the black.
+    // A new encounter (Try again, a debug restart or jump) drops the walk or the fall, the card and the black.
     private void OnRestarted()
     {
-        bool black = fadeTarget >= 1 || Entry != null;
-        EndEntry();
-        entryRan = false; entryWait = 0;
+        bool black = fadeTarget >= 1 || Entry != null || Defeat != null;
+        EndEntry(); EndDefeat();
+        endingRan = false; endingWait = 0;
         if (black) FadeFromBlack(fadeInSeconds);
+    }
+
+    // ---------------------------------------------------------------- Provoked defeat (docs/defeat.md)
+    // His last line said, Trola strikes (GatekeeperPerformer); the camera holds the close-up through the wind-up and
+    // takes over the frame the blow lands: recoil, fall, Vesper's reaction from the ground, then black and the card.
+    private void BeginDefeat()
+    {
+        endingRan = true; landed = false;
+        Deselect();
+        if (performer == null) performer = FindAnyObjectByType<GatekeeperPerformer>();
+        float fallback = defeatTiming.impactSeconds;
+        if (performer != null)
+        {
+            performer.StrikeImpact -= OnStrikeImpact; performer.StrikeImpact += OnStrikeImpact;
+            if (performer.Strike()) fallback = performer.StrikeImpactSeconds + .4f; // Its impact leads; the timer only covers a lost event.
+        }
+        Defeat = new Knockdown(defeatTiming, fallback);
+        SpiritDirector.Instance?.PrepareReaction();
+    }
+    private void OnStrikeImpact() { landed = true; }
+
+    private void TickDefeat()
+    {
+        var spirit = SpiritDirector.Instance;
+        bool quiet = spirit == null || !spirit.IsReacting;
+        var cues = Defeat.Advance(Mathf.Min(Time.unscaledDeltaTime, MaxStep), landed, quiet, BuildDefeatRoute);
+        landed = false;
+        if ((cues & Knockdown.Cue.Impact) != 0)
+        {
+            CampSoundscape.Instance?.Strike();
+            Thud(impactVolume, .85f);
+            Dip(impactDip, dazed, impactRecover);
+            dialogueTarget = 0;
+        }
+        if ((cues & Knockdown.Cue.Landed) != 0) Thud(impactVolume * .5f, 1.3f);
+        if ((cues & Knockdown.Cue.React) != 0) spirit?.SayReaction();
+        if ((cues & Knockdown.Cue.FadeOut) != 0) FadeToBlack(defeatTiming.fadeSeconds);
+        if ((cues & Knockdown.Cue.Card) != 0) ShowCard(cardDefeatTitle, cardDefeat);
+        if (Defeat.HasRoute)
+        {
+            var pose = Defeat.Evaluate();
+            atmosphere.SetCinematicPose(pose.position, pose.rotation, pose.fieldOfView, Defeat.CinematicWeight, pose.focusDistance);
+        }
+    }
+
+    private void EndDefeat()
+    {
+        if (Defeat != null && Defeat.HasRoute && atmosphere != null) atmosphere.ClearCinematicPose();
+        Defeat = null; landed = false;
+        if (performer != null) performer.StrikeImpact -= OnStrikeImpact;
+        if (card != null) card.SetActive(false);
+        RestoreDialogue();
+    }
+
+    // From the camera as the blow lands, away from his face along the ground.
+    private Knockdown.Route BuildDefeatRoute()
+    {
+        var lens = atmosphere.portraitCamera.transform;
+        Vector3 feet = atmosphere.actor.position, face = feet + atmosphere.lookOffset;
+        Vector3 back = lens.position - face; back.y = 0;
+        back = back.sqrMagnitude > 1e-4f ? back.normalized : -lens.forward;
+        return new Knockdown.Route
+        {
+            start = lens.position, startRotation = lens.rotation, back = back, side = Vector3.Cross(Vector3.up, back).normalized,
+            face = face, floor = feet.y, fieldOfView = atmosphere.portraitCamera.fieldOfView
+        };
+    }
+
+    private void Thud(float volume, float pitch)
+    {
+        if (steps == null || thud == null || volume <= 0) return;
+        steps.pitch = pitch;
+        steps.PlayOneShot(thud, Mathf.Clamp01(volume));
     }
 
     private void EndEntry()
@@ -356,11 +452,11 @@ public sealed class ExperienceDirector : MonoBehaviour
 
     // The end card, over the black: where the player ended up and Try again. Built once on the fade canvas, from the
     // view's font and a copy of its Send button (like Skip opening).
-    private void ShowCard()
+    private void ShowCard(string title, string line)
     {
         if (card == null) BuildCard();
-        cardHeading.text = cardTitle;
-        cardLine.text = Controller != null && Controller.Outcome == GatekeeperOutcome.Liked ? cardLiked : cardPassed;
+        cardHeading.text = title;
+        cardLine.text = line;
         cardGroup.alpha = 0;
         card.SetActive(true);
     }
@@ -450,6 +546,8 @@ public sealed class ExperienceDirector : MonoBehaviour
     }
     private void FadeFromBlack(float seconds) { fadeAlpha = 1; fadeTarget = 0; fadeSeconds = Mathf.Max(.01f, seconds); Paint(); }
     private void FadeToBlack(float seconds) { fadeTarget = 1; fadeSeconds = Mathf.Max(.01f, seconds); }
+    // At once to `alpha`, then to `to` over `seconds` (the blow's dip, recovering to a daze).
+    private void Dip(float alpha, float to, float seconds) { fadeAlpha = Mathf.Max(fadeAlpha, alpha); fadeTarget = to; fadeSeconds = Mathf.Max(.01f, seconds); Paint(); }
     private void AnimateFade()
     {
         if (fadeAlpha == fadeTarget) return;
@@ -502,6 +600,9 @@ public sealed class ExperienceDirector : MonoBehaviour
             stepClips[i] = AudioClip.Create("approach_footstep_" + i, data.Length, 1, StepRate, false);
             stepClips[i].SetData(data, 0);
         }
+        // The blow and the landing (docs/defeat.md): a low body thud, played lower for the blow and higher for the ground.
+        var body = ProceduralAudio.Render(SpiritSound.Thud, 9011, StepRate);
+        if (body != null && body.Length > 0) { thud = AudioClip.Create("defeat_thud", body.Length, 1, StepRate, false); thud.SetData(body, 0); }
     }
     private void Step(float pace)
     {
@@ -518,9 +619,9 @@ public sealed class ExperienceDirector : MonoBehaviour
     private void Fallback(Exception error)
     {
         Debug.LogException(error, this);
-        Debug.LogWarning("[Experience] The road approach and the walk into the camp are off for this session; Trola's encounter starts at the gate.", this);
+        Debug.LogWarning("[Experience] The road approach, the walk into the camp and the strike are off for this session; Trola's encounter starts at the gate.", this);
         broken = true;
-        try { EndApproach(); EndEntry(); } catch (Exception cleanup) { Debug.LogException(cleanup, this); }
+        try { EndApproach(); EndEntry(); EndDefeat(); } catch (Exception cleanup) { Debug.LogException(cleanup, this); }
         if (atmosphere != null) atmosphere.ClearCinematicPose();
         fadeAlpha = fadeTarget = 0; Paint();
         if (skipButton != null) skipButton.gameObject.SetActive(false);
@@ -534,6 +635,8 @@ public sealed class ExperienceDirector : MonoBehaviour
         RestoreDialogue();
         if (atmosphere != null) atmosphere.ClearCinematicPose();
         if (stepClips != null) foreach (var clip in stepClips) if (clip != null) Destroy(clip);
+        if (thud != null) Destroy(thud);
+        if (performer != null) performer.StrikeImpact -= OnStrikeImpact;
         if (Instance == this) Instance = null;
     }
 }

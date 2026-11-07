@@ -64,7 +64,7 @@ directly for the rest of the session.
 
 - `ExperienceDirector` (runtime-installed, like Vesper) owns the approach: when the encounter starts, the cues, the
   fade, the skip button and the footsteps. It turns off the controller's auto-start. It also owns the walk into the
-  camp and its end card ([docs/entry.md](entry.md)); with `-xybridNoOpening` it still installs for that, without
+  camp and its end card ([docs/entry.md](entry.md)) and the provoked defeat ([docs/defeat.md](defeat.md)); with `-xybridNoOpening` it still installs for that, without
   the approach.
 - `RoadApproach` is the pure timeline and camera path (stages, eased progress, walking motion, cues, skip).
 - `TrolaAtmosphere` stays the camera's single writer. `SetCinematicPose(position, rotation, fieldOfView, weight)`

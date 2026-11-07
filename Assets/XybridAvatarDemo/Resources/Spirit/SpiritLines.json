@@ -9,6 +9,8 @@
   {"id": "adviser-intro-1", "family": "adviser.intro", "key": "", "min_patience": 0, "max_patience": 5, "text": "He's proud, and he's bored. A little flattery, some coin, or asking about camp might help. Those are suggestions—use your own words."},
   {"id": "approach-first-1", "family": "approach.first", "key": "", "min_patience": 0, "max_patience": 5, "text": "Careful. That troll hates strangers, so let him speak first."},
   {"id": "approach-again-1", "family": "approach.again", "key": "", "min_patience": 0, "max_patience": 5, "text": "The gate again. Let him speak first."},
+  {"id": "defeat-first-1", "family": "defeat.first", "key": "", "min_patience": 0, "max_patience": 5, "text": "Ow. He meant that one, stay down a moment, then we try again."},
+  {"id": "defeat-again-1", "family": "defeat.again", "key": "", "min_patience": 0, "max_patience": 5, "text": "Down again. Maybe ask him nicely next time."},
   {"id": "adviser-none-1", "family": "adviser.remark", "key": "none", "min_patience": 0, "max_patience": 2, "text": "He's bristling. Keep your words measured."},
   {"id": "adviser-none-2", "family": "adviser.remark", "key": "none", "min_patience": 3, "max_patience": 4, "text": "He's watching you. Take a breath before you answer."},
   {"id": "adviser-none-3", "family": "adviser.remark", "key": "none", "min_patience": 5, "max_patience": 5, "text": "He's warming to you. Keep it natural."},
