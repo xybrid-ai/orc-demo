@@ -15,7 +15,7 @@ Subtitles appear phrase by phrase as Trola and Vesper speak; see
 Each encounter opens on the road: a short walk up to the gate, Vesper's warning
 and Trola's challenge, then the close-up (Space skips; Try again replays it).
 See [docs/approach.md](docs/approach.md).
-The visible towers and hearth have background residents, watch lights and drifting smoke;
+The towers and hearth have lookouts, drinking and seated residents, a short walking routine, watch lights and drifting smoke;
 see [docs/camp-activity.md](docs/camp-activity.md).
 Once admitted, the player talks on until they choose to go in ("Go in", or the Enter camp button): a short walk
 through the gate, then an end card. See [docs/entry.md](docs/entry.md).
@@ -64,6 +64,9 @@ hashes. Imported/derived assets stay local even outside `Assets/Synty`.
   a stock pack import alone is not guaranteed to reconstruct those. Restore the
   manifest-listed customized files from your licensed installation. No pack
   binaries, extracted meshes, textures or shaders are redistributed here.
+- Synty **Animation Idles**, the Base Locomotion in-place walk, customized GoblinFighter_01, _02, _04 and _05,
+  and locally supplied Mixamo **Sitting Talking** / **Sitting Laughing** clips for camp life. Restore the recorded
+  importer settings and avatars with them; see [camp activity](docs/camp-activity.md).
 - Cinzel font and locally generated authored/reaction audio at their original
   paths. These are also external pending explicit provenance/license packaging.
 - `Assets/Xybrid/Plugins/macOS/libxybrid_bolt.dylib` from the **0.16.0** native

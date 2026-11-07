@@ -36,6 +36,8 @@
 # Licensed art, models, and installed native tools are local.
 /Assets/Synty/
 /Assets/Synty.meta
+/Assets/Animations/
+/Assets/Animations.meta
 /Assets/Fonts/
 /Assets/Fonts.meta
 /Assets/StreamingAssets/
