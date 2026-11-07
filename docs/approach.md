@@ -77,9 +77,23 @@ directly for the rest of the session.
 - `SpiritDirector` owns Vesper's warning (`PrepareApproach`, `ApproachReady`, `SayApproach`, `EndApproach`); her voice
   may be heard while Trola waits, has ended, or has not started yet.
 - `XybridVillageGateScene.BuildRoadApproach` (**Xybrid ▸ Avatar Demo ▸ Build Road Approach**) dresses only the
-  foreground the walk exposes: six more planks continuing the path towards the road and roadside grass and rocks,
-  from the same Goblin War Camp prefabs as the rest of the set. It rebuilds only its own "Road approach" group, and
-  nothing in it can enter the close-up.
+  foreground the walk exposes. Six more planks continue the path towards the traveller; staggered delivery barrels
+  and crates, two low leaning palisade remnants, boulders and irregular grass pockets make the verges a used camp road.
+  Broad low grass beds cover the visible gate apron beside the planks, with taller tufts around the props. **Build Road
+  Grass** refreshes just those beds; **Build Road Approach** includes them when rebuilding the complete road group.
+  A short provision torch lights the west-side delivery pile, with a 2.6 m light range that cannot reach Trola. The existing
+  roadside hearth stays in place. All pieces reuse the already-required Goblin War Camp prefabs and material GUIDs.
+  It rebuilds only its own "Road approach" group; the camp, portrait, camera route and dialogue stay as authored.
+
+### Road dressing boundaries
+
+The opening starts at `(0, 1.5, 15)` on the portrait's 60 mm lens, looking slightly up. The first visible
+ground is around `z=5.7`, so the main supply clusters sit at `z=2.95–4.2` and the low fences at `z=5.25–5.65`, along
+the sides of the planks. Adding low props near the starting camera would put them below the frame. Grass and stones
+taper out along the verges. Low grass beds extend to the gate over `z≈-5–8`; their rotated mesh bounds align to the
+road shoulders, leaving the central planks bare. There is no scatter across the rest of the map. Keep the central walk and the knockdown
+landing area clear. Low roadside pieces leave the picture as the player nears Trola, keeping the portrait unobstructed.
+Camp inhabitants and distant activity are a separate pass; this dressing adds no background characters or simulation.
 
 ## Tuning
 

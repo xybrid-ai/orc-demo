@@ -104,10 +104,10 @@ public static class XybridVillageGateScene
         if (GameObject.Find("Dusk Atmosphere") != null) XybridDuskScene.Apply();
     }
 
-    // The road approach's foreground (docs/approach.md). The walk starts 12 m behind the close-up on a 60 mm lens, so the
-    // ground from about 7.5 m ahead shows: the plank road continues towards the traveller and grass and rocks dress its
-    // verges. Only this group is rebuilt, so the rest of the set (and the dusk builder's changes) stays as it is.
-    // Nothing here can enter the close-up, whose frame first meets the ground 16 m beyond Trola.
+    // The road approach's visible foreground (docs/approach.md). The 60 mm lens looks slightly up: at the distant hold
+    // it first sees the ground around z=5.7, so the readable clusters belong nearer the gate, not behind the traveller.
+    // Low supplies, worn palisade remnants and irregular verges make this a used camp road. Keep the walking/landing
+    // corridor clear and everything below the portrait's frame. Only this group is rebuilt; the camp and dusk stay put.
     [MenuItem("Xybrid/Avatar Demo/Build Road Approach")]
     public static void BuildRoadApproach()
     {
@@ -116,11 +116,10 @@ public static class XybridVillageGateScene
         if (scene.path != Demo + "/GoblinSpeakingDemo.unity") throw new InvalidOperationException("Open GoblinSpeakingDemo first.");
         var set = GameObject.Find("Village Gate Set");
         if (set == null) throw new InvalidOperationException("Build the fortified village gate first.");
-        foreach (var path in new[] { "Environment/SM_Env_Road_Planks_Straight_01", "Environment/SM_Env_Grass_Preset_01", "Environment/SM_Env_Grass_Preset_02", "Environment/SM_Env_Rock_02" })
+        foreach (var path in new[] { "Environment/SM_Env_Road_Planks_Straight_01", "Environment/SM_Env_Grass_Preset_01", "Environment/SM_Env_Grass_Preset_02", "Environment/SM_Env_Rock_02",
+            "Buildings/SM_Bld_Log_Wall_02", "Props/SM_Prop_Barrel_01", "Props/SM_Prop_Crate_02", "Props/SM_Prop_Torch_01", "Props/SM_Prop_Camp_Fire_01" })
             if (AssetDatabase.LoadAssetAtPath<GameObject>(Pack + path + ".prefab") == null)
                 throw new InvalidOperationException("Finish importing Goblin War Camp: " + path);
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(Pack + "Props/SM_Prop_Camp_Fire_01.prefab") == null)
-            throw new InvalidOperationException("Finish importing Goblin War Camp: Props/SM_Prop_Camp_Fire_01");
         converted.Clear();
         Undo.IncrementCurrentGroup(); Undo.SetCurrentGroupName("Build road approach");
         var old = set.transform.Find("Road approach");
@@ -130,20 +129,117 @@ public static class XybridVillageGateScene
         float[] sway = { .03f, -.05f, .06f, -.02f, .04f, -.06f }, turn = { 1.2f, -.8f, 1.6f, -1.4f, .6f, -1 };
         for (int i = 0; i < sway.Length; i++)
             Place("Environment/SM_Env_Road_Planks_Straight_01", "Road plank " + i, road, new Vector3(sway[i], .012f, 3.35f + i * 2.35f), .55f, turn[i]);
-        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 0", road, new Vector3(-2.3f, 0, 3.4f), .20f, 25);
-        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 1", road, new Vector3(2.6f, 0, 4.6f), .22f, -35);
-        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 2", road, new Vector3(-3, 0, 6.3f), .20f, 60);
-        Place("Environment/SM_Env_Grass_Preset_01", "Verge grass 3", road, new Vector3(2, 0, 7.6f), .18f, 15);
-        Place("Environment/SM_Env_Grass_Preset_02", "Verge grass 4", road, new Vector3(3.4f, 0, 2.6f), .22f);
-        Place("Environment/SM_Env_Grass_Preset_02", "Verge grass 5", road, new Vector3(-3.8f, 0, 8.8f), .24f, 10);
-        Place("Environment/SM_Env_Rock_02", "Verge rock 0", road, new Vector3(-2.9f, 0, 5), .30f, 30);
-        Place("Environment/SM_Env_Rock_02", "Verge rock 1", road, new Vector3(3.6f, 0, 7), .34f, -50);
+        var supplies = Group("Roadside provisions", road);
+        Place("Props/SM_Prop_Barrel_01", "Delivery barrel", supplies, new Vector3(-2.4f, 0, 3.15f), .82f, -17);
+        Place("Props/SM_Prop_Crate_02", "Unloaded crate", supplies, new Vector3(-1.95f, 0, 4.2f), .72f, 13);
+        Place("Props/SM_Prop_Crate_02", "Outer supply crate", supplies, new Vector3(-3.35f, 0, 3.55f), .95f, -9);
+        // The smaller right-hand cluster is staggered; it should not read as another checkpoint across the path.
+        Place("Props/SM_Prop_Barrel_01", "Gate-side spare barrel", supplies, new Vector3(2.8f, 0, 2.95f), .70f, 34);
+        Place("Props/SM_Prop_Crate_02", "Set-down road crate", supplies, new Vector3(2.15f, 0, 3.9f), .65f, -21);
+        Place("Props/SM_Prop_Torch_01", "Provision torch", supplies, new Vector3(-2.9f, 0, 4.85f), .20f, -8);
+        var provisionFlame = Fire("Provision torch flame", supplies, new Vector3(-2.9f, 1.19f, 4.85f), .65f);
+        var provisionLight = provisionFlame.GetComponentInChildren<Light>();
+        provisionLight.intensity = 3.2f; provisionLight.range = 2.6f;
+        // A local pool for the delivery pile: its short range cannot reach Trola or change the portrait lighting.
+        provisionLight.color = new Color(1, .60f, .28f);
+
+        var fences = Group("Worn roadside fences", road);
+        RoadFence("West worn fence", fences, new Vector3(-2.65f, 0, 5.25f), 84, -4);
+        RoadFence("East worn fence", fences, new Vector3(2.85f, 0, 5.65f), 96, 5);
+
+        var verge = Group("Broken verges", road);
+        Place("Environment/SM_Env_Rock_02", "Hearth-side boulder", verge, new Vector3(-4.05f, -.04f, 2.8f), .60f, 37);
+        Place("Environment/SM_Env_Rock_02", "East verge boulder", verge, new Vector3(3.6f, -.06f, 3.85f), .52f, -53);
+        Place("Environment/SM_Env_Rock_02", "West fence stone", verge, new Vector3(-2.05f, -.04f, 5.7f), .28f, 71);
+        Place("Environment/SM_Env_Rock_02", "East fence stone", verge, new Vector3(2.15f, -.03f, 6.25f), .25f, -16);
+        Place("Environment/SM_Env_Rock_02", "Outer west stone", verge, new Vector3(-3.6f, -.04f, 5.85f), .38f, 112);
+        // Authored pockets rather than a mirrored row or a world-sized scatter. The near-road tufts taper out behind
+        // the visible foreground; their silhouettes and the fence gaps still leave the planks easy to follow.
+        Vector3[] grass =
+        {
+            new Vector3(-1.85f, 0, 3.05f), new Vector3(-3.05f, 0, 2.8f), new Vector3(-3.6f, 0, 3.65f),
+            new Vector3(-2.2f, 0, 4.7f), new Vector3(-3.3f, 0, 4.9f), new Vector3(-2.5f, 0, 6.05f),
+            new Vector3(-1.95f, 0, 6.9f), new Vector3(-3.1f, 0, 7.4f), new Vector3(-2.1f, 0, 8.5f),
+            new Vector3(1.85f, 0, 2.85f), new Vector3(3.1f, 0, 3.3f), new Vector3(2.85f, 0, 4.4f),
+            new Vector3(3.55f, 0, 5.1f), new Vector3(1.95f, 0, 5.25f), new Vector3(2.55f, 0, 6.65f),
+            new Vector3(2.0f, 0, 7.65f), new Vector3(3.25f, 0, 7.15f)
+        };
+        for (int i = 0; i < grass.Length; i++)
+            Place("Environment/SM_Env_Grass_Preset_0" + (i % 3 == 0 ? "2" : "1"), "Verge grass " + i, verge,
+                grass[i], .16f + (i % 4) * .025f, (i * 137.5f) % 360);
+        DressGroundGrass(road);
         // The face firelight's source, seen from the road (beside the close-up camera, never in its frame). Flames only:
         // a lamp here would relight Trola's face.
         Place("Props/SM_Prop_Camp_Fire_01", "Roadside hearth", road, new Vector3(-1.2f, 0, 2.6f), .45f);
         Fire("Roadside hearth flame", road, new Vector3(-1.2f, .2f, 2.6f), 1.1f, false);
         EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
-        Debug.Log("[Village Gate] Road approach saved: " + road.childCount + " pieces.");
+        Debug.Log("[Village Gate] Road approach saved with provisions, worn fences and broken verges.");
+    }
+
+    [MenuItem("Xybrid/Avatar Demo/Build Road Grass")]
+    public static void BuildRoadGrass()
+    {
+        if (EditorApplication.isPlaying) throw new InvalidOperationException("Exit Play Mode before dressing the ground.");
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (scene.path != Demo + "/GoblinSpeakingDemo.unity") throw new InvalidOperationException("Open GoblinSpeakingDemo first.");
+        var set = GameObject.Find("Village Gate Set");
+        var road = set != null ? set.transform.Find("Road approach") : null;
+        if (road == null) throw new InvalidOperationException("Build the road approach first.");
+        for (int i = 1; i <= 2; i++)
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(Pack + "Environment/SM_Env_Grass_Preset_0" + i + ".prefab") == null)
+                throw new InvalidOperationException("Finish importing Goblin War Camp grass.");
+        converted.Clear();
+        Undo.IncrementCurrentGroup(); Undo.SetCurrentGroupName("Dress road ground with grass");
+        var old = road.Find("Ground grass");
+        if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
+        DressGroundGrass(road);
+        EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
+        Debug.Log("[Village Gate] Low grass beds saved across the visible gate apron.");
+    }
+
+    private static void DressGroundGrass(Transform road)
+    {
+        var ground = Group("Ground grass", road);
+        // Broad, short overlapping beds cover the exposed soil; the taller verge pockets remain for silhouettes.
+        // Only the visible apron is planted. The outer row stops early as the distant view narrows towards us.
+        for (int side = -1; side <= 1; side += 2)
+            for (int row = 0; row < 2; row++)
+                for (int i = 0; i < (row == 0 ? 7 : 4); i++)
+                {
+                    float z = -3.8f + i * 1.75f + .15f * Mathf.Sin(i * 2.4f + side + row);
+                    float spread = .34f + (i % 3) * .025f + row * .035f;
+                    var patch = Place("Environment/SM_Env_Grass_Preset_0" + ((i + row) % 2 + 1),
+                        "Low grass " + side + "-" + row + "-" + i, ground, new Vector3(0, -.015f, z), spread,
+                        (i * 137.5f + row * 51 + side * 23) % 360);
+                    patch.transform.localScale = new Vector3(spread, .10f + (i % 3) * .015f, spread);
+                    bool any = false; var bounds = new Bounds();
+                    foreach (var renderer in patch.GetComponentsInChildren<Renderer>())
+                    {
+                        if (!renderer.enabled) continue;
+                        if (!any) { bounds = renderer.bounds; any = true; } else bounds.Encapsulate(renderer.bounds);
+                    }
+                    // Align the actual mesh edge, after rotation, to the road shoulder. The prefab's off-centre pivot
+                    // and wide footprint must not put grass across the planks or Trola's feet.
+                    float edge = (side < 0 ? -.9f : 1.3f) + side * (row * 2.1f + .10f * Mathf.Sin(i * 1.7f));
+                    if (any) patch.transform.position += Vector3.right * (edge - (side < 0 ? bounds.max.x : bounds.min.x));
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(patch.transform);
+                }
+    }
+
+    private static void RoadFence(string name, Transform parent, Vector3 position, float yaw, float lean)
+    {
+        var go = Place("Buildings/SM_Bld_Log_Wall_02", name, parent, position, .28f, yaw);
+        // Reuse the camp's uneven logs as low, leaning road-edge remnants, not full-height fortifications.
+        go.transform.localScale = new Vector3(.28f, .13f, .28f);
+        go.transform.rotation = Quaternion.Euler(0, yaw, lean);
+        bool any = false; var bounds = new Bounds();
+        foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+        {
+            if (!renderer.enabled) continue;
+            if (!any) { bounds = renderer.bounds; any = true; } else bounds.Encapsulate(renderer.bounds);
+        }
+        if (any) go.transform.position += Vector3.up * (position.y - bounds.min.y - .025f);
+        PrefabUtility.RecordPrefabInstancePropertyModifications(go.transform);
     }
 
     private static Transform Group(string name, Transform parent)
@@ -237,7 +333,7 @@ public static class XybridVillageGateScene
         if (name == "Key") RenderSettings.sun = light;
     }
 
-    private static void Fire(string name, Transform parent, Vector3 position, float scale, bool lamp = true)
+    private static GameObject Fire(string name, Transform parent, Vector3 position, float scale, bool lamp = true)
     {
         var go = new GameObject(name); Undo.RegisterCreatedObjectUndo(go, "Create torch flame");
         go.transform.SetParent(parent, false); go.transform.position = position; go.transform.localScale = Vector3.one * scale;
@@ -259,6 +355,7 @@ public static class XybridVillageGateScene
             var light = bulb.AddComponent<Light>(); light.type = LightType.Point; light.color = new Color(1, .40f, .10f); light.intensity = 2; light.range = 3.5f;
         }
         particles.Play();
+        return go;
     }
 
     private static Material FlameMaterial()
